@@ -17,6 +17,7 @@ import signals
 import learner
 import universe
 import friction
+import outcome_stats
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -384,6 +385,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         except Exception:
             continue
     quotes = diversified_quotes(quotes, slot)
+    # Freeze the learning profile before creating any new OPEN; avoid replaying
+    # thousands of closed trades for each attempted symbol/horizon.
+    frozen_profile = learner.analysis(records)
     output, one_per_run = [], set()
     for rank, q in enumerate(quotes):
         if len(output) >= slots:
@@ -422,7 +426,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         h=None
         for offset in range(len(HORIZONS)):
             candidate_h=HORIZONS[(slot+rank+offset)%len(HORIZONS)]
-            picked,mode=learner.choose(options, records, symbol, candidate_h, slot, rank+offset)
+            picked,mode=learner.choose(options, records, symbol, candidate_h, slot, rank+offset,
+                                       profile=frozen_profile)
             if picked is None:
                 continue
             if any(r["status"] == "OPEN" and r["symbol"] == symbol and
@@ -537,6 +542,7 @@ def summarize(records, moment):
             "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
             "eligible_perpetual_timely": sample(eligible),
             "adaptive_research": learner.analysis(records),
+            "fixed_horizon_outcomes": outcome_stats.summarize(records, moment),
             "strategy_horizon": {
                 k: dict(sample(v), evidence="collect" if len(v) < 10 else
                         "hypothesis" if len(v) < 30 else "preliminary, correlated" if len(v) < 50
@@ -544,7 +550,7 @@ def summarize(records, moment):
                 for k, v in sorted(by.items())},
             "limitations": [
                 "Correlated trades are not independent evidence of edge",
-                "Fixed-horizon observed snapshots; delayed observations excluded from eligible sample",
+                "Fixed-horizon only; NO stop-loss, take-profit or interim exit; delayed observations excluded from eligible sample",
                 "Spot proxies excluded from eligible perpetual sample",
                 "No actual order fills, variable funding, spread, slippage or liquidation",
                 "Historical LAB-074..115 NOT imported; no verified robust edge"]}
