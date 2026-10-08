@@ -46,7 +46,18 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           python -m json.tool research_results/latest.json > /dev/null
-          python run_research_v9.py --symbols BTC ETH SOL LINK --offline --max-variants 260
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from research_v9.history import load_cache
+          from run_research_v9 import dataset_digest
+          report = json.loads(Path("research_results/latest.json").read_text())
+          assert report["proven_edge"] is False
+          assert report["v8_event_ledger_modified"] is False
+          for symbol, details in report["data_provenance"].items():
+              assert dataset_digest(load_cache(symbol)) == details["sha256"], symbol
+          print("Verified v9 data provenance for", list(report["data_provenance"]))
+          PY
           python -m json.tool research_results/latest.json > /dev/null
           git diff --check
       - name: Commit only v9 historical cache and research report
