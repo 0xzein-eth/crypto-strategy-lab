@@ -41,7 +41,7 @@ PREV_ZERO = "0" * 64
 
 
 def utcnow():
-    return dt.datetime.now(UTC).replace(microsecond=0)
+    return dt.datetime.now(UTC)
 
 
 def stamp(value):
@@ -220,9 +220,10 @@ def replay(base=None):
     return records, sequence, head, next_id
 
 
-def close_due(records, read_quote, moment):
+def close_due(records, read_quote, moment, clock=None):
     """Close against same-venue/same-instrument observation, never historical fills."""
     outputs, late, missing = [], 0, 0
+    clock = clock or (lambda: moment)
     for r in sorted(records.values(), key=lambda rec: rec["evaluate_at"]):
         if r["status"] != "OPEN" or parse(r["evaluate_at"]) > moment:
             continue
@@ -248,7 +249,7 @@ def close_due(records, read_quote, moment):
         close = dict(r)
         close.update(status="CLOSED", exit_price=q["price"],
                      exit_observed_at=q["observed_at"], exit_provider=q["provider"],
-                     exit_instrument=q["instrument"], resolved_at=stamp(max(moment, observed)),
+                     exit_instrument=q["instrument"], resolved_at=stamp(max(moment, observed, clock())),
                      delay_seconds=delay, late_excluded=delay > TIMELY_DELAY_SECONDS,
                      fee_round_trip_usd=round(fees, 6), signed_return_pct=round(signed, 8),
                      net_pnl_usd=round(pnl, 6),
@@ -260,13 +261,14 @@ def close_due(records, read_quote, moment):
     return outputs, late, missing
 
 
-def new_candidates(records, read_quote, moment, next_id, requested, advanced=None):
+def new_candidates(records, read_quote, moment, next_id, requested, advanced=None, reobserve=None, clock=None):
     """Validated candle hypotheses when observable; deterministic proxy controls otherwise."""
     slots = max(0, min(requested, MAX_NEW_PER_RUN, MAX_OPEN -
                        sum(r["status"] == "OPEN" for r in records.values())))
     if not slots:
         return []
     slot = int(moment.timestamp() // 1800)
+    clock = clock or (lambda:moment)
     quotes = []
     for symbol in SYMBOLS:
         try:
@@ -314,13 +316,24 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                r["provider"] == q["provider"] and r["strategy"] == style and
                r["horizon_hours"] == h for r in records.values()):
             continue
+        # A fresh same-venue quote is captured AFTER indicators are evaluated.
+        # We never pretend the earlier screening ticker was an executable entry.
+        try:
+            entry = reobserve(symbol, q["provider"]) if reobserve else q
+        except Exception:
+            continue
+        if (entry["provider"], entry["market_type"], entry["instrument"]) != (
+                q["provider"], q["market_type"], q["instrument"]):
+            continue
+        if (clock()-parse(entry["observed_at"])).total_seconds() > MAX_QUOTE_AGE_SECONDS:
+            continue
         rid = "LAB-" + str(next_id + len(output))
-        entered_at = max(moment, parse(q["observed_at"]))
+        entered_at = max(moment, clock(), parse(entry["observed_at"]))
         rec = {"id": rid, "status": "OPEN", "created_at": stamp(entered_at),
-               "entry_observed_at": q["observed_at"], "entry_price": q["price"],
+               "entry_observed_at": entry["observed_at"], "entry_price": entry["price"],
                "evaluate_at": stamp(entered_at + dt.timedelta(hours=h)),
-               "symbol": symbol, "instrument": q["instrument"],
-               "provider": q["provider"], "market_type": q["market_type"],
+               "symbol": symbol, "instrument": entry["instrument"],
+               "provider": entry["provider"], "market_type": entry["market_type"],
                "strategy": style, "side": side, "horizon_hours": h,
                "evidence": evidence,
                "cluster": "CRYPTO_BETA", "regime": "24h_down" if q["pct24h"] < 0 else "24h_up",
@@ -438,7 +451,7 @@ def run(requested=6, clock=utcnow):
             if cache[key] is not None:
                 return cache[key]
         raise RuntimeError("DATA_UNAVAILABLE: no provider for " + symbol)
-    closures, late, missing = close_due(records, read_quote, current)
+    closures, late, missing = close_due(records, read_quote, current, clock=clock)
     for r in closures:
         records[r["id"]] = r
     def advanced(symbol, snapshot):
@@ -448,7 +461,10 @@ def run(requested=6, clock=utcnow):
                 ValueError, IndexError, RuntimeError, OSError) as exc:
             errors["15m_OHLCV:" + symbol] = str(exc)[:150]
             return []
-    opens = new_candidates(records, read_quote, current, next_id, requested, advanced=advanced)
+    def reobserve(symbol, provider):
+        return quote(symbol, provider, clock=clock)
+    opens = new_candidates(records, read_quote, current, next_id, requested,
+                           advanced=advanced, reobserve=reobserve, clock=clock)
     for r in opens:
         records[r["id"]] = r
     events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
