@@ -120,6 +120,25 @@ def classify(bars):
         add("FB-v3","SHORT","previous bar broke 20-bar high, latest close back inside and bearish")
     if f["prior_breakout_down"] and p>f["regime_low_before_breakout"] and p>f["last_open"]:
         add("FB-v3","LONG","previous bar broke 20-bar low, latest close back inside and bullish")
+    # Frozen research candidates: never retroactively relabel older events.
+    # Trend continuation with established SMA separation and rising momentum.
+    if trend > 1.5 and f["sma20"] > f["sma20prev"] and p > f["sma20"] + 0.25*atr and p > f["c_prev"] + .1*atr and f["vol_ratio"] >= 1.1:
+        add("TREND-v1","LONG","SMA trend >1.5ATR; rising SMA20, positive impulse, volume >=1.1x")
+    if trend < -1.5 and f["sma20"] < f["sma20prev"] and p < f["sma20"] - 0.25*atr and p < f["c_prev"] - .1*atr and f["vol_ratio"] >= 1.1:
+        add("TREND-v1","SHORT","SMA trend <-1.5ATR; falling SMA20, negative impulse, volume >=1.1x")
+    # Confirmed sudden volatility expansion and directional closing body.
+    candle_range=max(1e-12,f["last_high"]-f["last_low"])
+    body=(p-f["last_open"])/candle_range
+    if candle_range >= 2.0*atr and f["vol_ratio"] >= 1.5:
+        if body > 0.6:
+            add("VOL-v1","LONG","confirmed range >=2ATR, volume >=1.5x, bullish body >60%")
+        if body < -0.6:
+            add("VOL-v1","SHORT","confirmed range >=2ATR, volume >=1.5x, bearish body >60%")
+    # A distinct range-fade variant with explicit rejection wick.
+    if abs(trend) < 0.65 and f["z20"] >= 1.5 and upper_wick >= .35:
+        add("RANGE-v1","SHORT","range-like trend, z20>=1.5, upper wick>=35%")
+    if abs(trend) < 0.65 and f["z20"] <= -1.5 and lower_wick >= .35:
+        add("RANGE-v1","LONG","range-like trend, z20<=-1.5, lower wick>=35%")
     return events
 
 
