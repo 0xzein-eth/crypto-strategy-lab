@@ -41,7 +41,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_v9.py' -v
       - name: Capture only confirmed same-venue perpetual historical candles
         if: github.event_name != 'pull_request'
-        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --max-variants 260
+        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 12 --funding-pages 5 --max-variants 260
       - name: Verify cached history and derived research report offline
         if: github.event_name != 'pull_request'
         run: |
@@ -50,15 +50,24 @@ jobs:
           import json
           from pathlib import Path
           from research_v9.history import load_cache
+          from research_v9.funding import load_cache as load_funding
           from run_research_v9 import dataset_digest
           report = json.loads(Path("research_results/latest.json").read_text())
           assert report["proven_edge"] is False
           assert report["v8_event_ledger_modified"] is False
+          queue = json.loads(Path("research_results/forward_candidates.json").read_text())
+          assert queue["paper_v8_auto_activation"] is False
+          assert queue["live_trading_enabled"] is False
+          assert report["measured_funding_symbols"] == sorted(report["measured_funding_symbols"])
           for symbol, details in report["data_provenance"].items():
               assert dataset_digest(load_cache(symbol)) == details["sha256"], symbol
-          print("Verified v9 data provenance for", list(report["data_provenance"]))
+          for symbol, details in report["funding_coverage"].items():
+              if details["complete_for_candle_window"]:
+                  assert dataset_digest(load_funding(symbol)) == details["sha256"], symbol
+          print("Verified v9 historical candles, funding provenance and promotion gate")
           PY
           python -m json.tool research_results/latest.json > /dev/null
+          python -m json.tool research_results/forward_candidates.json > /dev/null
           git diff --check
       - name: Commit only v9 historical cache and research report
         if: github.event_name != 'pull_request'
