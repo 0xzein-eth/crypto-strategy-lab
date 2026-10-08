@@ -237,7 +237,7 @@ def replay(base=None):
         base = BASE
     events = base / "data" / "events"
     records, sequence, head = {}, 0, PREV_ZERO
-    for path in sorted(events.glob("????-??.jsonl")):
+    for path in sorted(events.glob("????-??*.jsonl")):
         with path.open(encoding="utf-8") as f:
             for line_number, line in enumerate(f, 1):
                 if not line.strip():
@@ -554,7 +554,9 @@ def append_events(events, prev_seq, prev_hash, moment):
     if not events:
         return prev_seq, prev_hash
     EVENTS.mkdir(parents=True, exist_ok=True)
-    path = EVENTS / (moment.strftime("%Y-%m") + ".jsonl")
+    # Legacy month files sort before this day's shard in lexicographic replay.
+    # Monthly legacy 2026-10.jsonl => daily 2026-10_daily_08.jsonl.
+    path = EVENTS / (moment.strftime("%Y-%m_daily_%d") + ".jsonl")
     seq, head = prev_seq, prev_hash
     with path.open("a", encoding="utf-8") as out:
         for kind, record in events:
