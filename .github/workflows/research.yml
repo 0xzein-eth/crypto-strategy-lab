@@ -28,7 +28,7 @@ concurrency:
 jobs:
   research:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
         with:
@@ -41,7 +41,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_v9.py' -v
       - name: Capture only confirmed same-venue perpetual historical candles
         if: github.event_name != 'pull_request'
-        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 12 --funding-pages 5 --max-variants 260
+        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 60 --funding-pages 5 --max-variants 260
       - name: Verify cached history and derived research report offline
         if: github.event_name != 'pull_request'
         run: |
@@ -69,6 +69,29 @@ jobs:
           python -m json.tool research_results/latest.json > /dev/null
           python -m json.tool research_results/forward_candidates.json > /dev/null
           git diff --check
+      - name: Summarize historical data coverage (never paper trades)
+        if: github.event_name != 'pull_request'
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path('research_results/latest.json').read_text())
+          coverage = float(report.get('historical_overlap_days', 0))
+          rows = [
+              '### V9 historical research coverage',
+              f'- Overlapping confirmed OHLCV: **{coverage:.1f} days**',
+              f'- Number of historical variants evaluated: **{report["candidates_evaluated"]}**',
+              f'- Instruments: **{len(report["symbols_analyzed"])}**',
+              f'- Passed forward-review candidates: **{len(json.loads(Path("research_results/forward_candidates.json").read_text())["eligible_for_forward_code_review"])}**',
+              '- PAPER ONLY: historical backtests are not live fills or verified edges.',
+          ]
+          path = os.environ.get('GITHUB_STEP_SUMMARY')
+          if path:
+              with open(path, 'a', encoding='utf-8') as f:
+                  f.write('\\n'.join(rows) + '\\n')
+          print('\\n'.join(rows))
+          PY
       - name: Commit only v9 historical cache and research report
         if: github.event_name != 'pull_request'
         run: |
