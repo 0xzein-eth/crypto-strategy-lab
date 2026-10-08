@@ -1,32 +1,46 @@
-name: Paper research lab
+name: Continuous paper strategy lab
 on:
   workflow_dispatch:
   schedule:
-    - cron: '17 * * * *'
+    - cron: '13,43 * * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - engine.py
+      - .github/workflows/lab.yml
 permissions:
   contents: write
 concurrency:
-  group: canonical-ledger
+  group: continuous-canonical-paper-ledger
   cancel-in-progress: false
 jobs:
-  paper-only:
+  observe-and-commit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate and execute paper research
-        run: python lab.py
-      - name: Commit immutable ledger records
+      - name: Verify historical event integrity
+        run: python engine.py --verify-only
+      - name: Run regression and lifecycle tests
+        run: python -m unittest discover -s tests -v
+      - name: Capture public market observations and run paper experiments
+        run: python engine.py --count 6
+      - name: Verify new event history and source files
+        run: |
+          python engine.py --verify-only
+          python -m json.tool data/report.json > /dev/null
+          python -m json.tool data/state.json > /dev/null
+          git diff --check
+      - name: Commit paper ledger and report atomically to Git history
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ledger.json data/report.json
+          git add -A data/
           if ! git diff --cached --quiet; then
-            git commit -m "paper: scheduled prospective ledger update"
-            git push
+            git commit -m "paper(v8): observed prospective event ledger [skip ci]"
+            git push origin HEAD:main
           fi
