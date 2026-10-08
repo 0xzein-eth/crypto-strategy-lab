@@ -24,7 +24,7 @@ RECENT_RUN_COOLDOWN_MINUTES = 12
 PENDING_RUN_ALERT_MINUTES = 45
 BASE = "https://api.github.com"
 UTC = dt.timezone.utc
-REPOSITORY_RE = re.compile(r"^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$")
+REPOSITORY_RE = re.compile(r"^[a-zA-Z0-9_][a-zA-Z0-9_.-]*/[a-zA-Z0-9_][a-zA-Z0-9_.-]*$")
 
 
 def utc(value):
