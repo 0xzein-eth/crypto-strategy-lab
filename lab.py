@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prospective paper-only crypto perpetual research. No authenticated/order endpoints."""
+"""LEGACY v7 (disabled CLI). Use engine.py for the canonical append-only v8 lab."""
 import argparse
 import datetime as dt
 import json
@@ -287,7 +287,6 @@ def run(args):
     print(json.dumps(result,indent=2))
 
 if __name__=="__main__":
-    parser=argparse.ArgumentParser()
-    parser.add_argument("--count",type=int,default=5)
-    args=parser.parse_args()
-    run(args)
+    raise SystemExit(
+        "LEGACY_V7_DISABLED: do not write data/ledger.json or report.json with lab.py; "
+        "use 'python engine.py' for canonical v8 experiments.")
