@@ -7,13 +7,13 @@
         "holdout_days": 0,
         "holdout_n": 0,
         "holdout_net_R": 0,
-        "n": 0,
+        "n": 1,
         "preferential": false,
         "stage": "collect",
         "train_cluster_lcb_R": null,
-        "train_days": 0,
-        "train_n": 0,
-        "train_net_R": 0
+        "train_days": 1,
+        "train_n": 1,
+        "train_net_R": -0.06567
       },
       "BR-v3": {
         "beats_control_train": false,
@@ -21,13 +21,13 @@
         "holdout_days": 0,
         "holdout_n": 0,
         "holdout_net_R": 0,
-        "n": 0,
+        "n": 1,
         "preferential": false,
         "stage": "collect",
         "train_cluster_lcb_R": null,
-        "train_days": 0,
-        "train_n": 0,
-        "train_net_R": 0
+        "train_days": 1,
+        "train_n": 1,
+        "train_net_R": -0.04546
       },
       "CROSS-v1": {
         "beats_control_train": false,
@@ -105,13 +105,13 @@
         "holdout_days": 0,
         "holdout_n": 0,
         "holdout_net_R": 0,
-        "n": 0,
+        "n": 1,
         "preferential": false,
         "stage": "collect",
         "train_cluster_lcb_R": null,
-        "train_days": 0,
-        "train_n": 0,
-        "train_net_R": 0
+        "train_days": 1,
+        "train_n": 1,
+        "train_net_R": -0.17853
       },
       "RANGE-v1": {
         "beats_control_train": false,
@@ -199,8 +199,8 @@
       }
     },
     "champion": null,
-    "eligible_closed": 0,
-    "eligible_days": 0,
+    "eligible_closed": 3,
+    "eligible_days": 1,
     "method": "v2-d916bf2c; entry-spread/impact stress R with legacy haircut; 20% calendar-day monitoring and clustered daily lower bound",
     "provisional_leaders": [],
     "warning": "No strategy has demonstrated a reliable tradable edge. Selection is observational, multi-tested and correlated."
@@ -216,13 +216,13 @@
     "max_open": 850,
     "max_open_per_symbol": 50
   },
-  "closed": 0,
-  "closed_this_run": 0,
-  "created": 136,
+  "closed": 3,
+  "closed_this_run": 3,
+  "created": 150,
   "eligible_perpetual_timely": {
-    "expectancy_R": null,
-    "n": 0,
-    "net_R": 0
+    "expectancy_R": -0.01655,
+    "n": 3,
+    "net_R": -0.04966
   },
   "friction_stress_scenario": {
     "additional_assumed_cost_usd": 0,
@@ -233,7 +233,7 @@
   },
   "late_closed_this_run": 0,
   "late_closures": 0,
-  "ledger_tip_sha256": "4cb056c3b5b45ca7310714cc66b5f3eff13c2a5e2ddc3ea6189585b4e8759bbf",
+  "ledger_tip_sha256": "5ba0ceaec74f2ffd40e5e526268700af8e5ce3e158fbab0d77e9badd33517b38",
   "limitations": [
     "Correlated trades are not independent evidence of edge",
     "Fixed-horizon observed snapshots; delayed observations excluded from eligible sample",
@@ -241,15 +241,15 @@
     "No actual order fills, variable funding, spread, slippage or liquidation",
     "Historical LAB-074..115 NOT imported; no verified robust edge"
   ],
-  "losses": 0,
-  "max_closed_equity_drawdown_usd": 0.0,
+  "losses": 1,
+  "max_closed_equity_drawdown_usd": 14.78,
   "missed_due_snapshots": 0,
-  "net_R": 0,
-  "net_expectancy_R": null,
-  "net_pnl_usd": 0,
-  "open": 136,
+  "net_R": -0.04966,
+  "net_expectancy_R": -0.01655,
+  "net_pnl_usd": -7.45,
+  "open": 147,
   "pending": 0,
-  "profit_factor": null,
+  "profit_factor": 0.496,
   "provider_observations": 38,
   "schema_version": 8,
   "source_errors": {
@@ -262,13 +262,32 @@
   },
   "spot_proxy_closures": 0,
   "status": "OK",
-  "strategy_horizon": {},
-  "timestamp": "2026-10-08T04:14:21.101708Z",
-  "total_round_trip_fees_usd": 0,
+  "strategy_horizon": {
+    "BR-proxy-v1 / 1h": {
+      "evidence": "collect",
+      "expectancy_R": 0.01433,
+      "n": 1,
+      "net_R": 0.01433
+    },
+    "BR-v3 / 1h": {
+      "evidence": "collect",
+      "expectancy_R": 0.03454,
+      "n": 1,
+      "net_R": 0.03454
+    },
+    "MR-v3 / 1h": {
+      "evidence": "collect",
+      "expectancy_R": -0.09853,
+      "n": 1,
+      "net_R": -0.09853
+    }
+  },
+  "timestamp": "2026-10-08T04:28:53.281276Z",
+  "total_round_trip_fees_usd": 30.0,
   "universe_size": 38,
   "universe_version": "2026-10-08-v2",
-  "verified_events": 136,
-  "win_rate": null,
-  "wins": 0,
+  "verified_events": 153,
+  "win_rate": 0.6667,
+  "wins": 2,
   "workflow_interval_note": "GitHub scheduled triggers are best-effort"
 }
