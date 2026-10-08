@@ -11,7 +11,7 @@
 5. Immediately before committing a new trade, fetch a **second fresh ticker** from the same venue. The hypothetical entry timestamp must not predate the final observation or the decision.
 6. Append all OPEN/CLOSE events to the current monthly JSONL, replay the entire chain, regenerate `data/report.json` and `data/state.json`, and atomically commit the files together in one Git commit.
 
-The GitHub schedule targets **four times per hour**, at minutes 07, 22, 37 and 52. GitHub Actions is best effort and may be late or omitted. Time-sensitive exits can be missing or delayed. A close >1800 seconds after intended evaluation is **excluded from timely eligible evidence** but retained as a full actual observed paper outcome.
+The GitHub schedule targets **six times per hour**, at minutes 03, 13, 23, 33, 43 and 53. GitHub Actions is best effort and may be late or omitted. Time-sensitive exits can be missing or delayed. A close >1800 seconds after intended evaluation is **excluded from timely eligible evidence** but retained as a full actual observed paper outcome.
 
 ## Price and strategy evidence
 
