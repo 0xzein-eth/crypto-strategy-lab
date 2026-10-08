@@ -23,3 +23,13 @@ Locally: `python lab.py` (Python standard library only).
 Every run resolves positions before creating new experiments. Workflow uses serialized concurrency and commits the ledger. If Git push conflicts, the job fails rather than overwrite other writes.
 
 **This is not financial advice and is strictly a paper research system.**
+
+## October 8 build expansion
+- Public perpetual ticker priority: Bybit linear -> OKX swap -> Binance futures.
+- When all futures feeds are inaccessible, an **explicit Kraken USD spot proxy** is attempted. Proxy records are marked `kraken-spot-proxy` and `USD spot proxy`, never presented as futures fills.
+- No valid market snapshot now causes a failing workflow (not a misleading green run).
+- `tests/test_lab.py` covers prospective opening, due resolution, pending recovery, immutable CLOSED outcome, capacity and missing-ledger failure. CI runs on pushes.
+- Static responsive dashboard lives at `dashboard/index.html`; the `Validate dashboard` workflow uploads it as an artifact. To publish on GitHub Pages, configure Pages separately; Pages deployment is not claimed enabled.
+- Hourly paper workflow remains the only writer of `data/ledger.json`. No credentials are required.
+
+**Important:** An earlier successful GitHub workflow run created **zero** trades. A green workflow alone does not establish market-data availability or actual paper-trade generation. Check `added`, `market_snapshots`, and `market_errors` in the report after the NEXT run.
