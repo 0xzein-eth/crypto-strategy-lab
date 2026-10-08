@@ -1,0 +1,464 @@
+#!/usr/bin/env python3
+"""Prospective paper-trading research engine. PUBLIC market reads, NEVER orders.
+
+Event-sourced, append-only full individual records with SHA-256 hash chaining.
+No retrospective price lookup, no backdating and no API credentials.
+"""
+import argparse
+from collections import defaultdict
+import datetime as dt
+import hashlib
+import json
+import math
+from pathlib import Path
+import urllib.error
+import urllib.request
+
+BASE = Path(__file__).resolve().parent
+EVENTS = BASE / "data" / "events"
+REPORT = BASE / "data" / "report.json"
+STATE = BASE / "data" / "state.json"
+LEGACY = BASE / "data" / "ledger.json"
+UTC = dt.timezone.utc
+SYMBOLS = ("BTC", "ETH", "SOL", "BNB", "XRP", "ADA", "DOGE",
+           "LINK", "AVAX", "SUI", "LTC", "TRX")
+PROVIDERS = ("bybit-linear", "okx-swap", "binance-futures",
+             "kraken-spot-proxy", "coinbase-spot-proxy")
+HORIZONS = (1, 2, 4, 8, 12, 24)
+START_ID = 116
+NOTIONAL_USD = 10000.0
+FEE_SIDE_PCT = 0.05
+RESEARCH_RISK_PCT = 1.5
+MAX_OPEN = 120
+MAX_PER_SYMBOL = 12
+MAX_NEW_PER_RUN = 10
+MAX_QUOTE_AGE_SECONDS = 180
+TIMELY_DELAY_SECONDS = 1800
+MIN_QUOTE_VOLUME = 1_000_000.0
+HTTP_TIMEOUT = 7
+PREV_ZERO = "0" * 64
+
+
+def utcnow():
+    return dt.datetime.now(UTC).replace(microsecond=0)
+
+
+def stamp(value):
+    return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
+def parse(value):
+    result = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if result.tzinfo is None:
+        raise ValueError("timezone missing: " + value)
+    return result.astimezone(UTC)
+
+
+def positive(value):
+    v = float(value)
+    if v <= 0 or not math.isfinite(v):
+        raise ValueError("price or volume must be positive finite number")
+    return v
+
+
+def request_json(url):
+    req = urllib.request.Request(
+        url, headers={"User-Agent": "CryptoStrategyLab-PaperOnly/3.0",
+                      "Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
+        return json.load(resp)
+
+
+def quote(symbol, provider, clock=utcnow, requester=request_json):
+    """One public snapshot; no historical data, no orders and no price invention."""
+    observed = clock()
+    if provider == "bybit-linear":
+        raw = requester("https://api.bybit.com/v5/market/tickers?category=linear&symbol=" + symbol + "USDT")
+        if str(raw.get("retCode")) != "0" or not raw.get("result", {}).get("list"):
+            raise ValueError("Bybit missing ticker")
+        item = raw["result"]["list"][0]
+        px = positive(item["lastPrice"])
+        pct = float(item["price24hPcnt"]) * 100
+        volume = float(item.get("turnover24h", 0))
+        market_type, instrument = "perpetual", symbol + "USDT"
+    elif provider == "okx-swap":
+        raw = requester("https://www.okx.com/api/v5/market/ticker?instId=" + symbol + "-USDT-SWAP")
+        if raw.get("code") != "0" or not raw.get("data"):
+            raise ValueError("OKX missing ticker")
+        item = raw["data"][0]
+        px = positive(item["last"])
+        pct = (px / positive(item["open24h"]) - 1) * 100
+        # volCcy24h usually base units; convert to approximate quote notional.
+        volume = float(item.get("volCcy24h") or 0) * px
+        observed = dt.datetime.fromtimestamp(int(item["ts"]) / 1000, UTC)
+        market_type, instrument = "perpetual", symbol + "-USDT-SWAP"
+    elif provider == "binance-futures":
+        raw = requester("https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=" + symbol + "USDT")
+        px = positive(raw["lastPrice"])
+        pct = float(raw["priceChangePercent"])
+        volume = float(raw.get("quoteVolume", 0))
+        observed = dt.datetime.fromtimestamp(int(raw["closeTime"]) / 1000, UTC)
+        market_type, instrument = "perpetual", symbol + "USDT"
+    elif provider == "kraken-spot-proxy":
+        mapping = {"BTC": "XBTUSD"}
+        pair = mapping.get(symbol, symbol + "USD")
+        raw = requester("https://api.kraken.com/0/public/Ticker?pair=" + pair)
+        if raw.get("error") or not raw.get("result"):
+            raise ValueError("Kraken missing ticker")
+        item = next(iter(raw["result"].values()))
+        px = positive(item["c"][0])
+        pct = (px / positive(item["o"]) - 1) * 100
+        volume = float(item["v"][1]) * px
+        market_type, instrument = "spot_proxy", pair
+    elif provider == "coinbase-spot-proxy":
+        pair = symbol + "-USD"
+        raw = requester("https://api.exchange.coinbase.com/products/" + pair + "/stats")
+        px = positive(raw["last"])
+        pct = (px / positive(raw["open"]) - 1) * 100
+        volume = float(raw["volume"]) * px
+        market_type, instrument = "spot_proxy", pair
+    else:
+        raise ValueError("unknown market provider: " + provider)
+    after = clock()
+    age = (after - observed).total_seconds()
+    if age < -30 or age > MAX_QUOTE_AGE_SECONDS:
+        raise ValueError("stale or future quote, age=" + str(round(age)))
+    if abs(pct) > 95 or not math.isfinite(pct) or not math.isfinite(volume) or volume < 0:
+        raise ValueError("invalid change/volume")
+    return {"symbol": symbol, "price": px, "pct24h": pct,
+            "quote_volume_24h": volume, "observed_at": stamp(observed),
+            "provider": provider, "market_type": market_type,
+            "instrument": instrument}
+
+
+def canonical(value):
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+                      allow_nan=False)
+
+
+def seal(seq, prev_hash, kind, record):
+    raw = {"seq": seq, "prev_hash": prev_hash, "kind": kind, "record": record}
+    return dict(raw, hash=hashlib.sha256(canonical(raw).encode("utf-8")).hexdigest())
+
+
+def validate_open(r):
+    mandatory = ("id", "created_at", "evaluate_at", "symbol", "strategy",
+                 "provider", "market_type", "instrument", "entry_observed_at",
+                 "entry_price", "horizon_hours", "side", "research_risk_pct", "notional_usd")
+    for key in mandatory:
+        if key not in r:
+            raise ValueError("INTEGRITY_FAILURE missing OPEN field " + key)
+    if r["status"] != "OPEN" or r["side"] not in ("LONG", "SHORT"):
+        raise ValueError("INTEGRITY_FAILURE invalid OPEN status or side")
+    if not r["id"].startswith("LAB-") or not r["id"][4:].isdigit():
+        raise ValueError("INTEGRITY_FAILURE invalid ID")
+    if parse(r["evaluate_at"]) <= parse(r["created_at"]):
+        raise ValueError("INTEGRITY_FAILURE nonprospective evaluation")
+    if parse(r["entry_observed_at"]) > parse(r["created_at"]):
+        raise ValueError("INTEGRITY_FAILURE entry observation in future")
+    if r["horizon_hours"] not in HORIZONS or r["provider"] not in PROVIDERS:
+        raise ValueError("INTEGRITY_FAILURE unsupported horizon/provider")
+    if r["market_type"] != ("perpetual" if "proxy" not in r["provider"] else "spot_proxy"):
+        raise ValueError("INTEGRITY_FAILURE mislabeled instrument")
+    positive(r["entry_price"]); positive(r["research_risk_pct"])
+
+
+def replay(base=BASE):
+    """Validate every event and return reconstructed state. Fail closed on edits."""
+    events = base / "data" / "events"
+    records, sequence, head = {}, 0, PREV_ZERO
+    for path in sorted(events.glob("????-??.jsonl")):
+        with path.open(encoding="utf-8") as f:
+            for line_number, line in enumerate(f, 1):
+                if not line.strip():
+                    raise ValueError("INTEGRITY_FAILURE blank event line")
+                try:
+                    obj = json.loads(line)
+                    expected = seal(sequence + 1, head, obj["kind"], obj["record"])
+                    if obj != expected:
+                        raise ValueError("hash/sequence mismatch")
+                    r = obj["record"]
+                    ident = r["id"]
+                    if obj["kind"] == "OPEN":
+                        validate_open(r)
+                        if ident in records or int(ident[4:]) < START_ID:
+                            raise ValueError("duplicate or legacy ID")
+                        records[ident] = r
+                    elif obj["kind"] == "CLOSE":
+                        prior = records.get(ident)
+                        if prior is None or prior["status"] != "OPEN" or r["status"] != "CLOSED":
+                            raise ValueError("closing unknown/already-closed record")
+                        if any(r.get(k) != v for k, v in prior.items() if k != "status"):
+                            raise ValueError("CLOSE modified original OPEN record")
+                        for key in ("exit_price", "exit_observed_at", "resolved_at", "delay_seconds",
+                                    "net_pnl_usd", "normalized_R", "fee_round_trip_usd",
+                                    "exit_provider", "exit_instrument", "outcome"):
+                            if key not in r:
+                                raise ValueError("missing CLOSE field: " + key)
+                        if r["exit_provider"] != prior["provider"] or r["exit_instrument"] != prior["instrument"]:
+                            raise ValueError("CLOSE changed venue/instrument")
+                        if parse(r["exit_observed_at"]) < parse(r["evaluate_at"]):
+                            raise ValueError("CLOSE uses price before evaluation")
+                        records[ident] = r
+                    else:
+                        raise ValueError("unsupported event kind")
+                    sequence += 1
+                    head = expected["hash"]
+                except (KeyError, TypeError, ValueError) as exc:
+                    raise ValueError("INTEGRITY_FAILURE in %s:%s: %s" % (path, line_number, exc)) from exc
+    legacy = base / "data" / "ledger.json"
+    if legacy.exists():
+        old = json.loads(legacy.read_text(encoding="utf-8"))
+        if old.get("records"):
+            raise ValueError("INTEGRITY_FAILURE historic ledger not migrated; cannot run dual sources")
+    next_id = max([START_ID - 1] + [int(x[4:]) for x in records]) + 1
+    return records, sequence, head, next_id
+
+
+def close_due(records, read_quote, moment):
+    """Close against same-venue/same-instrument observation, never historical fills."""
+    outputs, late, missing = [], 0, 0
+    for r in sorted(records.values(), key=lambda rec: rec["evaluate_at"]):
+        if r["status"] != "OPEN" or parse(r["evaluate_at"]) > moment:
+            continue
+        try:
+            q = read_quote(r["symbol"], r["provider"])
+        except Exception:
+            missing += 1
+            continue
+        if (q["provider"], q["instrument"], q["market_type"]) != (
+                r["provider"], r["instrument"], r["market_type"]):
+            missing += 1
+            continue
+        observed = parse(q["observed_at"])
+        if observed < parse(r["evaluate_at"]):
+            missing += 1
+            continue
+        signed = (q["price"] / r["entry_price"] - 1) * 100
+        if r["side"] == "SHORT":
+            signed *= -1
+        fees = r["notional_usd"] * 2 * FEE_SIDE_PCT / 100
+        pnl = r["notional_usd"] * signed / 100 - fees
+        delay = int((observed - parse(r["evaluate_at"])).total_seconds())
+        close = dict(r)
+        close.update(status="CLOSED", exit_price=q["price"],
+                     exit_observed_at=q["observed_at"], exit_provider=q["provider"],
+                     exit_instrument=q["instrument"], resolved_at=stamp(moment),
+                     delay_seconds=delay, late_excluded=delay > TIMELY_DELAY_SECONDS,
+                     fee_round_trip_usd=round(fees, 6), signed_return_pct=round(signed, 8),
+                     net_pnl_usd=round(pnl, 6),
+                     normalized_R=round((signed - 2 * FEE_SIDE_PCT) / r["research_risk_pct"], 8),
+                     outcome="WIN" if pnl > 1e-7 else "LOSS" if pnl < -1e-7 else "BREAKEVEN",
+                     funding_assumption_usd=0.0)
+        outputs.append(close)
+        late += int(close["late_excluded"])
+    return outputs, late, missing
+
+
+def new_candidates(records, read_quote, moment, next_id, requested):
+    """Falsifiable baseline signals, not claims about realized market structure."""
+    slots = max(0, min(requested, MAX_NEW_PER_RUN, MAX_OPEN -
+                       sum(r["status"] == "OPEN" for r in records.values())))
+    if not slots:
+        return []
+    slot = int(moment.timestamp() // 1800)
+    quotes = []
+    for symbol in SYMBOLS:
+        try:
+            q = read_quote(symbol, None)
+            if (q["quote_volume_24h"] >= MIN_QUOTE_VOLUME and
+                    abs(q["pct24h"]) >= 0.5 and
+                    (moment - parse(q["observed_at"])).total_seconds() <= MAX_QUOTE_AGE_SECONDS):
+                quotes.append(q)
+        except Exception:
+            continue
+    quotes.sort(key=lambda q: (-abs(q["pct24h"]), q["symbol"]))
+    output, one_per_run = [], set()
+    for rank, q in enumerate(quotes):
+        if len(output) >= slots:
+            break
+        symbol = q["symbol"]
+        if symbol in one_per_run or sum(
+                r["symbol"] == symbol and r["status"] == "OPEN" for r in records.values()
+        ) >= MAX_PER_SYMBOL:
+            continue
+        style = ("BR-proxy-v1", "MR-proxy-v1", "CTRL-v1")[(slot + rank) % 3]
+        if style == "BR-proxy-v1":
+            side = "LONG" if q["pct24h"] >= 0 else "SHORT"
+        elif style == "MR-proxy-v1":
+            side = "SHORT" if q["pct24h"] >= 0 else "LONG"
+        else:
+            # Deterministic pseudo-randomized negative control with no lookahead.
+            hsh = hashlib.sha256((symbol + ":" + str(slot)).encode()).digest()
+            side = "LONG" if hsh[0] % 2 == 0 else "SHORT"
+        h = HORIZONS[(slot + rank) % len(HORIZONS)]
+        if any(r["status"] == "OPEN" and r["symbol"] == symbol and
+               r["provider"] == q["provider"] and r["strategy"] == style and
+               r["horizon_hours"] == h for r in records.values()):
+            continue
+        rid = "LAB-" + str(next_id + len(output))
+        rec = {"id": rid, "status": "OPEN", "created_at": stamp(moment),
+               "entry_observed_at": q["observed_at"], "entry_price": q["price"],
+               "evaluate_at": stamp(moment + dt.timedelta(hours=h)),
+               "symbol": symbol, "instrument": q["instrument"],
+               "provider": q["provider"], "market_type": q["market_type"],
+               "strategy": style, "side": side, "horizon_hours": h,
+               "evidence": {"price_change_24h_pct": round(q["pct24h"], 6),
+                            "quote_volume_24h": round(q["quote_volume_24h"], 2),
+                            "signal_rule": "24h trend / contra-trend / deterministic control",
+                            "research_only": True},
+               "cluster": "CRYPTO_BETA", "regime": "24h_down" if q["pct24h"] < 0 else "24h_up",
+               "notional_usd": NOTIONAL_USD, "hypothetical_leverage": 3,
+               "fee_per_side_pct": FEE_SIDE_PCT, "research_risk_pct": RESEARCH_RISK_PCT,
+               "funding_assumption_usd": 0, "quality": "exploratory; no tradable-edge claim"}
+        validate_open(rec)
+        output.append(rec)
+        one_per_run.add(symbol)
+    return output
+
+
+def summarize(records, moment):
+    closed = [r for r in records.values() if r["status"] == "CLOSED"]
+    opened = [r for r in records.values() if r["status"] == "OPEN"]
+    pending = sum(parse(r["evaluate_at"]) <= moment for r in opened)
+    pnl = [r["net_pnl_usd"] for r in closed]
+    gross_win = sum(p for p in pnl if p > 0)
+    gross_loss = -sum(p for p in pnl if p < 0)
+    by = defaultdict(list)
+    for r in closed:
+        by[r["strategy"] + " / " + str(r["horizon_hours"]) + "h"].append(r)
+    eligible = [r for r in closed if not r.get("late_excluded") and
+                r["market_type"] == "perpetual"]
+    balance = peak = max_dd = 0.0
+    for r in sorted(closed, key=lambda x: (x["resolved_at"], x["id"])):
+        balance += r["net_pnl_usd"]
+        peak = max(peak, balance)
+        max_dd = max(max_dd, peak - balance)
+    sample = lambda arr: {
+        "n": len(arr),
+        "net_R": round(sum(r["normalized_R"] for r in arr), 5),
+        "expectancy_R": round(sum(r["normalized_R"] for r in arr)/len(arr), 5) if arr else None
+    }
+    return {"schema_version": 8, "created": len(records), "closed": len(closed),
+            "open": len(opened)-pending, "pending": pending,
+            "wins": sum(p > 0 for p in pnl), "losses": sum(p < 0 for p in pnl),
+            "win_rate": round(sum(p > 0 for p in pnl) / len(pnl), 4) if pnl else None,
+            "net_pnl_usd": round(sum(pnl), 2),
+            "net_R": round(sum(r["normalized_R"] for r in closed), 5),
+            "net_expectancy_R": sample(closed)["expectancy_R"],
+            "profit_factor": round(gross_win/gross_loss, 4) if gross_loss else None,
+            "max_closed_equity_drawdown_usd": round(max_dd, 2),
+            "total_round_trip_fees_usd": round(sum(r["fee_round_trip_usd"] for r in closed), 2),
+            "late_closures": sum(r.get("late_excluded", False) for r in closed),
+            "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
+            "eligible_perpetual_timely": sample(eligible),
+            "strategy_horizon": {
+                k: dict(sample(v), evidence="collect" if len(v) < 10 else
+                        "hypothesis" if len(v) < 30 else "preliminary, correlated" if len(v) < 50
+                        else "multi-regime validation needed")
+                for k, v in sorted(by.items())},
+            "limitations": [
+                "Correlated trades are not independent evidence of edge",
+                "Fixed-horizon observed snapshots; delayed observations excluded from eligible sample",
+                "Spot proxies excluded from eligible perpetual sample",
+                "No actual order fills, variable funding, spread, slippage or liquidation",
+                "Historical LAB-074..115 NOT imported; no verified robust edge"]}
+
+
+def append_events(events, prev_seq, prev_hash, moment):
+    if not events:
+        return prev_seq, prev_hash
+    EVENTS.mkdir(parents=True, exist_ok=True)
+    path = EVENTS / (moment.strftime("%Y-%m") + ".jsonl")
+    seq, head = prev_seq, prev_hash
+    with path.open("a", encoding="utf-8") as out:
+        for kind, record in events:
+            seq += 1
+            obj = seal(seq, head, kind, record)
+            out.write(canonical(obj) + "\n")
+            head = obj["hash"]
+        out.flush()
+    return seq, head
+
+
+def atomic_json(path, obj):
+    import os, tempfile
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp = tempfile.mkstemp(prefix=".tmp-", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            json.dump(obj, out, sort_keys=True, indent=2, allow_nan=False)
+            out.write("\n")
+            out.flush()
+            os.fsync(out.fileno())
+        os.replace(temp, path)
+    finally:
+        if os.path.exists(temp):
+            os.unlink(temp)
+
+
+def run(requested=6, clock=utcnow):
+    current = clock()
+    records, seq, prev_hash, next_id = replay()
+    if any(int(r["id"][4:]) >= next_id for r in records.values()):
+        raise ValueError("INTEGRITY_FAILURE ID counter")
+    cache, errors = {}, {}
+    def read_quote(symbol, provider=None):
+        providers = (provider,) if provider else PROVIDERS
+        for name in providers:
+            key = (symbol, name)
+            if key not in cache:
+                try:
+                    cache[key] = quote(symbol, name, clock=clock)
+                except (urllib.error.URLError, TimeoutError, KeyError, TypeError,
+                        ValueError, IndexError, RuntimeError, OSError) as exc:
+                    cache[key] = None
+                    errors[symbol + ":" + name] = str(exc)[:130]
+            if cache[key] is not None:
+                return cache[key]
+        raise RuntimeError("DATA_UNAVAILABLE: no provider for " + symbol)
+    closures, late, missing = close_due(records, read_quote, current)
+    for r in closures:
+        records[r["id"]] = r
+    opens = new_candidates(records, read_quote, current, next_id, requested)
+    for r in opens:
+        records[r["id"]] = r
+    events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
+    # Avoid writing a partial ledger and misreporting green on total provider failure.
+    observations = sum(x is not None for x in cache.values())
+    if not observations:
+        raise RuntimeError("DATA_UNAVAILABLE: all public market sources failed: " +
+                           json.dumps(errors, sort_keys=True)[:1000])
+    # In CI/GitHub Actions, ledger + summary are committed together as one Git commit.
+    seq, prev_hash = append_events(events, seq, prev_hash, current)
+    # Replay *after* writing ensures hash-chain + individual records are consistent.
+    confirmed, seq2, head2, _ = replay()
+    if seq != seq2 or prev_hash != head2 or confirmed != records:
+        raise ValueError("INTEGRITY_FAILURE: event replay mismatch")
+    result = summarize(records, current)
+    result.update(status="OK" if opens else "NO_NEW_SIGNALS",
+                  timestamp=stamp(current), added=len(opens), closed_this_run=len(closures),
+                  late_closed_this_run=late, missed_due_snapshots=missing,
+                  provider_observations=observations, source_errors=errors,
+                  verified_events=seq, ledger_tip_sha256=prev_hash,
+                  workflow_interval_note="GitHub scheduled triggers are best-effort")
+    recent = sorted(records.values(), key=lambda r: (r["created_at"], r["id"]), reverse=True)[:80]
+    atomic_json(STATE, {"schema_version": 8, "timestamp": stamp(current),
+                        "records": recent, "ledger_tip_sha256": prev_hash,
+                        "all_events_verified": seq})
+    atomic_json(REPORT, result)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return result
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(description="Strict prospective paper research")
+    ap.add_argument("--count", type=int, default=6)
+    ap.add_argument("--verify-only", action="store_true")
+    args = ap.parse_args()
+    if args.verify_only:
+        rs, seq, head, nxt = replay()
+        print(json.dumps({"verified": True, "events": seq,
+                          "records": len(rs), "next_id": nxt, "hash": head}))
+    else:
+        run(args.count)
