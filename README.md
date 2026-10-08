@@ -10,7 +10,7 @@
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
 
-**Jadwal otomatis:** menit **07, 22, 37, dan 52 setiap jam** (setiap 15 menit), menggunakan `schedule` GitHub Actions. Jadwal bersifat best effort; eksekusi dapat terlambat atau sesekali terlewat. Laptop pengguna tidak perlu menyala. Pada kondisi normal engine mengupayakan hingga 14 eksperimen baru per run (hard cap 24), dengan batas **850 OPEN bersamaan**, **50 OPEN per aset** dan **1.400 OPEN baru per hari UTC**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
+**Jadwal otomatis:** menit **03, 13, 23, 33, 43, dan 53 setiap jam** (target setiap 10 menit), menggunakan `schedule` GitHub Actions. Jadwal bersifat best effort; eksekusi dapat terlambat atau sesekali terlewat. Laptop pengguna tidak perlu menyala. Pada kondisi normal engine mengupayakan hingga 14 eksperimen baru per run (hard cap 24), dengan batas **850 OPEN bersamaan**, **50 OPEN per aset** dan **1.400 OPEN baru per hari UTC**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
 
 ## Struktur repository
 
@@ -33,7 +33,7 @@ Strategi berbasis candle aktif **hanya jika** data OHLCV dari **instrumen OKX pe
 
 ## Sumber harga & aturan integritas
 
-Prioritas data: Bybit linear → OKX USDT swap → Binance Futures → Kraken USD spot proxy → Coinbase USD spot proxy. Beberapa penyedia bisa memblokir runner GitHub berdasarkan wilayah; kode membedakan kesalahan HTTP 403/451 dan mencoba sumber alternatif. **Harga exit selalu harus dari provider, tipe pasar, dan instrumen yang sama dengan entry.** Spot proxy tidak pernah dihitung sebagai sampel valid untuk bukti edge perpetual.
+Prioritas data untuk eksperimen baru: OKX USDT swap → Bybit linear → Binance Futures → Kraken USD spot proxy → Coinbase USD spot proxy. Harga keluar posisi lama tetap diwajibkan berasal dari venue serta instrumen entry yang sama. Beberapa penyedia bisa memblokir runner GitHub berdasarkan wilayah; kode membedakan kesalahan HTTP 403/451 dan mencoba sumber alternatif. **Harga exit selalu harus dari provider, tipe pasar, dan instrumen yang sama dengan entry.** Spot proxy tidak pernah dihitung sebagai sampel valid untuk bukti edge perpetual.
 
 - Simulasi `$10,000` notional per eksperimen, leverage hipotesis `3x`, fee `0,05%` per sisi.
 - `normalized_R = (signed_return_pct − 0,10%) / research_risk_pct`. Risk denominator riset awal `1,5%`, **bukan stop-loss aktual**.
