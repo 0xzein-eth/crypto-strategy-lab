@@ -145,7 +145,8 @@ class CliTests(unittest.TestCase):
             with patch.object(history, "CACHE_DIR", root/"cache"):
                 history.save_cache("BTC", market(1000))
                 history.save_cache("ETH", market(1000, base=200))
-                with patch.object(cli, "RESULT_PATH", destination):
+                with patch.object(cli, "RESULT_PATH", destination), patch.object(
+                        cli, "QUEUE_PATH", root/"candidates.json"):
                     report = cli.produce(["BTC", "ETH"], offline=True,
                                          max_variants=15)
             self.assertTrue(destination.exists())
@@ -160,7 +161,8 @@ class CliTests(unittest.TestCase):
             root = Path(directory)
             destination = root/"latest.json"
             with patch.object(history, "CACHE_DIR", root/"cache"):
-                with patch.object(cli, "RESULT_PATH", destination):
+                with patch.object(cli, "RESULT_PATH", destination), patch.object(
+                        cli, "QUEUE_PATH", root/"candidates.json"):
                     with self.assertRaisesRegex(RuntimeError, "DATA_UNAVAILABLE"):
                         cli.produce(["BTC", "ETH"], offline=True)
             self.assertFalse(destination.exists())
@@ -176,7 +178,7 @@ class ExtendedHistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "gap"):
             history.extend_older(existing, data[:98])
         changed = [r.copy() for r in older + existing[:1]]
-        changed[-1][4] += 1
+        changed[-1][5] += 1
         with self.assertRaisesRegex(ValueError, "conflicting"):
             history.extend_older(existing, changed)
 
