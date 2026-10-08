@@ -1,0 +1,46 @@
+name: Redundant GitHub-native paper clock
+
+# An independent workflow definition gives the lab another scheduled trigger.
+# These events still share GitHub Actions infrastructure; there is NO
+# guaranteed deadline if GitHub delays/drops all cron jobs.
+on:
+  schedule:
+    - cron: '01,11,21,31,41,51 * * * *'
+  workflow_dispatch:
+  # A successful/failed research or CI run gives a second opportunity to
+  # inspect freshness without relying exclusively on the schedule backend.
+  workflow_run:
+    workflows: ['Historical Research Factory v9', 'CI tests']
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: write
+
+# Repository-wide across both health.yml and rescue.yml. Never cancel a
+# running guardian; do not dispatch parallel retries for the same stale report.
+concurrency:
+  group: schedule-guardian-main
+  cancel-in-progress: false
+
+jobs:
+  redundant-recovery:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify local canonical event ledger before requesting a recovery
+        run: python audit.py
+      - name: Recheck authoritative main report and conditionally dispatch lab.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scheduler_guard.py --recover --threshold-minutes 14
+      - name: Surface an unresolved stale run instead of reporting false health
+        run: python health.py --max-hours 1.25
