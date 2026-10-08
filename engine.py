@@ -16,6 +16,7 @@ import urllib.request
 import signals
 import learner
 import universe
+import friction
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -76,6 +77,7 @@ def request_json(url):
 def quote(symbol, provider, clock=utcnow, requester=request_json):
     """One public snapshot; no historical data, no orders and no price invention."""
     observed = clock()
+    bid_px = ask_px = None
     if provider == "bybit-linear":
         raw = requester("https://api.bybit.com/v5/market/tickers?category=linear&symbol=" + symbol + "USDT")
         if str(raw.get("retCode")) != "0" or not raw.get("result", {}).get("list"):
@@ -85,6 +87,7 @@ def quote(symbol, provider, clock=utcnow, requester=request_json):
         pct = float(item["price24hPcnt"]) * 100
         volume = float(item.get("turnover24h", 0))
         market_type, instrument = "perpetual", symbol + "USDT"
+        bid_px, ask_px = item.get("bid1Price"), item.get("ask1Price")
     elif provider == "okx-swap":
         raw = requester("https://www.okx.com/api/v5/market/ticker?instId=" + symbol + "-USDT-SWAP")
         if raw.get("code") != "0" or not raw.get("data"):
@@ -96,6 +99,7 @@ def quote(symbol, provider, clock=utcnow, requester=request_json):
         volume = float(item.get("volCcy24h") or 0) * px
         observed = dt.datetime.fromtimestamp(int(item["ts"]) / 1000, UTC)
         market_type, instrument = "perpetual", symbol + "-USDT-SWAP"
+        bid_px, ask_px = item.get("bidPx"), item.get("askPx")
     elif provider == "binance-futures":
         raw = requester("https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=" + symbol + "USDT")
         px = positive(raw["lastPrice"])
@@ -114,6 +118,8 @@ def quote(symbol, provider, clock=utcnow, requester=request_json):
         pct = (px / positive(item["o"]) - 1) * 100
         volume = float(item["v"][1]) * px
         market_type, instrument = "spot_proxy", pair
+        bid_px = item.get("b", [None])[0]
+        ask_px = item.get("a", [None])[0]
     elif provider == "coinbase-spot-proxy":
         pair = symbol + "-USD"
         raw = requester("https://api.exchange.coinbase.com/products/" + pair + "/stats")
@@ -134,7 +140,8 @@ def quote(symbol, provider, clock=utcnow, requester=request_json):
             "price_change_reference": period,
             "quote_volume_24h": volume, "observed_at": stamp(observed),
             "provider": provider, "market_type": market_type,
-            "instrument": instrument}
+            "instrument": instrument,
+            "spread_pct_observed": friction.observed_spread_pct(bid_px,ask_px)}
 
 
 def canonical(value):
@@ -184,6 +191,14 @@ def validate_open(r):
         raise ValueError("INTEGRITY_FAILURE changed research notional")
     if abs(r["fee_per_side_pct"] - FEE_SIDE_PCT) > 1e-8:
         raise ValueError("INTEGRITY_FAILURE changed research fee")
+    if "friction_stress" in r:
+        m=r["friction_stress"]
+        if (not isinstance(m,dict) or m.get("version")!=friction.VERSION or
+            m.get("description")!="hypothetical crossing and impact stress, NOT a real fill"):
+            raise ValueError("INTEGRITY_FAILURE invalid friction scenario version")
+        if (not isinstance(m.get("assumed_round_trip_extra_pct"),(int,float)) or
+            not 0<=m["assumed_round_trip_extra_pct"]<=friction.MAX_ROUND_TRIP_EXTRA_PCT):
+            raise ValueError("INTEGRITY_FAILURE invalid friction scenario value")
 
 
 def validate_close(prior, record):
@@ -208,6 +223,12 @@ def validate_close(prior, record):
         raise ValueError("INTEGRITY_FAILURE outcome label mismatch")
     if record.get("late_excluded") != (observed_delay > TIMELY_DELAY_SECONDS):
         raise ValueError("INTEGRITY_FAILURE delayed-sample inclusion mismatch")
+    if "friction_stress" in prior:
+        expected_stress=friction.scenario(signed,prior["notional_usd"],
+            prior["research_risk_pct"],prior["friction_stress"]["assumed_round_trip_extra_pct"])
+        if any(key not in record or abs(record[key]-value)>1e-4
+               for key,value in expected_stress.items()):
+            raise ValueError("INTEGRITY_FAILURE changed frozen friction-stress scenario")
 
 
 def replay(base=None):
@@ -301,6 +322,9 @@ def close_due(records, read_quote, moment, clock=None):
                      normalized_R=round((signed - 2 * FEE_SIDE_PCT) / r["research_risk_pct"], 8),
                      outcome="WIN" if pnl > 1e-7 else "LOSS" if pnl < -1e-7 else "BREAKEVEN",
                      funding_assumption_usd=0.0)
+        if "friction_stress" in r:
+            close.update(friction.scenario(signed,r["notional_usd"],
+                         r["research_risk_pct"],r["friction_stress"]["assumed_round_trip_extra_pct"]))
         outputs.append(close)
         late += int(close["late_excluded"])
     return outputs, late, missing
@@ -437,7 +461,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                "cluster": "CRYPTO_BETA", "regime": "24h_down" if q["pct24h"] < 0 else "24h_up",
                "notional_usd": NOTIONAL_USD, "hypothetical_leverage": 3,
                "fee_per_side_pct": FEE_SIDE_PCT, "research_risk_pct": RESEARCH_RISK_PCT,
-               "funding_assumption_usd": 0, "quality": quality}
+               "funding_assumption_usd": 0, "quality": quality,
+               "friction_stress":friction.estimate_extra_round_trip_pct(
+                    symbol,entry["pct24h"],entry["quote_volume_24h"],
+                    entry.get("spread_pct_observed"))}
         validate_open(rec)
         output.append(rec)
         one_per_run.add(symbol)
@@ -461,6 +488,7 @@ def summarize(records, moment):
         balance += r["net_pnl_usd"]
         peak = max(peak, balance)
         max_dd = max(max_dd, peak - balance)
+    stress_rows=[r for r in closed if "stress_net_pnl_usd" in r]
     sample = lambda arr: {
         "n": len(arr),
         "net_R": round(sum(r["normalized_R"] for r in arr), 5),
@@ -476,6 +504,20 @@ def summarize(records, moment):
             "profit_factor": round(gross_win/gross_loss, 4) if gross_loss else None,
             "max_closed_equity_drawdown_usd": round(max_dd, 2),
             "total_round_trip_fees_usd": round(sum(r["fee_round_trip_usd"] for r in closed), 2),
+            "friction_stress_scenario": {
+                "modeled_closes":len(stress_rows),
+                "net_pnl_usd":round(sum(r["stress_net_pnl_usd"] for r in stress_rows),2),
+                "net_R":round(sum(r["stress_normalized_R"] for r in stress_rows),5),
+                "additional_assumed_cost_usd":round(
+                    sum(r["stress_extra_cost_usd"] for r in stress_rows),2),
+                "assumption":"entry bid-ask crossing plus hypothetical impact; not observed fills"},
+            "universe_size":len(SYMBOLS),
+            "universe_version":universe.UNIVERSE_VERSION,
+            "capacity_policy":{
+                "max_new_per_run":MAX_NEW_PER_RUN,
+                "max_new_per_utc_day":MAX_NEW_PER_UTC_DAY,
+                "max_open":MAX_OPEN,
+                "max_open_per_symbol":MAX_PER_SYMBOL},
             "late_closures": sum(r.get("late_excluded", False) for r in closed),
             "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
             "eligible_perpetual_timely": sample(eligible),
