@@ -1,24 +1,103 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Crypto Strategy Lab | Paper Research</title><style>
-:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color-scheme:dark;background:#090d17;color:#e5eaf4}*{box-sizing:border-box}body{margin:0}main{max-width:1150px;margin:auto;padding:32px 18px}header{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}h1{font-size:clamp(24px,4vw,38px);letter-spacing:-1.5px;margin:4px 0}p{color:#9aa7bd;line-height:1.6}.eyebrow{font-size:12px;color:#80c8fc;letter-spacing:2px;font-weight:700}.tag{background:#162239;color:#99caff;border:1px solid #304566;border-radius:999px;padding:7px 12px;font-size:12px}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:30px 0}.metric,.panel{background:#121a2a;border:1px solid #27334a;border-radius:16px;padding:20px}.metric small{color:#98a8bf}.metric strong{display:block;font-size:26px;margin-top:10px;font-variant-numeric:tabular-nums}.panel{margin:14px 0}h2{font-size:17px;margin-top:0}.muted{font-size:13px;color:#9aa7bd}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}th{text-align:left;color:#9aa7bd;font-weight:600}td,th{padding:12px 10px;border-bottom:1px solid #263248}td{font-variant-numeric:tabular-nums}.bad{color:#ff8997}.good{color:#6ce2b3}.empty{padding:30px;color:#9aa7bd;text-align:center}.footer{font-size:12px;margin:28px 0;color:#8f9eb3}a{color:#9fd5ff}button{background:#223a58;border:1px solid #45668b;color:#d5ecff;border-radius:9px;padding:9px 14px;cursor:pointer}
-</style></head><body><main><header><div><div class="eyebrow">AUTONOMOUS RESEARCH / PAPER ONLY</div><h1>Crypto Strategy Lab</h1><p>Prospective experiments. Immutable outcomes by policy. No live orders.</p></div><div><span class="tag" id="status">Loading ledger…</span> <button onclick="location.reload()">Refresh</button></div></header>
-<section class="metrics" id="metrics"></section><section class="panel"><h2>Research quality</h2><p id="limitations">Waiting for latest report.</p><p class="muted" id="updated"></p></section><section class="panel"><h2>Strategy × horizon</h2><div class="scroll" id="strategies"></div></section><section class="panel"><h2>Latest individual experiments</h2><div class="scroll" id="trades"></div></section><div class="footer">Not investment advice. Data may lag scheduled runs. All P&L is hypothetical and excludes real fills, slippage, liquidation and variable funding. <a href="https://github.com/0xzein-eth/crypto-strategy-lab">Source code & audit trail</a></div></main><script>
-const fmt=(n,d=2)=>n==null?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cell=(x)=>'<td>'+esc(x)+'</td>';
-async function init(){try{
-const root='https://raw.githubusercontent.com/0xzein-eth/crypto-strategy-lab/main/data/';
-const [r,l]=await Promise.all([fetch(root+'report.json?'+Date.now()),fetch(root+'ledger.json?'+Date.now())]);
-if(!r.ok||!l.ok)throw Error('Could not load GitHub ledger');
-const s=await r.json(),d=await l.json();
-document.getElementById('status').textContent=esc(s.status||'Awaiting run');
-const metrics=[['Created',s.created],['Closed',s.closed],['Open',s.open],['Pending',s.pending],['Win rate',s.win_rate==null?'—':fmt(s.win_rate*100,1)+'%'],['Net simulated P&L',s.net_pnl_usd==null?'—':'$'+fmt(s.net_pnl_usd)],['Net R',s.net_R==null?'—':fmt(s.net_R,3)],['Profit factor',fmt(s.profit_factor)],['Max closed drawdown',s.max_closed_equity_drawdown_usd==null?'—':'$'+fmt(s.max_closed_equity_drawdown_usd)],['Capacity remaining',s.remaining_capacity]];
-document.getElementById('metrics').innerHTML=metrics.map(([k,v])=>'<div class="metric"><small>'+esc(k)+'</small><strong>'+esc(v??'—')+'</strong></div>').join('');
-document.getElementById('limitations').textContent=(s.limitations||[s.warning||'Exploratory research only']).join(' • ');
-document.getElementById('updated').textContent='Last report: '+(s.timestamp||'not yet executed')+' · Historical LAB-074..115 excluded pending full verification.';
-const groups=Object.entries(s.strategy_horizon||{});
-document.getElementById('strategies').innerHTML=groups.length?'<table><thead><tr><th>Strategy / horizon</th><th>Closed</th><th>Net R</th><th>Evidence</th></tr></thead><tbody>'+groups.map(([k,v])=>'<tr>'+cell(k)+cell(v.n)+cell(v.net_R)+cell(v.evidence)+'</tr>').join('')+'</tbody></table>':'<div class="empty">No resolved strategy cohorts yet.</div>';
-const trades=(d.records||[]).slice(-35).reverse();
-document.getElementById('trades').innerHTML=trades.length?'<table><thead><tr><th>ID</th><th>Market</th><th>Strategy</th><th>Side</th><th>Horizon</th><th>Status</th><th>Entry</th><th>Exit</th><th>Net USD</th><th>R</th></tr></thead><tbody>'+trades.map(x=>'<tr>'+[x.id,x.symbol,x.strategy,x.side,x.horizon_hours+'h',x.status,x.entry_price,x.exit_price??'—',x.net_pnl_usd??'—',x.normalized_R??'—'].map(cell).join('')+'</tr>').join('')+'</tbody></table>':'<div class="empty">No new canonical experiments yet.</div>';
-}catch(e){document.getElementById('status').textContent='Data unavailable';document.getElementById('limitations').textContent=e.message;}}
-init();
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Public audit dashboard for autonomous paper-only crypto strategy research.">
+<title>Crypto Strategy Lab — Paper Research</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:#0c1019;color:#e8edf6;color-scheme:dark;line-height:1.5}
+*{box-sizing:border-box}body{margin:0}a{color:#a7d0fc}button{font:inherit;cursor:pointer;border:1px solid #37475e;background:#1a2536;color:#e5edf7;border-radius:10px;padding:10px 14px}button:hover{background:#263752}
+main{max-width:1280px;margin:auto;padding:30px 24px 80px}h1{font-size:clamp(28px,4vw,46px);letter-spacing:-1.8px;line-height:1.12;margin:8px 0}h2{font-size:18px;letter-spacing:-.3px;margin:0 0 14px}p{margin:8px 0;color:#9fadc1}.header{display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:1.8px;color:#85baff;text-transform:uppercase}.pill{display:inline-block;font-size:12px;border:1px solid #33455e;background:#182435;padding:6px 10px;border-radius:999px;color:#a7c5df}
+.head-controls{display:flex;align-items:center;gap:12px}.overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:28px 0}
+.metric,.panel{background:#131b29;border:1px solid #253247;border-radius:16px}.metric{padding:18px}.metric .k{font-size:12px;color:#99a9c0}.metric .v{display:block;font-size:clamp(19px,2.5vw,30px);font-weight:750;letter-spacing:-.7px;font-variant-numeric:tabular-nums;margin:8px 0 2px}
+.metric .hint{font-size:11px;color:#7f91aa}.good{color:#75dab1}.bad{color:#ff929e}.panel{padding:22px;margin:14px 0}
+.two{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}.muted{color:#8fa0b6;font-size:12px}.warnings{font-size:13px;line-height:1.8;color:#aab6c8;margin:0;padding-left:18px}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap;text-align:left;font-size:13px}td,th{padding:12px 11px;border-bottom:1px solid #273247}th{font-size:11px;color:#8e9fb5;font-weight:700;letter-spacing:.25px}td{font-variant-numeric:tabular-nums}tr:last-child td{border:0}.empty{padding:34px;text-align:center;color:#9eacc0}
+.overline{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.legend{display:flex;gap:12px;flex-wrap:wrap;color:#a0b1c7;font-size:12px}
+.bar{height:7px;background:#273243;border-radius:20px;overflow:hidden;margin-top:12px}.fill{height:100%;background:#759bd2;width:0}
+.chart{width:100%;height:174px;display:block}.note{font-size:12px;color:#95a5b9;border-left:2px solid #627caa;padding-left:12px;margin-top:14px}
+footer{padding:24px 0;font-size:12px;color:#7f91aa}
+@media(max-width:1050px){.overview{grid-template-columns:repeat(3,minmax(0,1fr))}.two{grid-template-columns:1fr}}
+@media(max-width:620px){main{padding:22px 14px 50px}.overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric{padding:13px}.panel{padding:15px}.head-controls{width:100%;justify-content:space-between}}
+</style></head><body><main>
+<header class="header"><div><div class="eyebrow">Autonomous research / public audit</div><h1>Crypto Strategy Lab</h1><p>Prospective observations. Fee-adjusted hypothetical results. No real orders.</p></div>
+<div class="head-controls"><span class="pill" id="status">Awaiting market run</span><button id="refresh">Refresh data ↻</button></div></header>
+<section class="overview" id="overview" aria-label="Performance overview">
+<div class="metric"><span class="k">Data</span><strong class="v">Loading…</strong></div></section>
+<div class="two">
+<section class="panel"><div class="overline"><h2>Recent closed-trade equity</h2><span class="muted">Last 80 closures only</span></div><svg id="equity" class="chart" role="img" aria-label="Recent cumulative hypothetical closed-trade equity" viewBox="0 0 680 174" preserveAspectRatio="none"></svg><p class="muted" id="equity-note">Awaiting closed experiments.</p></section>
+<section class="panel"><h2>Research integrity</h2><div id="integrity"><p>Loading audit state.</p></div><div class="bar"><div class="fill" id="venue-bar"></div></div><p class="muted" id="venue-caption"></p><p class="note">Correlated positions are not independent evidence of a trading edge. No order fills, funding variation, slippage, or liquidation simulation.</p></section>
+</div>
+<section class="panel"><div class="overline"><h2>Strategy × horizon</h2><span class="muted">Research thresholds: 10 / 30 / 50 closures</span></div><div id="strategies" class="scroll"></div></section>
+<section class="panel"><div class="overline"><h2>Individual experiment ledger</h2><span class="muted">All active + 80 most recent closes; full history in event files</span></div><div id="trades" class="scroll"></div></section>
+<section class="panel"><h2>Research limitations</h2><ul class="warnings" id="limitations"><li>Waiting for reports.</li></ul>
+<p class="muted" id="updated"></p></section>
+<footer>Paper-only. No exchange account or trading credentials. <a href="https://github.com/0xzein-eth/crypto-strategy-lab">View repository</a> · <a href="https://github.com/0xzein-eth/crypto-strategy-lab/tree/main/data/events">Auditable event history</a> · Last refreshed <span id="refresh-at">—</span></footer>
+</main><script>
+"use strict";
+const base="https://raw.githubusercontent.com/0xzein-eth/crypto-strategy-lab/main/data/";
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=(x,d=2)=>x==null?"—":Number(x).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd=n=>n==null?"—":(n<0?"−":"") +"$"+num(Math.abs(n));
+const wib=t=>t?new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Jakarta"}).format(new Date(t))+" WIB":"—";
+const td=x=>"<td>"+esc(x)+"</td>";
+function metric(k,v,hint="",tone=""){return '<div class="metric"><span class="k">'+esc(k)+'</span><strong class="v '+tone+'">'+esc(v)+'</strong><span class="hint">'+esc(hint)+'</span></div>'}
+function chart(records){
+const closed=records.filter(x=>x.status==="CLOSED").sort((a,b)=>String(a.resolved_at).localeCompare(String(b.resolved_at)));
+if(!closed.length){$("equity").innerHTML='<text x="25" y="90" fill="#8e9eb3" font-size="15">No closed trades yet</text>';$("equity-note").textContent="Graph starts once an experiment reaches its evaluation horizon.";return}
+const series=[0];for(const x of closed)series.push(series.at(-1)+Number(x.net_pnl_usd||0));
+const low=Math.min(...series),high=Math.max(...series),span=Math.max(1,high-low);
+const points=series.map((v,i)=>(18+i*644/Math.max(1,series.length-1)).toFixed(2)+","+(145-(v-low)/span*115).toFixed(2)).join(" ");
+const end=series.at(-1),tone=end>=0?"#75dab1":"#ff929e";
+$("equity").innerHTML='<line x1="18" y1="145" x2="665" y2="145" stroke="#334054" stroke-width="1"/><polyline fill="none" stroke="'+tone+'" stroke-width="2.8" stroke-linejoin="round" points="'+points+'"/>';
+$("equity-note").textContent=closed.length+" recent closed trades; cumulative net "+usd(end)+". Not a full historical equity curve.";
+}
+async function load(){
+$("status").textContent="Checking";
+try{
+const suffix="?t="+Date.now();
+const r=await fetch(base+"report.json"+suffix,{cache:"no-store"});
+if(!r.ok)throw Error("No report.json yet ("+r.status+")");
+const report=await r.json();
+let state={records:[],all_events_verified:null};
+const sr=await fetch(base+"state.json"+suffix,{cache:"no-store"});
+if(sr.ok)state=await sr.json();
+$("status").textContent=report.status||"Awaiting first v8 run";
+const ratio=report.win_rate==null?"—":num(report.win_rate*100,1)+"%";
+const p=report.net_pnl_usd??0, eligible=report.eligible_perpetual_timely||{};
+$("overview").innerHTML=[
+metric("Created experiments",num(report.created??0,0),"Full event history"),
+metric("Closed",num(report.closed??0,0),"Win rate: "+ratio),
+metric("Active",num(report.open??0,0),"Pending: "+num(report.pending??0,0)),
+metric("Hypothetical net",usd(p),"Includes fees",p<0?"bad":"good"),
+metric("Net R",num(report.net_R??0,3),"Risk-normalized",p<0?"bad":"good"),
+metric("Profit factor",num(report.profit_factor),"All closes, exploratory"),
+metric("Max drawdown",usd(report.max_closed_equity_drawdown_usd??0),"Closed trade approximation"),
+metric("Timely perpetual",num(eligible.n??0,0),"Eligible research observations"),
+metric("Late resolutions",num(report.late_closures??0,0),"Excluded from timely cohort"),
+metric("Events verified",num(report.verified_events??0,0),"Hash-chained, append-only")
+].join("");
+$("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_events!=null?"Hash-chain verified":"Awaiting v8 first run")+'</p>'+
+'<p><strong>Last check:</strong> '+esc(wib(report.timestamp))+'</p>'+
+'<p><strong>Provider snapshots:</strong> '+esc(report.provider_observations??"—")+'</p>'+
+'<p><strong>Missed due snapshots:</strong> '+esc(report.missed_due_snapshots??"—")+'</p>'+
+'<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>';
+const total=Math.max(1,report.closed||0),covered=eligible.n||0;
+$("venue-bar").style.width=(100*covered/total).toFixed(1)+"%";
+$("venue-caption").textContent=covered+" of "+(report.closed??0)+" closes are timely observations of perpetual quotes (not real fills).";
+$("limitations").innerHTML=(report.limitations||["First v8 run has not yet completed."]).map(x=>"<li>"+esc(x)+"</li>").join("");
+$("updated").textContent="Last run: "+wib(report.timestamp)+". Historical LAB-074…115 excluded pending independent verification.";
+const cohorts=Object.entries(report.strategy_horizon||{});
+$("strategies").innerHTML=cohorts.length?'<table><thead><tr><th>Strategy / horizon</th><th>Closes</th><th>Net R</th><th>Mean R</th><th>Research status</th></tr></thead><tbody>'+cohorts.map(([k,v])=>'<tr>'+[k,v.n,num(v.net_R,3),num(v.expectancy_R,3),v.evidence].map(td).join("")+'</tr>').join("")+"</tbody></table>":'<div class="empty">No completed strategy cohorts yet.</div>';
+const records=state.records||[];
+$("trades").innerHTML=records.length?'<table><thead><tr><th>ID</th><th>Asset</th><th>Strategy</th><th>Side</th><th>Horizon</th><th>Status</th><th>Venue</th><th>Entry</th><th>Exit</th><th>Net USD</th><th>R</th><th>Late</th></tr></thead><tbody>'+records.map(x=>{
+const status=x.status==="OPEN"&&new Date(x.evaluate_at).getTime()<=Date.now()?"DUE/PENDING":x.status;
+return "<tr>"+[x.id,x.symbol,x.strategy,x.side,x.horizon_hours+"h",status,x.provider,x.entry_price,x.exit_price??"—",x.net_pnl_usd==null?"—":usd(x.net_pnl_usd),x.normalized_R==null?"—":num(x.normalized_R,3),x.late_excluded?"yes":"—"].map(td).join("")+"</tr>";
+}).join("")+"</tbody></table>":'<div class="empty">First verified v8 experiment has not been recorded yet.</div>';
+chart(records);
+$("refresh-at").textContent=wib(new Date().toISOString());
+}catch(e){$("status").textContent="Data unavailable";$("integrity").textContent=e.message;$("updated").textContent="Check the latest GitHub Actions execution for diagnostics.";}
+}
+$("refresh").addEventListener("click",load);
+load();setInterval(load,300000);
 </script></body></html>
