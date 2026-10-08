@@ -125,7 +125,9 @@ def quote(symbol, provider, clock=utcnow, requester=request_json):
         raise ValueError("stale or future quote, age=" + str(round(age)))
     if abs(pct) > 95 or not math.isfinite(pct) or not math.isfinite(volume) or volume < 0:
         raise ValueError("invalid change/volume")
+    period = "UTC-day-open-to-now" if provider == "kraken-spot-proxy" else "provider-24h-window"
     return {"symbol": symbol, "price": px, "pct24h": pct,
+            "price_change_reference": period,
             "quote_volume_24h": volume, "observed_at": stamp(observed),
             "provider": provider, "market_type": market_type,
             "instrument": instrument}
@@ -308,6 +310,7 @@ def new_candidates(records, read_quote, moment, next_id, requested):
                "strategy": style, "side": side, "horizon_hours": h,
                "evidence": {"price_change_24h_pct": round(q["pct24h"], 6),
                             "quote_volume_24h": round(q["quote_volume_24h"], 2),
+                            "price_change_reference": q.get("price_change_reference", "provider-24h-window"),
                             "signal_rule": "24h trend / contra-trend / deterministic control",
                             "research_only": True},
                "cluster": "CRYPTO_BETA", "regime": "24h_down" if q["pct24h"] < 0 else "24h_up",
@@ -403,6 +406,11 @@ def atomic_json(path, obj):
 def run(requested=6, clock=utcnow):
     current = clock()
     records, seq, prev_hash, next_id = replay()
+    if REPORT.exists():
+        previous = json.loads(REPORT.read_text(encoding="utf-8"))
+        if previous.get("schema_version") == 8:
+            if previous.get("verified_events") != seq or previous.get("ledger_tip_sha256") != prev_hash:
+                raise ValueError("INTEGRITY_FAILURE: persisted report disagrees with event chain")
     if any(int(r["id"][4:]) >= next_id for r in records.values()):
         raise ValueError("INTEGRITY_FAILURE ID counter")
     cache, errors = {}, {}
@@ -445,7 +453,10 @@ def run(requested=6, clock=utcnow):
                   provider_observations=observations, source_errors=errors,
                   verified_events=seq, ledger_tip_sha256=prev_hash,
                   workflow_interval_note="GitHub scheduled triggers are best-effort")
-    recent = sorted(records.values(), key=lambda r: (r["created_at"], r["id"]), reverse=True)[:80]
+    active = [r for r in records.values() if r["status"] == "OPEN"]
+    recent_closed = sorted((r for r in records.values() if r["status"] == "CLOSED"),
+                           key=lambda r: (r["resolved_at"], r["id"]), reverse=True)[:80]
+    recent = sorted(active, key=lambda r: (r["created_at"], r["id"]), reverse=True) + recent_closed
     atomic_json(STATE, {"schema_version": 8, "timestamp": stamp(current),
                         "records": recent, "ledger_tip_sha256": prev_hash,
                         "all_events_verified": seq})
