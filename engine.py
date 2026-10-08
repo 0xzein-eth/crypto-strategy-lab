@@ -15,6 +15,7 @@ import urllib.error
 import urllib.request
 import signals
 import learner
+import universe
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -22,8 +23,7 @@ REPORT = BASE / "data" / "report.json"
 STATE = BASE / "data" / "state.json"
 LEGACY = BASE / "data" / "ledger.json"
 UTC = dt.timezone.utc
-SYMBOLS = ("BTC", "ETH", "SOL", "BNB", "XRP", "ADA", "DOGE",
-           "LINK", "AVAX", "SUI", "LTC", "TRX")
+SYMBOLS = universe.SYMBOLS
 PROVIDERS = ("bybit-linear", "okx-swap", "binance-futures",
              "kraken-spot-proxy", "coinbase-spot-proxy")
 HORIZONS = (1, 2, 4, 8, 12, 24)
@@ -31,12 +31,14 @@ START_ID = 116
 NOTIONAL_USD = 10000.0
 FEE_SIDE_PCT = 0.05
 RESEARCH_RISK_PCT = 1.5
-MAX_OPEN = 180
-MAX_PER_SYMBOL = 16
-MAX_NEW_PER_RUN = 12
+MAX_OPEN = 850
+MAX_PER_SYMBOL = 50
+MAX_NEW_PER_RUN = 24
+MAX_NEW_PER_UTC_DAY = 1400
+MAX_NEW_PER_SYMBOL_PER_DAY = 65
 MAX_QUOTE_AGE_SECONDS = 180
 TIMELY_DELAY_SECONDS = 1800
-MIN_QUOTE_VOLUME = 1_000_000.0
+MIN_QUOTE_VOLUME = 2_000_000.0
 HTTP_TIMEOUT = 7
 PREV_ZERO = "0" * 64
 
@@ -304,14 +306,49 @@ def close_due(records, read_quote, moment, clock=None):
     return outputs, late, missing
 
 
+
+def diversified_quotes(quotes, slot):
+    """Interleave predeclared sector/direction/volatility strata deterministically.
+
+    Sector groupings improve representation but do not create statistical independence.
+    No retrospective outcomes influence ranking or features.
+    """
+    buckets = defaultdict(list)
+    for q in quotes:
+        buckets[universe.bucket(q["symbol"], q["pct24h"], q["quote_volume_24h"])].append(q)
+    for key, rows in buckets.items():
+        rows.sort(key=lambda q: (
+            hashlib.sha256(f"{slot}:{q['symbol']}:{key}".encode()).hexdigest(),
+            q["symbol"]))
+    keys = sorted(buckets)
+    if keys:
+        start = slot % len(keys)
+        keys = keys[start:] + keys[:start]
+    ordered = []
+    while any(buckets.values()):
+        for key in keys:
+            if buckets[key]:
+                ordered.append(buckets[key].pop(0))
+    return ordered
+
+
 def new_candidates(records, read_quote, moment, next_id, requested, advanced=None, reobserve=None, clock=None):
     """Validated candle hypotheses when observable; deterministic proxy controls otherwise."""
-    slots = max(0, min(requested, MAX_NEW_PER_RUN, MAX_OPEN -
+    # UTC-day budgets bound public CI/storage use and avoid accidental flood
+    # from repeated manual dispatches. Existing full event history remains intact.
+    utc_day = moment.date()
+    opened_today = [r for r in records.values()
+                    if parse(r["created_at"]).date() == utc_day]
+    daily_capacity = MAX_NEW_PER_UTC_DAY - len(opened_today)
+    slots = max(0, min(requested, MAX_NEW_PER_RUN, daily_capacity, MAX_OPEN -
                        sum(r["status"] == "OPEN" for r in records.values())))
     if not slots:
         return []
-    slot = int(moment.timestamp() // 1800)
+    slot = int(moment.timestamp() // 900)
     clock = clock or (lambda:moment)
+    daily_by_symbol = defaultdict(int)
+    for r in opened_today:
+        daily_by_symbol[r["symbol"]] += 1
     quotes = []
     for symbol in SYMBOLS:
         try:
@@ -322,15 +359,16 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                 quotes.append(q)
         except Exception:
             continue
-    quotes.sort(key=lambda q: (-abs(q["pct24h"]), q["symbol"]))
+    quotes = diversified_quotes(quotes, slot)
     output, one_per_run = [], set()
     for rank, q in enumerate(quotes):
         if len(output) >= slots:
             break
         symbol = q["symbol"]
-        if symbol in one_per_run or sum(
-                r["symbol"] == symbol and r["status"] == "OPEN" for r in records.values()
-        ) >= MAX_PER_SYMBOL:
+        if (symbol in one_per_run or
+            daily_by_symbol[symbol] >= MAX_NEW_PER_SYMBOL_PER_DAY or
+            sum(r["symbol"] == symbol and r["status"] == "OPEN"
+                for r in records.values()) >= MAX_PER_SYMBOL):
             continue
         # The online allocator only selects among pre-registered, observable
         # hypotheses. Controls remain available regardless of apparent results.
@@ -364,7 +402,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "research_only":True,
                   "allocation_policy":"learner-v1-fixed-day-holdout",
                   "selection_mode":allocation,
-                  "signal_catalog_version":"2026-10-08"}
+                  "signal_catalog_version":"2026-10-08",
+                  "universe_version":universe.UNIVERSE_VERSION,
+                  "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
+                  "sampling_rule":"sector-direction-volatility-roundrobin-15m"}
         quality="exploratory; no tradable-edge claim"
         if chosen.get("evidence"):
             evidence.update(chosen["evidence"])
@@ -484,7 +525,7 @@ def atomic_json(path, obj):
             os.unlink(temp)
 
 
-def run(requested=10, clock=utcnow):
+def run(requested=14, clock=utcnow):
     current = clock()
     records, seq, prev_hash, next_id = replay()
     if REPORT.exists():
@@ -567,7 +608,7 @@ def run(requested=10, clock=utcnow):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Strict prospective paper research")
-    ap.add_argument("--count", type=int, default=10)
+    ap.add_argument("--count", type=int, default=14)
     ap.add_argument("--verify-only", action="store_true")
     args = ap.parse_args()
     if args.verify_only:
