@@ -44,6 +44,7 @@ jobs:
           python -m json.tool data/report.json > /dev/null
           python -m json.tool data/state.json > /dev/null
           git diff --check
+          echo "Verified immutable legacy-monthly and daily-sharded v8 source events."
       - name: Commit paper ledger and report atomically to Git history
         run: |
           git config user.name "github-actions[bot]"
