@@ -1,5 +1,12 @@
 name: Continuous paper strategy lab
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'engine.py'
+      - 'signals.py'
+      - 'audit.py'
+      - '.github/workflows/lab.yml'
   workflow_dispatch:
   schedule:
     - cron: '13,43 * * * *'
