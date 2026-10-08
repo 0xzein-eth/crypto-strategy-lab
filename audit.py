@@ -36,6 +36,11 @@ def verify(root=ROOT):
         report["adaptive_research"].get("method") == summary["adaptive_research"].get("method") and
         report["adaptive_research"] != summary["adaptive_research"]):
         raise ValueError("INTEGRITY_FAILURE: adaptive research statistics mismatch")
+    # Optional for reports written before the additive fixed-horizon reporting
+    # upgrade; required to reconcile as soon as the next run publishes it.
+    if ("fixed_horizon_outcomes" in report and
+        report["fixed_horizon_outcomes"] != summary["fixed_horizon_outcomes"]):
+        raise ValueError("INTEGRITY_FAILURE: fixed-horizon statistics mismatch")
     active = {key: value for key, value in records.items() if value["status"] == "OPEN"}
     expected_state = set(active)
     latest_closed = sorted(
