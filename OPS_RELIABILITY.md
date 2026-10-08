@@ -29,10 +29,23 @@ More overlapping entries without a reliable clock would worsen the research.
    on-time run resumes normal selection automatically. This rule only
    affects future experiments; all old OPEN/CLOSE entries and their hashes
    are preserved.
-5. A separate GitHub Actions watchdog targets minutes `:09` and `:39`
-   each hour and fails when the last verified report is >75 minutes old.
-   A failed watchdog can surface GitHub notifications, but it cannot
-   detect an outage if GitHub does not start the watchdog either.
+5. **NEW: automated schedule guardian.** The independent `health.yml`
+   workflow targets minutes `:07, :22, :37, :52` (four times/hour), runs
+   after every completed paper workflow, and starts after changes to its
+   own code land on `main`. It fetches the **authoritative** latest report
+   from GitHub's API rather than trusting a possibly stale checkout.
+   If the last persisted market observation is >25 minutes old, it checks
+   whether `lab.yml` is already queued/running or recently executed. Only
+   if neither applies does it use the repository-scoped `GITHUB_TOKEN` with
+   Actions write permission to request **one `workflow_dispatch`**.
+   Queued/stuck runs are never duplicated, and a 12-minute retry cooldown
+   prevents storms. Health still fails when the last report is >75 minutes
+   old, even when a recovery has just been accepted: a dispatch is not
+   evidence of a successful quote or persisted event. No personal access
+   token is required for this in-repository guardian.
+   **Limit:** if all GitHub Action schedulers stop firing, this guardian
+   cannot run either; a truly independent clock is still needed for stronger
+   availability.
 6. Run the full regression suite on CI pushes and PRs. Paper ticks run
    a targeted set of offline lifecycle tests plus full ledger audit;
    this avoids repeatedly running heavy historical research tests.
