@@ -16,8 +16,9 @@ jobs:
           python-version: '3.12'
       - name: Verify ledger and detect missed scheduled observations
         run: |
+          set -euo pipefail
           python health.py --max-hours 1.25 | tee /tmp/lab-health.json
           echo '### Paper lab health' >> "$GITHUB_STEP_SUMMARY"
-          echo '\`\`\`json' >> "$GITHUB_STEP_SUMMARY"
+          echo '~~~json' >> "$GITHUB_STEP_SUMMARY"
           cat /tmp/lab-health.json >> "$GITHUB_STEP_SUMMARY"
-          echo '\`\`\`' >> "$GITHUB_STEP_SUMMARY"
+          echo '~~~' >> "$GITHUB_STEP_SUMMARY"
