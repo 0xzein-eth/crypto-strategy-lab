@@ -37,7 +37,7 @@ Version 9 adds:
 
 CI: \`python -m unittest discover -s tests -p 'test_research_v9.py' -v\`
 
-Daily (network): \`python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --max-variants 260\`
+Daily (network): \`python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 60 --max-variants 260\`
 
 Offline (requires already-populated cache): \`python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --offline --max-variants 260\`
 
@@ -81,11 +81,10 @@ comparison, and explicit promotion-gated forward paper candidates.
 ## V9.1: deeper market history, observed funding, and independent gate
 
 **Daily deeper candle backfill:** \`refresh_symbol\` now extends cache
-*backwards* by up to 12 older history pages on each scheduled execution,
+*backwards* by up to **60 older history pages** per scheduled execution (bounded by 12,000 cached candles),
 preserving all existing confirmed data and refusing silent gaps or overlapping
 values that change. The cache holds a bounded 12,000 continuous bars per asset,
-about 125 days of 15m observations. Growth is incremental; a single successful
-execution does **not** mean all 125 days are already available. Endpoint
+about 125 days of 15m observations. This faster bootstrap can expand by about 6,000 15m candles (roughly 62.5 days) per successful run until the cap, if OKX serves continuous historical data. It does **not** fabricate missing bars or guarantee coverage. Endpoint
 pagination uses \`after=oldest_seen_timestamp\` for strictly older records and
 validates every added page. The 8-asset research universe is unchanged.
 
@@ -122,3 +121,18 @@ required. Real order endpoints remain absent.
 and its workflow are unchanged. V9.1 commits only the historical cache and
 separate research reports. Network outages fail or are explicitly marked as
 funding coverage gaps instead of creating synthetic settled payments.
+
+## V9.2: faster historical bootstrap, explicit coverage
+
+The daily workflow now requests up to 60 *older* pages per instrument per run
+(100 records per page), rather than 12. It keeps the same data integrity
+checks, overlap validations and 12,000-bar cap. GitHub Actions remains
+best-effort, and OKX can rate-limit or restrict access. Larger history is
+intended to increase distinct market-day coverage, **not** imply profitable
+strategies or independent sampling.
+
+`research_results/latest.json` now reports `historical_overlap_days`,
+`ninety_day_overlap_reached` and the cache cap; the Actions run summary shows
+these alongside strategy-count statistics and the strict forward-review gate.
+Backfill cannot alter `data/events/`, v8 paper P&L, or historical experiment
+outcomes. All published v9 results remain purely hypothetical.
