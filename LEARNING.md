@@ -42,7 +42,7 @@ The `learner.py` policy:
 This is a *repeatedly inspected monitoring split*, **NOT an untouched final holdout**. Repeated trials, adaptive assignment and correlated markets introduce selection bias. Even a provisional leader requires a separately frozen, forward out-of-sample assessment in multiple regimes before a tradable edge can be argued. Actual execution profitability is not tested.
 
 ## Capacity and schedule
-The workflow targets GitHub Actions at minutes :07, :22, :37 and :52 (best effort) with 14 prospective experiments per scheduled run when qualifying quotes permit. Hard cap: 24 candidates per run, 850 concurrent OPEN, 50 OPEN per symbol, 1,400 new OPEN per UTC day and 65 new OPEN per UTC day per symbol. Universe: 38 predeclared candidates, minimum $2 million approximate reported 24h turnover. Missing or unsupported contracts are skipped, and event files rotate monthly without deleting historic records.
+The workflow targets GitHub Actions at minutes :07, :22, :37 and :52 (best effort) with 14 prospective experiments per scheduled run when qualifying quotes permit. Hard cap: 24 candidates per run, 850 concurrent OPEN, 50 OPEN per symbol, 1,400 new OPEN per UTC day and 65 new OPEN per UTC day per symbol. Universe: 38 predeclared candidates, minimum $2 million approximate reported 24h turnover. Missing or unsupported contracts are skipped, and new event files rotate daily while original month archives remain without deleting historic records.
 
 **Higher trade count is not higher independent sample size.** Each UTC-day cluster and the volume of within-asset overlapping positions should be considered when interpreting edge. Selection uses observed confirmed candle signals, plus stratified sampling of asset sector, price direction and volatility.
 
@@ -50,7 +50,7 @@ The independent `health.py` watchdog targets every two hours and **fails** if th
 
 ## Interpreting results
 - `data/report.json → adaptive_research`: counts per strategy, training and monitoring splits, daily lower bounds, provisional leader and warnings.
-- `data/events/YYYY-MM.jsonl`: immutable-by-policy full OPEN/CLOSE records and original feature evidence; hash chain plus Git commits. Git admins can rewrite history.
+- `data/events/YYYY-MM.jsonl or YYYY-MM_daily_DD.jsonl`: immutable-by-policy full OPEN/CLOSE records and original feature evidence in legacy monthly plus new daily-sharded files; hash chain plus Git commits. Git admins can rewrite history.
 - `data/state.json`: active positions plus most recent 80 closed for public dashboard.
 - All net P&L is hypothetical: canonical base retains 0.05% fee per side, and new records additionally report a hypothetical frozen spread/market-impact **stress** scenario. It is not a real bid/ask fill model; funding remains zero and liquidation is unmodeled. Do **not** treat R as actual stop-based account risk.
 
