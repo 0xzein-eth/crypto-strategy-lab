@@ -19,7 +19,7 @@ class EndToEnd(unittest.TestCase):
             return {"symbol":symbol,"price":100+i+(1 if now[0]>start else 0),
                     "pct24h":(-2 if i%2==0 else 3),"quote_volume_24h":3_000_000,
                     "observed_at":engine.stamp(now[0]),"provider":provider,
-                    "market_type":"spot_proxy","instrument":symbol+"USD"}
+                    "market_type":"spot_proxy","instrument":"XBTUSD" if symbol=="BTC" else symbol+"USD"}
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp)
             (base/"data").mkdir()
