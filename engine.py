@@ -243,7 +243,7 @@ def close_due(records, read_quote, moment):
         close = dict(r)
         close.update(status="CLOSED", exit_price=q["price"],
                      exit_observed_at=q["observed_at"], exit_provider=q["provider"],
-                     exit_instrument=q["instrument"], resolved_at=stamp(moment),
+                     exit_instrument=q["instrument"], resolved_at=stamp(max(moment, observed)),
                      delay_seconds=delay, late_excluded=delay > TIMELY_DELAY_SECONDS,
                      fee_round_trip_usd=round(fees, 6), signed_return_pct=round(signed, 8),
                      net_pnl_usd=round(pnl, 6),
@@ -297,9 +297,10 @@ def new_candidates(records, read_quote, moment, next_id, requested):
                r["horizon_hours"] == h for r in records.values()):
             continue
         rid = "LAB-" + str(next_id + len(output))
-        rec = {"id": rid, "status": "OPEN", "created_at": stamp(moment),
+        entered_at = max(moment, parse(q["observed_at"]))
+        rec = {"id": rid, "status": "OPEN", "created_at": stamp(entered_at),
                "entry_observed_at": q["observed_at"], "entry_price": q["price"],
-               "evaluate_at": stamp(moment + dt.timedelta(hours=h)),
+               "evaluate_at": stamp(entered_at + dt.timedelta(hours=h)),
                "symbol": symbol, "instrument": q["instrument"],
                "provider": q["provider"], "market_type": q["market_type"],
                "strategy": style, "side": side, "horizon_hours": h,
