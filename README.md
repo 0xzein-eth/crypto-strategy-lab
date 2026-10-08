@@ -65,6 +65,14 @@ The lab now scores a frozen set of **14 auditable paper-only strategy hypotheses
 
 [Lihat rancangan learner](LEARNING.md) · [Lihat workflow kesehatan](.github/workflows/health.yml)
 
+## Model evaluasi yang dipertahankan: fixed-horizon TANPA SL/TP
+
+Setiap paper-trade `OPEN` mempunyai harga/timestamp masuk, arah LONG/SHORT, serta `evaluate_at` di horizon 1, 2, 4, 8, 12, atau 24 jam. **Tidak ada stop-loss, take-profit, trailing-stop, atau exit intrahorizon.** Ketika waktu evaluasi telah lewat, workflow memakai **harga segar yang benar-benar teramati dari venue dan kontrak yang sama, pada atau setelah `evaluate_at`**. Jika terhambat, posisi tetap `OPEN` dan ditandai `DUE/PENDING`; saat harga tersedia, keterlambatan tercatat dan hasil yang terlalu terlambat dipisahkan dari kelompok penilaian tepat waktu.
+
+Laba/rugi simulasi setelah fee hanya diakui untuk eksperimen berstatus `CLOSED`, bukan sebagai floating P&L dari posisi `OPEN`. Ini penelitian berdasarkan titik waktu, **bukan simulasi order TP/SL atau fill persis di detik evaluasi**. Perbedaan harga akibat keterlambatan GitHub Actions tercatat secara eksplisit.
+
+Laporan kini menyediakan `data/report.json → fixed_horizon_outcomes` untuk **statistik LONG vs SHORT, tiap horizon, strategi, aset, jatuh tempo, profit/loss dan P&L simulasi**. Dashboard menampilkan tabel ringkasnya. Notional untuk banyak posisi eksperimen yang saling tumpang-tindih bukan modal portofolio sungguhan.
+
 ## Menjalankan dan memantau
 
 Otomatisasi telah terpasang; untuk inspeksi buka [GitHub Actions](https://github.com/0xzein-eth/crypto-strategy-lab/actions) dan pilih **Continuous paper strategy lab**. Setiap run yang berhasil akan memperbarui [report](data/report.json) dan [individual events](data/events/). Run hijau tetap perlu dicek `added`, `provider_observations`, `closed_this_run`, `pending` agar tidak salah membaca kegiatan.
