@@ -27,6 +27,10 @@ def verify(root=ROOT):
                 "strategy_horizon", "eligible_perpetual_timely"):
         if report.get(key) != summary.get(key):
             raise ValueError("INTEGRITY_FAILURE: report derived field mismatch: " + key)
+    # Permit one-time legacy report migration, then require the new policy
+    # profile to match an independent replay of all completed records.
+    if "adaptive_research" in report and report["adaptive_research"] != summary["adaptive_research"]:
+        raise ValueError("INTEGRITY_FAILURE: adaptive research statistics mismatch")
     active = {key: value for key, value in records.items() if value["status"] == "OPEN"}
     expected_state = set(active)
     latest_closed = sorted(
