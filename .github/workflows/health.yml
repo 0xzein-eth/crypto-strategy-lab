@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   guardian:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.event != 'pull_request')
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
