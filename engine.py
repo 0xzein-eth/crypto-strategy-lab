@@ -414,8 +414,26 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         ]
         # Deduplicate arm labels without rewriting evidence.
         options=list({x["strategy"]:x for x in options}.values())
-        h=HORIZONS[(slot+rank)%len(HORIZONS)]
-        chosen, allocation=learner.choose(options, records, symbol, h, slot, rank)
+        # Rotate across pre-registered horizons when a symbol/arm/horizon is
+        # already OPEN. This prevents artificial throughput loss from repeated
+        # identical signatures; no future outcome participates in selection.
+        chosen=allocation=None
+        horizon_retry=0
+        h=None
+        for offset in range(len(HORIZONS)):
+            candidate_h=HORIZONS[(slot+rank+offset)%len(HORIZONS)]
+            picked,mode=learner.choose(options, records, symbol, candidate_h, slot, rank+offset)
+            if picked is None:
+                continue
+            if any(r["status"] == "OPEN" and r["symbol"] == symbol and
+                   r["provider"] == q["provider"] and
+                   r["strategy"] == picked["strategy"] and
+                   r["horizon_hours"] == candidate_h for r in records.values()):
+                continue
+            h=candidate_h
+            chosen,allocation=picked,mode
+            horizon_retry=offset
+            break
         if chosen is None:
             continue
         style,side=chosen["strategy"],chosen["side"]
@@ -426,6 +444,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "research_only":True,
                   "allocation_policy":"learner-v1-fixed-day-holdout",
                   "selection_mode":allocation,
+                  "horizon_conflict_retries":horizon_retry,
                   "signal_catalog_version":"2026-10-08",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
@@ -434,10 +453,6 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         if chosen.get("evidence"):
             evidence.update(chosen["evidence"])
             quality="confirmed historical 15m OHLCV; still experimental"
-        if any(r["status"] == "OPEN" and r["symbol"] == symbol and
-               r["provider"] == q["provider"] and r["strategy"] == style and
-               r["horizon_hours"] == h for r in records.values()):
-            continue
         # A fresh same-venue quote is captured AFTER indicators are evaluated.
         # We never pretend the earlier screening ticker was an executable entry.
         try:
