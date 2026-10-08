@@ -1,0 +1,18 @@
+name: Ledger integrity and schedule watchdog
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '07 */3 * * *'
+permissions:
+  contents: read
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify complete source history and derived reports
+        run: python health.py --max-hours 3
