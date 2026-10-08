@@ -37,15 +37,15 @@ Version 9 adds:
 
 CI: \`python -m unittest discover -s tests -p 'test_research_v9.py' -v\`
 
-Daily (network): \`python run_research_v9.py --symbols BTC ETH SOL LINK --cold-pages 16 --update-pages 10 --max-variants 260\`
+Daily (network): \`python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --max-variants 260\`
 
-Offline (requires already-populated cache): \`python run_research_v9.py --symbols BTC ETH SOL LINK --offline --max-variants 260\`
+Offline (requires already-populated cache): \`python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --offline --max-variants 260\`
 
 Workflow: \`.github/workflows/research.yml\`. Scheduled 03:19 UTC daily
 (10:19 WIB), with GitHub Actions best-effort delivery. Public endpoints may
 block GitHub IPs; status should FAIL when less than two usable instruments are
 available. No fabricated prices, interpolated candles, or retroactive paper
-fills are permitted. Four requested instruments can be degraded to two while
+fills are permitted. Eight requested instruments can be degraded to two while
 explicitly listing errors. Fresh confirmed candle staleness cannot exceed 3h.
 
 For prospectively observed strategies and valid OPEN/CLOSE records, continue
