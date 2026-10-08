@@ -1,6 +1,6 @@
 # Research methodology and limitations (v8)
 
-**All numbers are hypothetical and prospective paper-research only.** All original full records are stored in `data/events/YYYY-MM.jsonl`, one JSON object per line. Avoid deriving strong market conclusions from a single period or from correlated crypto assets.
+**All numbers are hypothetical and prospective paper-research only.** All original full records are stored in `data/events/YYYY-MM.jsonl or YYYY-MM_daily_DD.jsonl`, one JSON object per line. Avoid deriving strong market conclusions from a single period or from correlated crypto assets.
 
 ## Lifecycle
 
@@ -70,3 +70,5 @@ Historical **LAB-074..115** belongs to an older compromised scheduler prompt and
 Universe is defined in `universe.py` (38 assets). A deterministic 15-minute-slot hash stratifies by sector, movement direction and absolute-change band. It interleaves market groups instead of selecting only the highest 24h movers, which reduces extreme-momentum sampling bias but cannot make trades independent. Unsupported instruments and under-liquid quotes are skipped. The engine targets 14 new OPEN records per scheduled execution (configurable hard cap 24) with 850 maximum simultaneous OPEN, 50 per symbol, 1,400 new per UTC day and 65 per asset per UTC day. Existing OPEN→CLOSE events and the SHA-256 chain are never rewritten to accommodate the sampling upgrades.
 
 More samples in a single day do not resolve small effective sample size: `learner.py` uses daily clustered scores and keeps a control arm and held-out monitoring partition, and reports no proven tradable edge without further independent validation. Maintenance can add new *versioned, explicit* strategies without revising older frozen rules or outcomes.
+
+New writes use `data/events/YYYY-MM_daily_DD.jsonl` per UTC day. Prior `YYYY-MM.jsonl` is preserved verbatim, and the hash chain is continuous across both formats; the loader verifies files in deterministic chronological order. Daily sharding mitigates growth of each individual Git blob but is not unlimited storage.
