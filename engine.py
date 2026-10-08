@@ -436,14 +436,22 @@ def run(requested=6, clock=utcnow):
                 raise ValueError("INTEGRITY_FAILURE: persisted report disagrees with event chain")
     if any(int(r["id"][4:]) >= next_id for r in records.values()):
         raise ValueError("INTEGRITY_FAILURE ID counter")
-    cache, errors = {}, {}
+    cache, errors, blocked_providers = {}, {}, {}
     def read_quote(symbol, provider=None):
         providers = (provider,) if provider else PROVIDERS
         for name in providers:
+            if name in blocked_providers:
+                continue
             key = (symbol, name)
             if key not in cache:
                 try:
                     cache[key] = quote(symbol, name, clock=clock)
+                except urllib.error.HTTPError as exc:
+                    cache[key] = None
+                    errors[symbol + ":" + name] = "HTTP " + str(exc.code)
+                    if exc.code in (401, 403, 451):
+                        blocked_providers[name] = exc.code
+                        errors["PROVIDER_BLOCKED:" + name] = "HTTP " + str(exc.code)
                 except (urllib.error.URLError, TimeoutError, KeyError, TypeError,
                         ValueError, IndexError, RuntimeError, OSError) as exc:
                     cache[key] = None
@@ -484,6 +492,7 @@ def run(requested=6, clock=utcnow):
                   timestamp=stamp(current), added=len(opens), closed_this_run=len(closures),
                   late_closed_this_run=late, missed_due_snapshots=missing,
                   provider_observations=observations, source_errors=errors,
+                  blocked_market_providers=blocked_providers,
                   verified_events=seq, ledger_tip_sha256=prev_hash,
                   workflow_interval_note="GitHub scheduled triggers are best-effort")
     active = [r for r in records.values() if r["status"] == "OPEN"]
