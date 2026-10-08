@@ -10,14 +10,17 @@
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
 
-**Jadwal otomatis:** menit **13 dan 43 setiap jam**, menggunakan `schedule` GitHub Actions. Jadwal bersifat best effort; eksekusi dapat terlambat atau sesekali terlewat. Laptop pengguna tidak perlu menyala. Pada kondisi normal engine membuat hingga 10 kandidat baru per run (maksimum 12 melalui parameter kode), dengan batas **180 OPEN bersamaan**, **16 OPEN per aset**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
+**Jadwal otomatis:** menit **07, 22, 37, dan 52 setiap jam** (setiap 15 menit), menggunakan `schedule` GitHub Actions. Jadwal bersifat best effort; eksekusi dapat terlambat atau sesekali terlewat. Laptop pengguna tidak perlu menyala. Pada kondisi normal engine mengupayakan hingga 14 eksperimen baru per run (hard cap 24), dengan batas **850 OPEN bersamaan**, **50 OPEN per aset** dan **1.400 OPEN baru per hari UTC**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
 
 ## Struktur repository
 
 | File | Fungsi |
 |---|---|
 | `engine.py` | Mesin prospektif event-sourcing v8; harga publik, buka/tutup simulasi, audit |
-| `signals.py` | Hipotesis TP-v3, BR-v3, MR-v3, LS-v3, FB-v3 dengan OHLCV **15m confirmed** |
+| `signals.py` | 11 aturan berbasis OHLCV 15 menit yang telah dikonfirmasi, termasuk RSI/SMA/VWAP |
+| `learner.py` | Alokasi eksperimen dan kelompok kontrol, pemantauan berbasis hari |
+| `universe.py` | Katalog 38 aset dengan strata sektor/arah/volatilitas; aset tanpa kontrak terverifikasi dilewati |
+| `friction.py` | Skenario spread/impact hipotesis yang disimpan pada eksperimen baru |
 | `data/events/YYYY-MM.jsonl` | **Sumber kebenaran tunggal**: OPEN & CLOSE record **lengkap**, baris append-only, rantai SHA-256 |
 | `data/report.json` | Seluruh statistik hasil observasi dan peringatan kualitas |
 | `data/state.json` | Semua posisi OPEN dan 80 CLOSED terbaru untuk dashboard |
@@ -43,12 +46,24 @@ Prioritas data: Bybit linear → OKX USDT swap → Binance Futures → Kraken US
 
 ## Adaptive continuous research (v1)
 
-The lab now scores a frozen set of **11 auditable paper-only strategy hypotheses** and continuously reallocates *future* experiments. The learner excludes late closes and spot proxies, retains precommitted controls, evaluates day-cluster lower bounds, and maintains a reproducible date-partitioned monitoring sample. Until strict training/monitoring/control thresholds are met, **no strategy is provisionally preferred**. A provisional leader is not proof of profitability. New signal families are versioned rather than generated through unreviewed arbitrary code.
+The lab now scores a frozen set of **14 auditable paper-only strategy hypotheses** and continuously reallocates *future* experiments. The learner excludes late closes and spot proxies, retains precommitted controls, evaluates day-cluster lower bounds, and maintains a reproducible date-partitioned monitoring sample. Until strict training/monitoring/control thresholds are met, **no strategy is provisionally preferred**. A provisional leader is not proof of profitability. New signal families are versioned rather than generated through unreviewed arbitrary code.
 
 - [Read the learning design](LEARNING.md)
 - Dashboard now displays adaptive arm evidence, monitoring samples and provisional status.
-- Normal target: **10 new experiments per scheduled run** (hard max 12; 180 OPEN overall; 16 OPEN per symbol), if source and strategy filters allow.
-- [Read-only health watchdog](.github/workflows/health.yml) checks event integrity and whether market updates are more than three hours old. Liveness cannot be guaranteed when GitHub Actions or exchanges are unavailable.
+- Normal target: **14 new experiments per scheduled run** (hard max 24; 850 OPEN overall; 50 OPEN per symbol; UTC day cap 1,400), if source and strategy filters allow.
+- [Read-only health watchdog](.github/workflows/health.yml) checks event integrity every two hours and whether updates are more than 2.5 hours old. Liveness cannot be guaranteed when GitHub Actions or exchanges are unavailable.
+
+## Peningkatan kapasitas dan kualitas sampel (Oktober 2026)
+
+- **38 pasar kandidat** lintas kelompok aset; sistem hanya menerima harga dari instrumen yang sungguh tersedia, tidak menciptakan harga atau memaksa aset tidak terdaftar.
+- **4 pemindaian per jam** secara best-effort (sebelumnya dua), target **14 eksperimen per run**, sampai 24 bila dikonfigurasi manual. Batas 1.400 entri baru per hari UTC mencegah lonjakan tidak sengaja.
+- **Stratifikasi** berdasarkan sektor, arah pasar dan band volatilitas agar tidak seluruh eksperimen mengejar aset paling volatil; hasil tetap saling berkorelasi dan tidak otomatis independen.
+- **Kapasitas 850 posisi simulasi OPEN**, 50 OPEN per simbol. Berbagai horizon 1/2/4/8/12/24h tetap digunakan; duplikat aktif strategi×horizon pada venue yang sama dihindari.
+- **Skenario friction-stress** memakai bid/ask entry jika ada dan estimasi dampak pasar; dilaporkan terpisah dari P&L lama berbasis fee sehingga rekam historis tidak diubah.
+- **14 hipotesis terdaftar**, meliputi tiga baseline serta 11 sinyal berbasis candle. Metode terbaik baru dapat memperoleh alokasi tambahan setelah hasil prospektif memadai.
+- **Biaya Git storage** bisa bertambah besar pada throughput tinggi. Ini rancangan riset gratis selama masih dalam batas layanan; tidak dijamin tanpa batas waktu atau kapasitas.
+
+[Lihat rancangan learner](LEARNING.md) · [Lihat workflow kesehatan](.github/workflows/health.yml)
 
 ## Menjalankan dan memantau
 
@@ -59,11 +74,11 @@ Untuk menjalankan secara lokal tanpa dependensi pihak ketiga:
 ```sh
 python -m unittest discover -s tests -v
 python engine.py --verify-only
-python engine.py --count 10
+python engine.py --count 14
 ```
 
 Dashboard disimpan di `dashboard/index.html` dan dapat diperoleh sebagai artifact workflow `Validate dashboard`. **GitHub Pages belum dianggap aktif** sampai Pages dikonfigurasi/berhasil diterbitkan.
 
 [Lihat metodologi & keterbatasan](METHODOLOGY.md) · [Lihat troubleshooting](RUNBOOK.md)
 
-> **Penting:** Ini simulasi penelitian, bukan sistem trading real. Tidak ada API key exchange, order, wallet, deposit, atau posisi asli. Performa simulasi tidak memodelkan pendanaan variabel, slippage, spread, order fill dan likuidasi. **Tidak ada bukti strategi menguntungkan secara riil.**
+> **Penting:** Ini simulasi penelitian, bukan sistem trading real. Tidak ada API key exchange, order, wallet, deposit, atau posisi asli. Performa simulasi kini menyediakan skenario perkiraan dampak spread dan slippage **terpisah**, tetapi tidak mencerminkan fill sesungguhnya, funding variabel, atau likuidasi. **Tidak ada bukti strategi menguntungkan secara riil.**
