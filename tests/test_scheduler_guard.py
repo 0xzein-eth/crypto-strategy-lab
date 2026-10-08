@@ -33,19 +33,29 @@ def run(minutes_ago, status="completed", branch="main"):
 
 
 class FakeApi:
-    def __init__(self, latest, runs):
+    def __init__(self, latest, runs, next_report=None, next_runs=None):
         self.latest = latest
         self.runs = runs
+        self.next_report = next_report
+        self.next_runs = next_runs
         self.calls = []
     def call(self, path, payload=None):
         self.calls.append((path, payload))
         if path.endswith("contents/data/report.json?ref=main"):
+            reads = sum(p.endswith("contents/data/report.json?ref=main")
+                        for p, _ in self.calls)
+            current = (self.next_report if reads > 1 and
+                       self.next_report is not None else self.latest)
             return {
                 "encoding": "base64",
-                "content": base64.b64encode(json.dumps(self.latest).encode()).decode(),
+                "content": base64.b64encode(json.dumps(current).encode()).decode(),
             }
         if path.endswith("actions/workflows/lab.yml/runs?per_page=40"):
-            return {"total_count": len(self.runs), "workflow_runs": self.runs}
+            reads = sum(p.endswith("actions/workflows/lab.yml/runs?per_page=40")
+                        for p, _ in self.calls)
+            current = (self.next_runs if reads > 1 and
+                       self.next_runs is not None else self.runs)
+            return {"total_count": len(current), "workflow_runs": current}
         if path.endswith("actions/workflows/lab.yml/dispatches"):
             if payload != {"ref": "main"}:
                 raise AssertionError("unexpected dispatch arguments")
@@ -68,11 +78,29 @@ class GuardianTests(unittest.TestCase):
                               api, NOW, allow_dispatch=True)
         self.assertEqual(state["status"], "RECOVERY_DISPATCHED")
         self.assertTrue(state["recovery_requested"])
-        self.assertEqual(len(api.calls), 3)
+        self.assertEqual(len(api.calls), 5)
         self.assertEqual(api.calls[-1], (
             "/repos/0xzein-eth/crypto-strategy-lab/actions/workflows/lab.yml/dispatches",
             {"ref": "main"}))
         self.assertIn("NOT YET CONFIRMED", state["reason"])
+
+    def test_race_fresh_report_prevents_duplicate_dispatch(self):
+        api = FakeApi(report(45), [run(65)], next_report=report(2))
+        state = guard.execute("0xzein-eth/crypto-strategy-lab",
+                              api, NOW, allow_dispatch=True)
+        self.assertEqual(state["status"], "HEALTHY")
+        self.assertTrue(state["recheck_prevented_duplicate"])
+        self.assertFalse(state["recovery_requested"])
+        self.assertEqual(len(api.calls), 4)
+
+    def test_race_new_running_primary_prevents_duplicate_dispatch(self):
+        api = FakeApi(report(45), [run(65)],
+                      next_runs=[run(1, "in_progress"), run(65)])
+        state = guard.execute("0xzein-eth/crypto-strategy-lab",
+                              api, NOW, allow_dispatch=True)
+        self.assertEqual(state["status"], "IN_FLIGHT")
+        self.assertTrue(state["recheck_prevented_duplicate"])
+        self.assertEqual(len(api.calls), 4)
 
     def test_guardian_does_not_dispatch_an_active_job(self):
         for status in ("queued", "in_progress", "waiting", "pending", "requested"):
