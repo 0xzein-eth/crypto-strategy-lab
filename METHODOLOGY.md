@@ -37,6 +37,12 @@ For OKX perpetual contracts, `signals.py` requests `bar=15m`, at most 120 candle
 
 Kraken `o` references the day's opening price, **not always a rolling 24-hour window**; `price_change_reference` records this distinction. Indicator evidence is captured in each OPEN event. Labels signify research hypotheses, not market profits.
 
+## Exit policy: fixed-horizon only, NO SL/TP
+
+User-selected research has **no stop-loss, take-profit, trailing stop or early exit**. Each OPEN has one precommitted `evaluate_at`. The engine records a CLOSE using a valid, fresh same-venue/same-instrument observation after that due time; if missing, leave the experiment OPEN until a later observed snapshot. Report the genuine delay, keep late closes for audit and exclude delayed closes from timely learning. Never reprice an overdue experiment using a retrospective market quote as if it had been observed at the exact target second. Only CLOSED positions contribute to realized hypothetical P&L and win/loss.
+
+Descriptive `fixed_horizon_outcomes` report includes side/horizon/strategy/symbol/market groupings, late rate and due counts; it intentionally does not mark OPEN trades to market. Hypothetical notionals can overlap massively, so their sum is not investable portfolio exposure.
+
 ## Fixed-horizon arithmetic
 
 No TP/SL orders are submitted. At evaluation time the best **first observed eligible snapshot available on an actual later run** is used (not the missed target-time historical price). Horizon set: **1, 2, 4, 8, 12 and 24 hours**. Sample size is driven by independent run timing, not by retrospective market replay.
