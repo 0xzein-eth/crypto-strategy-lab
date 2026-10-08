@@ -42,11 +42,11 @@ The `learner.py` policy:
 This is a *repeatedly inspected monitoring split*, **NOT an untouched final holdout**. Repeated trials, adaptive assignment and correlated markets introduce selection bias. Even a provisional leader requires a separately frozen, forward out-of-sample assessment in multiple regimes before a tradable edge can be argued. Actual execution profitability is not tested.
 
 ## Capacity and schedule
-The workflow targets GitHub Actions at minutes :07, :22, :37 and :52 (best effort) with 14 prospective experiments per scheduled run when qualifying quotes permit. Hard cap: 24 candidates per run, 850 concurrent OPEN, 50 OPEN per symbol, 1,400 new OPEN per UTC day and 65 new OPEN per UTC day per symbol. Universe: 38 predeclared candidates, minimum $2 million approximate reported 24h turnover. Missing or unsupported contracts are skipped, and new event files rotate daily while original month archives remain without deleting historic records.
+The workflow targets GitHub Actions at minutes :03, :13, :23, :33, :43 and :53 (best effort) with 14 prospective experiments per scheduled run when qualifying quotes permit. Hard cap: 24 candidates per run, 850 concurrent OPEN, 50 OPEN per symbol, 1,400 new OPEN per UTC day and 65 new OPEN per UTC day per symbol. Universe: 38 predeclared candidates, minimum $2 million approximate reported 24h turnover. Missing or unsupported contracts are skipped, and new event files rotate daily while original month archives remain without deleting historic records.
 
 **Higher trade count is not higher independent sample size.** Each UTC-day cluster and the volume of within-asset overlapping positions should be considered when interpreting edge. Selection uses observed confirmed candle signals, plus stratified sampling of asset sector, price direction and volatility.
 
-The independent `health.py` watchdog targets every two hours and **fails** if the last committed report is more than 2.5 hours old, no source observations exist, or audit/source-of-truth consistency fails. Failed Actions require troubleshooting; self-healing is NOT guaranteed for blocked APIs, GitHub outages, or changes to Actions privileges.
+The independent `health.py` watchdog targets two times per hour and **fails** if the last committed report is more than 1.25 hours old, no source observations exist, or audit/source-of-truth consistency fails. Failed Actions require troubleshooting; self-healing is NOT guaranteed for blocked APIs, GitHub outages, or changes to Actions privileges.
 
 ## Interpreting results
 - `data/report.json → adaptive_research`: counts per strategy, training and monitoring splits, daily lower bounds, provisional leader and warnings.
