@@ -163,8 +163,10 @@ def validate_open(r):
     positive(r["entry_price"]); positive(r["research_risk_pct"])
 
 
-def replay(base=BASE):
+def replay(base=None):
     """Validate every event and return reconstructed state. Fail closed on edits."""
+    if base is None:
+        base = BASE
     events = base / "data" / "events"
     records, sequence, head = {}, 0, PREV_ZERO
     for path in sorted(events.glob("????-??.jsonl")):
