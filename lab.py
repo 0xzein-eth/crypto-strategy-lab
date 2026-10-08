@@ -51,7 +51,7 @@ def market(symbol, clock=None):
     clock = clock or utcnow
     errors = []
     # Provider priority: Bybit linear USDT, OKX USDT swap, Binance USDT perpetual.
-    for provider in ("bybit-linear","okx-swap","binance-futures"):
+    for provider in ("bybit-linear","okx-swap","binance-futures","kraken-spot-proxy"):
         try:
             if provider == "bybit-linear":
                 d = get_json("https://api.bybit.com/v5/market/tickers?category=linear&symbol="+symbol+"USDT")
@@ -72,18 +72,34 @@ def market(symbol, clock=None):
                 pct = (price/open24-1)*100
                 volume = float(item.get("volCcy24h") or 0)
                 observed = dt.datetime.fromtimestamp(int(item["ts"])/1000,UTC)
-            else:
+            elif provider == "binance-futures":
                 d = get_json("https://fapi.binance.com/fapi/v1/ticker/24hr?symbol="+symbol+"USDT")
                 price = finite_positive(d["lastPrice"])
                 pct = float(d["priceChangePercent"])
                 volume = float(d.get("quoteVolume",0))
+                observed = clock()
+            else:
+                # Explicit spot proxy fallback for regions blocking futures APIs.
+                # This is research-only, never mislabel as actual perpetual execution.
+                pairs = {"BTC":"XBTUSD","ETH":"ETHUSD","SOL":"SOLUSD","BNB":"BNBUSD",
+                         "XRP":"XRPUSD","ADA":"ADAUSD","DOGE":"DOGEUSD","LINK":"LINKUSD",
+                         "AVAX":"AVAXUSD","SUI":"SUIUSD","LTC":"LTCUSD","TRX":"TRXUSD"}
+                d = get_json("https://api.kraken.com/0/public/Ticker?pair="+pairs[symbol])
+                if d.get("error") or not d.get("result"):
+                    raise ValueError("Kraken unavailable")
+                item = next(iter(d["result"].values()))
+                price = finite_positive(item["c"][0])
+                open24 = finite_positive(item["o"])
+                pct = (price/open24-1)*100
+                volume = float(item["v"][1])*price
                 observed = clock()
             if not math.isfinite(pct) or abs(pct)>95:
                 raise ValueError("invalid 24h change")
             if observed > clock()+dt.timedelta(minutes=2) or clock()-observed > dt.timedelta(minutes=10):
                 raise ValueError("stale/future market snapshot")
             return {"price":price,"change24h_pct":pct,"quote_volume_24h":volume,
-                    "provider":provider,"observed_at":stamp(observed),"instrument":symbol+"USDT perpetual"}
+                    "provider":provider,"observed_at":stamp(observed),
+                    "instrument":symbol+("USD spot proxy" if provider=="kraken-spot-proxy" else "USDT perpetual")}
         except (ValueError,KeyError,IndexError,TypeError,urllib.error.URLError,TimeoutError) as exc:
             errors.append(provider+":"+str(exc)[:90])
     raise RuntimeError("; ".join(errors))
@@ -259,7 +275,7 @@ def run(args):
                       market_errors=errors,status="DATA_UNAVAILABLE")
         atomic_json(REPORT,result)
         print(json.dumps(result,indent=2))
-        return
+        raise RuntimeError("DATA_UNAVAILABLE: no market provider succeeded; refusing silent success")
     # Every due resolution and every new record is persisted in the same committed transaction.
     added=create_new(d,prices,t,args.count)
     atomic_json(LEDGER,d)
