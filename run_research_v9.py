@@ -13,7 +13,7 @@ from research_v9.history import load_cache, refresh_symbol
 
 ROOT = Path(__file__).resolve().parent
 RESULT_PATH = ROOT / "research_results" / "latest.json"
-DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK")
+DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK", "XRP", "ADA", "AVAX", "DOGE")
 
 
 def dataset_digest(bars):
