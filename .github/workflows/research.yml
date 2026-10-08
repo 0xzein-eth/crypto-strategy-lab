@@ -1,0 +1,85 @@
+name: Historical Research Factory v9
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'run_research_v9.py'
+      - 'research_v9/**'
+      - 'tests/test_research_v9.py'
+      - '.github/workflows/research.yml'
+  pull_request:
+    paths:
+      - 'run_research_v9.py'
+      - 'research_v9/**'
+      - 'tests/test_research_v9.py'
+      - '.github/workflows/research.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '19 3 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v9-history-and-walkforward
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Offline regression tests (zero exchange access)
+        run: python -m unittest discover -s tests -p 'test_research_v9.py' -v
+      - name: Capture only confirmed same-venue perpetual historical candles
+        if: github.event_name != 'pull_request'
+        run: python run_research_v9.py --symbols BTC ETH SOL LINK --cold-pages 16 --update-pages 10 --max-variants 260
+      - name: Verify cached history and derived research report offline
+        if: github.event_name != 'pull_request'
+        run: |
+          python -m json.tool research_results/latest.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from research_v9.history import load_cache
+          from run_research_v9 import dataset_digest
+          report = json.loads(Path("research_results/latest.json").read_text())
+          assert report["proven_edge"] is False
+          assert report["v8_event_ledger_modified"] is False
+          for symbol, details in report["data_provenance"].items():
+              assert dataset_digest(load_cache(symbol)) == details["sha256"], symbol
+          print("Verified v9 data provenance for", list(report["data_provenance"]))
+          PY
+          python -m json.tool research_results/latest.json > /dev/null
+          git diff --check
+      - name: Commit only v9 historical cache and research report
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A research_cache/ research_results/
+          if ! git diff --cached --quiet; then
+            git commit -m "research(v9): refresh historical OHLCV and walk-forward report [skip ci]"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              echo "Non-fast-forward (attempt ${attempt}); rebasing safely."
+              git fetch origin main
+              if ! git rebase origin/main; then
+                echo "PERSISTENCE_FAILURE: rebase conflicted; refusing overwrite."
+                git rebase --abort || true
+                exit 1
+              fi
+            done
+            echo "PERSISTENCE_FAILURE: could not push without overwrite."
+            exit 1
+          fi
