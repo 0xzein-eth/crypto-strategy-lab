@@ -1,6 +1,9 @@
 """Capacity, sampling and hypothetical-friction regression checks (offline)."""
 import datetime as dt
 import unittest
+import json
+from pathlib import Path
+import tempfile
 from unittest.mock import patch
 
 import engine
@@ -61,6 +64,27 @@ class ScaleAndCostTests(unittest.TestCase):
         broken=dict(closed,stress_normalized_R=closed["stress_normalized_R"]+1)
         with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
             engine.validate_close(original,broken)
+
+    def test_existing_monthly_event_can_close_in_new_daily_shard(self):
+        original=engine.new_candidates({},self.read,self.t,116,1,clock=lambda:self.t)[0]
+        due=engine.parse(original["evaluate_at"])
+        later=dict(self.quotes[original["symbol"]],price=original["entry_price"]*1.01,
+                   observed_at=engine.stamp(due+dt.timedelta(minutes=2)))
+        closed=engine.close_due({original["id"]:original},lambda s,p:later,
+                                due+dt.timedelta(minutes=2))[0][0]
+        with tempfile.TemporaryDirectory() as name:
+            base=Path(name)
+            folder=base/"data"/"events"
+            folder.mkdir(parents=True)
+            historical=engine.seal(1,engine.PREV_ZERO,"OPEN",original)
+            (folder/"2026-10.jsonl").write_text(engine.canonical(historical)+"\\n")
+            with patch.object(engine,"EVENTS",folder):
+                seq,tip=engine.append_events([("CLOSE",closed)],1,historical["hash"],due)
+            self.assertEqual(seq,2)
+            self.assertEqual(tip,engine.replay(base)[2])
+            self.assertEqual(engine.replay(base)[0][original["id"]]["status"],"CLOSED")
+            self.assertTrue((folder/"2026-10.jsonl").exists())
+            self.assertTrue(list(folder.glob("2026-10_daily_*.jsonl")))
 
     def test_spread_validation_and_scenario(self):
         self.assertIsNone(friction.observed_spread_pct(101,100))
