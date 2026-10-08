@@ -21,7 +21,7 @@ Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 
 | `learner.py` | Alokasi eksperimen dan kelompok kontrol, pemantauan berbasis hari |
 | `universe.py` | Katalog 38 aset dengan strata sektor/arah/volatilitas; aset tanpa kontrak terverifikasi dilewati |
 | `friction.py` | Skenario spread/impact hipotesis yang disimpan pada eksperimen baru |
-| `data/events/YYYY-MM.jsonl` | **Sumber kebenaran tunggal**: OPEN & CLOSE record **lengkap**, baris append-only, rantai SHA-256 |
+| `data/events/YYYY-MM.jsonl or YYYY-MM_daily_DD.jsonl` | **Sumber kebenaran tunggal**: OPEN & CLOSE record **lengkap**, baris append-only, rantai SHA-256 |
 | `data/report.json` | Seluruh statistik hasil observasi dan peringatan kualitas |
 | `data/state.json` | Semua posisi OPEN dan 80 CLOSED terbaru untuk dashboard |
 | `dashboard/index.html` | Dashboard mandiri yang membaca data publik langsung dari GitHub |
@@ -82,3 +82,5 @@ Dashboard disimpan di `dashboard/index.html` dan dapat diperoleh sebagai artifac
 [Lihat metodologi & keterbatasan](METHODOLOGY.md) · [Lihat troubleshooting](RUNBOOK.md)
 
 > **Penting:** Ini simulasi penelitian, bukan sistem trading real. Tidak ada API key exchange, order, wallet, deposit, atau posisi asli. Performa simulasi kini menyediakan skenario perkiraan dampak spread dan slippage **terpisah**, tetapi tidak mencerminkan fill sesungguhnya, funding variabel, atau likuidasi. **Tidak ada bukti strategi menguntungkan secara riil.**
+
+New writes use `data/events/YYYY-MM_daily_DD.jsonl` per UTC day. Prior `YYYY-MM.jsonl` is preserved verbatim, and the hash chain is continuous across both formats; the loader verifies files in deterministic chronological order. Daily sharding mitigates growth of each individual Git blob but is not unlimited storage.
