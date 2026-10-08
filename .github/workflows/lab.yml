@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Verify historical event integrity
@@ -42,5 +42,21 @@ jobs:
           git add -A data/
           if ! git diff --cached --quiet; then
             git commit -m "paper(v8): observed prospective event ledger [skip ci]"
-            git push origin HEAD:main
+            # Ordinary code/documentation pushes may race with a running workflow.
+            # Retry via fast-forward-compatible rebase; never force and never
+            # silently resolve ledger conflicts.
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              echo "Non-fast-forward (attempt ${attempt}); attempting safe rebase."
+              git fetch origin main
+              if ! git rebase origin/main; then
+                echo "INTEGRITY_FAILURE: rebase conflict; refusing to overwrite canonical ledger."
+                git rebase --abort || true
+                exit 1
+              fi
+            done
+            echo "PERSISTENCE_FAILURE: unable to push after three safe retries."
+            exit 1
           fi
