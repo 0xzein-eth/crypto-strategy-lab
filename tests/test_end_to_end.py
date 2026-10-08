@@ -44,7 +44,9 @@ class EndToEnd(unittest.TestCase):
                 self.assertTrue(head!=engine.PREV_ZERO)
                 self.assertEqual(len({r["id"] for r in current.values()}),12)
                 # Every historical full CLOSE and OPEN event is preserved in JSONL.
-                lines=(base/"data"/"events"/"2026-10.jsonl").read_text().splitlines()
+                paths=sorted((base/"data"/"events").glob("*.jsonl"))
+                self.assertEqual(len(paths),2)
+                lines=[line for path in paths for line in path.read_text().splitlines()]
                 self.assertEqual(len(lines),18)
                 self.assertTrue((base/"data"/"report.json").exists())
                 self.assertTrue((base/"data"/"state.json").exists())
