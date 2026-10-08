@@ -13,6 +13,7 @@ import math
 from pathlib import Path
 import urllib.error
 import urllib.request
+import signals
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -259,8 +260,8 @@ def close_due(records, read_quote, moment):
     return outputs, late, missing
 
 
-def new_candidates(records, read_quote, moment, next_id, requested):
-    """Falsifiable baseline signals, not claims about realized market structure."""
+def new_candidates(records, read_quote, moment, next_id, requested, advanced=None):
+    """Validated candle hypotheses when observable; deterministic proxy controls otherwise."""
     slots = max(0, min(requested, MAX_NEW_PER_RUN, MAX_OPEN -
                        sum(r["status"] == "OPEN" for r in records.values())))
     if not slots:
@@ -292,9 +293,22 @@ def new_candidates(records, read_quote, moment, next_id, requested):
         elif style == "MR-proxy-v1":
             side = "SHORT" if q["pct24h"] >= 0 else "LONG"
         else:
-            # Deterministic pseudo-randomized negative control with no lookahead.
+            # Deterministic randomized control, chosen before outcome is observed.
             hsh = hashlib.sha256((symbol + ":" + str(slot)).encode()).digest()
             side = "LONG" if hsh[0] % 2 == 0 else "SHORT"
+        evidence = {"price_change_24h_pct": round(q["pct24h"], 6),
+                    "quote_volume_24h": round(q["quote_volume_24h"], 2),
+                    "price_change_reference": q.get("price_change_reference", "provider-24h-window"),
+                    "signal_rule": "24h trend / contra-trend / deterministic control",
+                    "research_only": True}
+        quality = "exploratory; no tradable-edge claim"
+        if advanced is not None and q["provider"] == "okx-swap":
+            detections = advanced(symbol, q)
+            if detections:
+                pick = detections[(slot + rank) % len(detections)]
+                style, side = pick["strategy"], pick["side"]
+                evidence.update(pick["evidence"])
+                quality = "confirmed historical 15m OHLCV; still experimental"
         h = HORIZONS[(slot + rank) % len(HORIZONS)]
         if any(r["status"] == "OPEN" and r["symbol"] == symbol and
                r["provider"] == q["provider"] and r["strategy"] == style and
@@ -308,15 +322,11 @@ def new_candidates(records, read_quote, moment, next_id, requested):
                "symbol": symbol, "instrument": q["instrument"],
                "provider": q["provider"], "market_type": q["market_type"],
                "strategy": style, "side": side, "horizon_hours": h,
-               "evidence": {"price_change_24h_pct": round(q["pct24h"], 6),
-                            "quote_volume_24h": round(q["quote_volume_24h"], 2),
-                            "price_change_reference": q.get("price_change_reference", "provider-24h-window"),
-                            "signal_rule": "24h trend / contra-trend / deterministic control",
-                            "research_only": True},
+               "evidence": evidence,
                "cluster": "CRYPTO_BETA", "regime": "24h_down" if q["pct24h"] < 0 else "24h_up",
                "notional_usd": NOTIONAL_USD, "hypothetical_leverage": 3,
                "fee_per_side_pct": FEE_SIDE_PCT, "research_risk_pct": RESEARCH_RISK_PCT,
-               "funding_assumption_usd": 0, "quality": "exploratory; no tradable-edge claim"}
+               "funding_assumption_usd": 0, "quality": quality}
         validate_open(rec)
         output.append(rec)
         one_per_run.add(symbol)
@@ -431,7 +441,14 @@ def run(requested=6, clock=utcnow):
     closures, late, missing = close_due(records, read_quote, current)
     for r in closures:
         records[r["id"]] = r
-    opens = new_candidates(records, read_quote, current, next_id, requested)
+    def advanced(symbol, snapshot):
+        try:
+            return signals.from_okx(symbol, snapshot, request_json, clock)
+        except (urllib.error.URLError, TimeoutError, KeyError, TypeError,
+                ValueError, IndexError, RuntimeError, OSError) as exc:
+            errors["15m_OHLCV:" + symbol] = str(exc)[:150]
+            return []
+    opens = new_candidates(records, read_quote, current, next_id, requested, advanced=advanced)
     for r in opens:
         records[r["id"]] = r
     events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
