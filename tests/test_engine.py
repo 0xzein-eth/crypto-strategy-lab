@@ -59,7 +59,7 @@ class EngineTests(unittest.TestCase):
                 closed=engine.close_due({r["id"]:r},lambda s,p:later,due+dt.timedelta(minutes=2))[0][0]
                 seq,head=engine.append_events([("CLOSE",closed)],seq,head,self.t)
                 self.assertEqual(engine.replay(base)[0][r["id"]]["status"],"CLOSED")
-                path=event_dir/"2026-10.jsonl"
+                path=next(event_dir.glob("2026-10_daily_*.jsonl"))
                 lines=path.read_text().splitlines()
                 bad=json.loads(lines[1]);bad["record"]["net_pnl_usd"]=99999
                 lines[1]=json.dumps(bad)
