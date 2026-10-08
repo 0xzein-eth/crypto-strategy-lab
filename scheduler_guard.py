@@ -169,11 +169,31 @@ def execute(repo, api, now=None, allow_dispatch=False,
                            str(PENDING_RUN_ALERT_MINUTES) +
                            " minutes; manual investigation needed")
     if state["status"] == "NEEDS_DISPATCH" and allow_dispatch:
-        api.call(prefix + "/actions/workflows/" + WORKFLOW +
-                 "/dispatches", {"ref": "main"})
-        state.update(status="RECOVERY_DISPATCHED", recovery_requested=True,
-                     reason="Authenticated workflow_dispatch accepted by GitHub API; "
-                            "new paper observation NOT YET CONFIRMED")
+        # A primary paper run can finish between the first GET and this POST.
+        # Re-read both sources immediately before writing; two staggered GitHub
+        # guardians share a repository-wide concurrency group, but a scheduled
+        # primary job is independent and may start at any moment.
+        confirmation = decode_report(
+            api.call(prefix + "/contents/data/report.json?ref=main"))
+        current_runs = api.call(prefix + "/actions/workflows/" + WORKFLOW +
+                                "/runs?per_page=40")
+        if (not isinstance(current_runs, dict) or
+                not isinstance(current_runs.get("workflow_runs"), list)):
+            raise RuntimeError("DATA_UNAVAILABLE: cannot confirm workflow queue")
+        fresh_state = evaluate(confirmation, current_runs["workflow_runs"], now,
+                               threshold_minutes=threshold_minutes)
+        if fresh_state["status"] == "STUCK":
+            raise RuntimeError("STUCK_RUN: primary workflow has stalled")
+        if fresh_state["status"] != "NEEDS_DISPATCH":
+            state = fresh_state
+            state["recheck_prevented_duplicate"] = True
+        else:
+            api.call(prefix + "/actions/workflows/" + WORKFLOW +
+                     "/dispatches", {"ref": "main"})
+            state.update(status="RECOVERY_DISPATCHED", recovery_requested=True,
+                         recheck_prevented_duplicate=False,
+                         reason="Authenticated workflow_dispatch accepted by GitHub API; "
+                                "new paper observation NOT YET CONFIRMED")
     state["inspected_at_utc"] = now.astimezone(UTC).isoformat()
     state["guardian_source"] = "main report + GitHub workflow-specific runs API"
     state["real_exchange_orders"] = False
