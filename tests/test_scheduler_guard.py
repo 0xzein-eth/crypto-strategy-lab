@@ -2,6 +2,8 @@
 import base64
 import datetime as dt
 import json
+import re
+from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -64,6 +66,47 @@ class FakeApi:
 
 
 class GuardianTests(unittest.TestCase):
+    def test_three_native_cron_clocks_are_staggered(self):
+        root = Path(__file__).resolve().parents[1] / ".github" / "workflows"
+        expected = {
+            "lab.yml": [4, 14, 24, 34, 44, 54],
+            "health.yml": [9, 19, 29, 39, 49, 59],
+            "rescue.yml": [2, 12, 22, 32, 42, 52],
+        }
+        seen = set()
+        for filename, minutes in expected.items():
+            content = (root / filename).read_text(encoding="utf-8")
+            match = re.search(r"cron: '([0-9,]+) [*] [*] [*] [*]'", content)
+            self.assertIsNotNone(match, filename)
+            observed = [int(x) for x in match.group(1).split(",")]
+            self.assertEqual(observed, minutes)
+            self.assertEqual(len(observed), len(set(observed)))
+            for index in range(len(observed)):
+                self.assertEqual((observed[(index+1) % len(observed)] -
+                                  observed[index]) % 60, 10)
+                self.assertNotIn(observed[index], seen)
+                seen.add(observed[index])
+        self.assertEqual(len(seen), 18)
+
+    def test_recovery_workflows_share_lease_and_ignore_foreign_pull_requests(self):
+        root = Path(__file__).resolve().parents[1] / ".github" / "workflows"
+        for filename in ("health.yml", "rescue.yml"):
+            with self.subTest(filename=filename):
+                s = (root / filename).read_text(encoding="utf-8")
+                self.assertIn("group: schedule-guardian-main", s)
+                self.assertIn("cancel-in-progress: false", s)
+                self.assertIn("actions: write", s)
+                self.assertIn("contents: read", s)
+                self.assertIn("ref: main", s)
+                self.assertIn("head_repository.full_name == github.repository", s)
+                self.assertIn("github.event.workflow_run.event != 'pull_request'", s)
+                self.assertIn("scheduler_guard.py --recover --threshold-minutes 14", s)
+                self.assertNotIn("  pull_request:", s)
+        paper = (root / "lab.yml").read_text(encoding="utf-8")
+        self.assertIn("group: continuous-canonical-paper-ledger", paper)
+        self.assertIn("cancel-in-progress: false", paper)
+        self.assertIn("workflow_dispatch:", paper)
+
     def test_healthy_report_never_dispatches(self):
         api = FakeApi(report(8), [])
         state = guard.execute("0xzein-eth/crypto-strategy-lab",
