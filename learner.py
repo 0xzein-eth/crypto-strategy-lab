@@ -117,7 +117,8 @@ def analysis(records):
     candidates.sort(key=lambda name:(-(summary[name]["holdout_cluster_lcb_R"] or 0),
                                      -(summary[name]["train_cluster_lcb_R"] or 0),name))
     return {
-        "method":"v2; entry-spread/impact stress R with conservative legacy haircut; 20% calendar-day monitoring and clustered daily lower bound",
+        "method":"v2-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
+                   "; entry-spread/impact stress R with legacy haircut; 20% calendar-day monitoring and clustered daily lower bound",
         "eligible_closed":len(all_eligible),
         "eligible_days":len({day_of(r) for r in all_eligible}),
         "arms":summary,
