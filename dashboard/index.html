@@ -42,6 +42,11 @@ footer{padding:24px 0;font-size:12px;color:#7f91aa}
 <p class="muted" id="leader-note">No provisional leader. Collecting prospective observations.</p>
 <div id="adaptive" class="scroll"><div class="empty">Waiting for evidence.</div></div>
 <p class="note">“Candidate for validation” is not a proven trading edge. The learning policy preserves controls and baseline exploration. Allocation decisions apply only to new paper experiments.</p></section>
+<section class="panel"><div class="overline"><h2>Historical strategy research v9</h2><span class="muted">Independent backtests — never counted as paper-trading results</span></div>
+<div class="overview" id="history-metrics" style="margin:0 0 12px"><div class="metric"><span class="k">Historical data</span><strong class="v">Loading…</strong></div></div>
+<p class="muted" id="history-note">Historical experiment outcomes must not be treated as live fills or profitable strategies.</p>
+<p class="note">Parameters are screened with chronological evaluation, assumed fees and modelled frictions. A positive backtest is not proof of trading edge. Prospective v8 positions are separate.</p>
+</section>
 <section class="panel"><div class="overline"><h2>Strategy × horizon</h2><span class="muted">Research thresholds: 10 / 30 / 50 closures</span></div><div id="strategies" class="scroll"></div></section>
 <section class="panel"><div class="overline"><h2>Individual experiment ledger</h2><span class="muted">All active + 80 most recent closes; full history in event files</span></div><div id="trades" class="scroll"></div></section>
 <section class="panel"><h2>Research limitations</h2><ul class="warnings" id="limitations"><li>Waiting for reports.</li></ul>
@@ -50,6 +55,7 @@ footer{padding:24px 0;font-size:12px;color:#7f91aa}
 </main><script>
 "use strict";
 const base="https://raw.githubusercontent.com/0xzein-eth/crypto-strategy-lab/main/data/";
+const researchBase="https://raw.githubusercontent.com/0xzein-eth/crypto-strategy-lab/main/research_results/";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num=(x,d=2)=>x==null?"—":Number(x).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -153,6 +159,36 @@ const status=x.status==="OPEN"&&new Date(x.evaluate_at).getTime()<=Date.now()?"D
 return "<tr>"+[x.id,x.symbol,x.strategy,x.side,x.horizon_hours+"h",status,x.provider,x.entry_price,x.exit_price??"—",x.net_pnl_usd==null?"—":usd(x.net_pnl_usd),x.normalized_R==null?"—":num(x.normalized_R,3),x.late_excluded?"yes":"—"].map(td).join("")+"</tr>";
 }).join("")+"</tbody></table>":'<div class="empty">First verified v8 experiment has not been recorded yet.</div>';
 chart(records);
+// V9 historical results load independently so an API/cache failure cannot mask
+// the authoritative V8 prospective ledger and its report.
+try{
+  const rh=await fetch(researchBase+"latest.json"+suffix,{cache:"no-store"});
+  if(!rh.ok)throw Error("v9 research report unavailable");
+  const h=await rh.json();
+  let queue=null;
+  try{
+    const qr=await fetch(researchBase+"forward_candidates.json"+suffix,{cache:"no-store"});
+    if(qr.ok)queue=await qr.json();
+  }catch(_ignored){}
+  const approved=queue?.eligible_for_forward_code_review?.length??null;
+  const covered=h.measured_funding_symbols?.length??0;
+  const lookedBack=h.historical_overlap_days??(h.common_bars!=null?Math.round(h.common_bars/96*100)/100:null);
+  $("history-metrics").innerHTML=[
+    metric("Variants compared",num(h.candidates_evaluated??0,0),"Historical hypotheses"),
+    metric("Overlapping history",num(lookedBack,1)+" days","Only common 15m candles"),
+    metric("Markets analyzed",num(h.datasets_evaluated??0,0),"OKX USDT perpetual"),
+    metric("Settled funding",num(covered,0)+" markets","Coverage verified only"),
+    metric("Forward review queue",approved==null?"—":num(approved,0),"Manual review required")
+  ].join("");
+  const ageH=Math.floor((Date.now()-Date.parse(h.generated_at_utc))/3600000);
+  $("history-note").textContent="Last historical research: "+wib(h.generated_at_utc)+
+    (Number.isFinite(ageH)&&ageH>48?" (STALE)": "")+
+    ". Verified profitable strategy: none. Backtest-only, never real fills. "+
+    "Forward automatic activation: "+(queue?.paper_v8_auto_activation===false?"disabled":"not confirmed")+".";
+}catch(error){
+  $("history-metrics").innerHTML='<div class="empty">Historical research temporarily unavailable; paper results remain intact.</div>';
+  $("history-note").textContent="Check research_results/latest.json and GitHub Actions for v9 health.";
+}
 $("refresh-at").textContent=wib(new Date().toISOString());
 }catch(e){$("status").textContent="Data unavailable";$("integrity").textContent=e.message;$("updated").textContent="Check the latest GitHub Actions execution for diagnostics.";}
 }
