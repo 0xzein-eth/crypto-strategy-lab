@@ -6,11 +6,13 @@ on:
       - 'engine.py'
       - 'signals.py'
       - 'learner.py'
+      - 'universe.py'
+      - 'friction.py'
       - 'audit.py'
       - '.github/workflows/lab.yml'
   workflow_dispatch:
   schedule:
-    - cron: '13,43 * * * *'
+    - cron: '07,22,37,52 * * * *'
 permissions:
   contents: write
 concurrency:
@@ -19,7 +21,7 @@ concurrency:
 jobs:
   observe-and-commit:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v5
         with:
@@ -33,7 +35,7 @@ jobs:
       - name: Run regression and lifecycle tests
         run: python -m unittest discover -s tests -v
       - name: Capture public market observations and run paper experiments
-        run: python engine.py --count 10
+        run: python engine.py --count 14
       - name: Verify new event history and source files
         run: |
           python engine.py --verify-only
