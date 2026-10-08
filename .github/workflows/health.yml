@@ -7,12 +7,13 @@ on:
       - 'scheduler_guard.py'
       - 'health.py'
       - '.github/workflows/health.yml'
+      - '.github/workflows/rescue.yml'
   workflow_dispatch:
   workflow_run:
     workflows: ['Continuous paper strategy lab']
     types: [completed]
   schedule:
-    - cron: '07,22,37,52 * * * *'
+    - cron: '08,18,28,38,48,58 * * * *'
 
 # Least privilege: read canonical report and request workflow_dispatch only.
 # Never grant secrets from forks/PRs to this job; it always executes main.
@@ -42,7 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python scheduler_guard.py --recover --threshold-minutes 25
+        run: python scheduler_guard.py --recover --threshold-minutes 14
       - name: Verify ledger and alert if market observation remains stale
         run: |
           set -euo pipefail
