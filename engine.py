@@ -163,7 +163,48 @@ def validate_open(r):
         raise ValueError("INTEGRITY_FAILURE unsupported horizon/provider")
     if r["market_type"] != ("perpetual" if "proxy" not in r["provider"] else "spot_proxy"):
         raise ValueError("INTEGRITY_FAILURE mislabeled instrument")
+    if r["symbol"] not in SYMBOLS:
+        raise ValueError("INTEGRITY_FAILURE unknown asset")
+    instrument_by_venue = {
+        "bybit-linear": r["symbol"]+"USDT",
+        "binance-futures": r["symbol"]+"USDT",
+        "okx-swap": r["symbol"]+"-USDT-SWAP",
+        "kraken-spot-proxy": "XBTUSD" if r["symbol"]=="BTC" else r["symbol"]+"USD",
+        "coinbase-spot-proxy": r["symbol"]+"-USD"}
+    if r["instrument"] != instrument_by_venue[r["provider"]]:
+        raise ValueError("INTEGRITY_FAILURE instrument/provider mismatch")
     positive(r["entry_price"]); positive(r["research_risk_pct"])
+    if abs((parse(r["evaluate_at"])-parse(r["created_at"])).total_seconds()
+           - r["horizon_hours"]*3600) > 0.001:
+        raise ValueError("INTEGRITY_FAILURE horizon was retroactively moved")
+    if abs(r["notional_usd"] - NOTIONAL_USD) > 1e-8:
+        raise ValueError("INTEGRITY_FAILURE changed research notional")
+    if abs(r["fee_per_side_pct"] - FEE_SIDE_PCT) > 1e-8:
+        raise ValueError("INTEGRITY_FAILURE changed research fee")
+
+
+def validate_close(prior, record):
+    """Recompute all stored outcomes to detect tampering even with a rebuilt hash."""
+    if parse(record["resolved_at"]) < parse(record["exit_observed_at"]):
+        raise ValueError("INTEGRITY_FAILURE closure timestamp precedes price observation")
+    observed_delay = int((parse(record["exit_observed_at"])-parse(prior["evaluate_at"])).total_seconds())
+    if record["delay_seconds"] != observed_delay or observed_delay < 0:
+        raise ValueError("INTEGRITY_FAILURE outcome delay mismatch")
+    signed = (positive(record["exit_price"])/positive(prior["entry_price"])-1)*100
+    signed *= 1 if prior["side"]=="LONG" else -1
+    fees = prior["notional_usd"] * 2 * FEE_SIDE_PCT / 100
+    pnl = prior["notional_usd"]*signed/100 - fees
+    nr = (signed-2*FEE_SIDE_PCT)/prior["research_risk_pct"]
+    if (abs(record["signed_return_pct"]-signed)>1e-6 or
+        abs(record["fee_round_trip_usd"]-fees)>1e-6 or
+        abs(record["net_pnl_usd"]-pnl)>1e-4 or
+        abs(record["normalized_R"]-nr)>1e-6):
+        raise ValueError("INTEGRITY_FAILURE outcome arithmetic mismatch")
+    expected="WIN" if pnl>1e-7 else "LOSS" if pnl< -1e-7 else "BREAKEVEN"
+    if record["outcome"]!=expected:
+        raise ValueError("INTEGRITY_FAILURE outcome label mismatch")
+    if record.get("late_excluded") != (observed_delay > TIMELY_DELAY_SECONDS):
+        raise ValueError("INTEGRITY_FAILURE delayed-sample inclusion mismatch")
 
 
 def replay(base=None):
@@ -204,6 +245,7 @@ def replay(base=None):
                             raise ValueError("CLOSE changed venue/instrument")
                         if parse(r["exit_observed_at"]) < parse(r["evaluate_at"]):
                             raise ValueError("CLOSE uses price before evaluation")
+                        validate_close(prior, r)
                         records[ident] = r
                     else:
                         raise ValueError("unsupported event kind")
