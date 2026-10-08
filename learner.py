@@ -20,6 +20,16 @@ MIN_TRAIN_DAYS=7
 MIN_HOLDOUT=10
 MIN_HOLDOUT_DAYS=3
 CLIP_R=3.0
+# Historical v8 closes without a frozen friction scenario remain eligible
+# with a transparent, conservative extra 0.12%-of-notional roundtrip haircut.
+LEGACY_EXTRA_COST_PCT=0.12
+
+def research_R(record):
+    if "stress_normalized_R" in record:
+        return float(record["stress_normalized_R"])
+    risk = float(record.get("research_risk_pct", 1.5))
+    return float(record["normalized_R"]) - LEGACY_EXTRA_COST_PCT/risk
+
 
 
 def stable_bucket(value, modulo):
@@ -46,7 +56,7 @@ def daily_lcb(rows):
     """Day-level *means*, rather than falsely independent correlated trades."""
     by_day=defaultdict(list)
     for r in rows:
-        by_day[day_of(r)].append(max(-CLIP_R,min(CLIP_R,float(r["normalized_R"]))))
+        by_day[day_of(r)].append(max(-CLIP_R,min(CLIP_R,research_R(r))))
     arr=[mean(v) for v in by_day.values()]
     if len(arr)<4:
         return None
@@ -73,15 +83,15 @@ def analysis(records):
         test_days=len({day_of(r) for r in test})
         t_lcb=daily_lcb(train)
         h_lcb=daily_lcb(test)
-        train_net=round(sum(float(r["normalized_R"]) for r in train),5)
-        test_net=round(sum(float(r["normalized_R"]) for r in test),5)
+        train_net=round(sum(research_R(r) for r in train),5)
+        test_net=round(sum(research_R(r) for r in test),5)
         # Never promote based on cherry-picked training results alone.
         controls=groups["CTRL-v1"]
         control_train=[r for r in controls if stable_bucket("holdout:"+day_of(r),5)!=0]
         baseline_ready=len(control_train)>=MIN_TRAIN
-        ctrl_avg=(mean([r["normalized_R"] for r in control_train])
+        ctrl_avg=(mean([research_R(r) for r in control_train])
                   if baseline_ready else None)
-        arm_train_avg=(mean([r["normalized_R"] for r in train]) if train else None)
+        arm_train_avg=(mean([research_R(r) for r in train]) if train else None)
         beats_control=(baseline_ready and arm_train_avg is not None
                        and arm_train_avg>ctrl_avg)
         nominated=(arm!="CTRL-v1" and
@@ -107,7 +117,7 @@ def analysis(records):
     candidates.sort(key=lambda name:(-(summary[name]["holdout_cluster_lcb_R"] or 0),
                                      -(summary[name]["train_cluster_lcb_R"] or 0),name))
     return {
-        "method":"v1; 20% fixed calendar-day holdout; clustered day-level lower bound",
+        "method":"v2; entry-spread/impact stress R with conservative legacy haircut; 20% calendar-day monitoring and clustered daily lower bound",
         "eligible_closed":len(all_eligible),
         "eligible_days":len({day_of(r) for r in all_eligible}),
         "arms":summary,
