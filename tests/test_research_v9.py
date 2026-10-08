@@ -10,7 +10,7 @@ from unittest.mock import patch
 import research_v9
 import research_v9.history as history
 import research_v9.factory as factory
-import research_v9 as cli
+import run_research_v9 as cli
 
 BASE_TS = 1_767_225_600_000  # 2026-01-01 00:00 UTC, aligned 15m
 
@@ -51,7 +51,7 @@ class HistoryTests(unittest.TestCase):
         incoming = older[-20:] + market(220)[200:]
         self.assertEqual(len(history.merge_series(older, incoming)), 220)
         changed = [r.copy() for r in incoming]
-        changed[0][4] += 5
+        changed[0][5] += 5
         with self.assertRaisesRegex(ValueError, "revised"):
             history.merge_series(older, changed)
         with self.assertRaisesRegex(ValueError, "no overlap"):
