@@ -12,8 +12,12 @@ on:
       - 'audit.py'
       - '.github/workflows/lab.yml'
   workflow_dispatch:
+  # Optional external trusted clock using GitHub repository_dispatch (requires
+  # a repository-scoped token on the calling service; never store it here).
+  repository_dispatch:
+    types: [paper-tick]
   schedule:
-    - cron: '07,22,37,52 * * * *'
+    - cron: '03,13,23,33,43,53 * * * *'
 permissions:
   contents: write
 concurrency:
