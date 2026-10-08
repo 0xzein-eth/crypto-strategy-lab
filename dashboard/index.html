@@ -29,6 +29,15 @@ footer{padding:24px 0;font-size:12px;color:#7f91aa}
 </div>
 <section class="panel"><div class="overline"><h2>Scale, coverage and friction stress</h2><span class="muted">Research scenarios, not observed order fills</span></div>
 <div id="scale"><p>Awaiting latest verified research report.</p></div></section>
+<section class="panel"><div class="overline"><h2>Fixed-horizon outcomes</h2><span class="muted">Time-based evaluation only · no SL/TP</span></div>
+<p class="muted" id="fixed-horizon-note">Awaiting the next derived report.</p>
+<div class="two">
+<div><h2>LONG / SHORT</h2><div class="scroll" id="position-sides"><div class="empty">No data yet.</div></div></div>
+<div><h2>Evaluation horizons</h2><div class="scroll" id="position-horizons"><div class="empty">No data yet.</div></div></div>
+</div>
+<div class="overline"><h2>Per-strategy completed outcomes</h2><span class="muted">No interim exits or implied floating profit</span></div>
+<div class="scroll" id="position-strategies"><div class="empty">Waiting for completed evaluations.</div></div>
+<p class="note">The sum of overlapping $10,000 paper notionals is not portfolio capital. Outcomes use the first valid fresh same-instrument quote observed at or after each due time; a late result is explicitly labeled.</p></section>
 <section class="panel"><div class="overline"><h2>Adaptive research allocator</h2><span class="muted">Only timely perpetual closes; 20% calendar-day monitoring partition</span></div>
 <p class="muted" id="leader-note">No provisional leader. Collecting prospective observations.</p>
 <div id="adaptive" class="scroll"><div class="empty">Waiting for evidence.</div></div>
@@ -105,6 +114,24 @@ $("scale").innerHTML='<p><strong>Markets in catalog:</strong> '+esc(report.unive
 ' · <strong>Stress modeled net:</strong> '+esc(usd(stress.net_pnl_usd??0))+
 ' · <strong>Extra hypothetical friction:</strong> '+esc(usd(stress.additional_assumed_cost_usd??0))+'</p>'+
 '<p class="muted">The friction model uses available entry bid–ask spreads and an estimated impact buffer. Neither is a real execution result. More trades in one correlated regime do not create independent evidence.</p>';
+const fixed=report.fixed_horizon_outcomes||{}, overviewFixed=fixed.side||{};
+$("fixed-horizon-note").textContent=fixed.method
+  ?"Pending past due: "+num(fixed.due_unresolved,0)+" · Due in next hour: "+num(fixed.evaluation_next_hour,0)+
+   " · Due within 24h: "+num(fixed.evaluation_next_24_hours,0)+". No SL/TP; only completed fixed-horizon snapshots count as profit/loss."
+  :"Awaiting updated fixed-horizon report from a verified run. Existing experiment ledger remains unchanged.";
+function fixedTable(groups, labelName){
+  const entries=Object.entries(groups||{});
+  return entries.length?'<table><thead><tr><th>'+esc(labelName)+'</th><th>OPEN</th><th>CLOSED</th><th>Wins</th><th>Losses</th><th>Win rate</th><th>Closed net</th></tr></thead><tbody>'+
+  entries.map(([name,v])=>'<tr>'+[
+    name,v.active,v.closed,v.wins,v.losses,
+    v.win_rate==null?"—":num(v.win_rate*100,1)+"%",
+    v.closed>0?usd(v.closed_net_usd):"—"
+  ].map(td).join("")+'</tr>').join("")+'</tbody></table>':
+  '<div class="empty">No experiments in this group yet.</div>';
+}
+$("position-sides").innerHTML=fixedTable(fixed.side,"Side");
+$("position-horizons").innerHTML=fixedTable(fixed.horizon_hours,"Horizon (h)");
+$("position-strategies").innerHTML=fixedTable(fixed.strategy,"Strategy");
 const research=report.adaptive_research||{};
 const leaders=research.provisional_leaders||[];
 $("leader-note").textContent=leaders.length
