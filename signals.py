@@ -74,6 +74,8 @@ def features(bars):
             "vol_ratio":cur["volume"]/vol20 if vol20>0 else 0,
             "prior_breakout_up":c[-2]>max(h[-22:-2]),
             "prior_breakout_down":c[-2]<min(l[-22:-2]),
+            "regime_high_before_breakout":max(h[-22:-2]),
+            "regime_low_before_breakout":min(l[-22:-2]),
             "bar_time":cur["time"],
             "bar_span":"15m confirmed OKX USDT-SWAP"}
 
@@ -114,9 +116,9 @@ def classify(bars):
     if f["last_high"]>f["prev_high20"] and p<f["prev_high20"] and upper_wick>=.45:
         add("LS-v3","SHORT","high sweeps prior-20 maximum; >=45% upper wick; close inside")
     # Breakout attempt on penultimate bar fails on newest confirmed bar.
-    if f["prior_breakout_up"] and p<f["prev_high20"] and p<f["last_open"]:
+    if f["prior_breakout_up"] and p<f["regime_high_before_breakout"] and p<f["last_open"]:
         add("FB-v3","SHORT","previous bar broke 20-bar high, latest close back inside and bearish")
-    if f["prior_breakout_down"] and p>f["prev_low20"] and p>f["last_open"]:
+    if f["prior_breakout_down"] and p>f["regime_low_before_breakout"] and p>f["last_open"]:
         add("FB-v3","LONG","previous bar broke 20-bar low, latest close back inside and bullish")
     return events
 
