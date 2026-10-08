@@ -27,6 +27,8 @@ footer{padding:24px 0;font-size:12px;color:#7f91aa}
 <section class="panel"><div class="overline"><h2>Recent closed-trade equity</h2><span class="muted">Last 80 closures only</span></div><svg id="equity" class="chart" role="img" aria-label="Recent cumulative hypothetical closed-trade equity" viewBox="0 0 680 174" preserveAspectRatio="none"></svg><p class="muted" id="equity-note">Awaiting closed experiments.</p></section>
 <section class="panel"><h2>Research integrity</h2><div id="integrity"><p>Loading audit state.</p></div><div class="bar"><div class="fill" id="venue-bar"></div></div><p class="muted" id="venue-caption"></p><p class="note">Correlated positions are not independent evidence of a trading edge. No order fills, funding variation, slippage, or liquidation simulation.</p></section>
 </div>
+<section class="panel"><div class="overline"><h2>Scale, coverage and friction stress</h2><span class="muted">Research scenarios, not observed order fills</span></div>
+<div id="scale"><p>Awaiting latest verified research report.</p></div></section>
 <section class="panel"><div class="overline"><h2>Adaptive research allocator</h2><span class="muted">Only timely perpetual closes; 20% calendar-day monitoring partition</span></div>
 <p class="muted" id="leader-note">No provisional leader. Collecting prospective observations.</p>
 <div id="adaptive" class="scroll"><div class="empty">Waiting for evidence.</div></div>
@@ -79,7 +81,9 @@ metric("Profit factor",num(report.profit_factor),"All closes, exploratory"),
 metric("Max drawdown",usd(report.max_closed_equity_drawdown_usd??0),"Closed trade approximation"),
 metric("Timely perpetual",num(eligible.n??0,0),"Eligible research observations"),
 metric("Late resolutions",num(report.late_closures??0,0),"Excluded from timely cohort"),
-metric("Events verified",num(report.verified_events??0,0),"Hash-chained, append-only")
+metric("Events verified",num(report.verified_events??0,0),"Hash-chained, append-only"),
+metric("Markets tracked",num(report.universe_size??12,0),"Missing instruments skipped"),
+metric("Friction stress net",report.friction_stress_scenario?.modeled_closes?usd(report.friction_stress_scenario.net_pnl_usd):"—","Modeled closes: "+num(report.friction_stress_scenario?.modeled_closes??0,0))
 ].join("");
 $("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_events!=null?"Hash-chain verified":"Awaiting v8 first run")+'</p>'+
 '<p><strong>Last check:</strong> '+esc(wib(report.timestamp))+'</p>'+
@@ -91,6 +95,16 @@ $("venue-bar").style.width=(100*covered/total).toFixed(1)+"%";
 $("venue-caption").textContent=covered+" of "+(report.closed??0)+" closes are timely observations of perpetual quotes (not real fills).";
 $("limitations").innerHTML=(report.limitations||["First v8 run has not yet completed."]).map(x=>"<li>"+esc(x)+"</li>").join("");
 $("updated").textContent="Last run: "+wib(report.timestamp)+". Historical LAB-074…115 excluded pending independent verification.";
+const cp=report.capacity_policy||{}, stress=report.friction_stress_scenario||{};
+$("scale").innerHTML='<p><strong>Markets in catalog:</strong> '+esc(report.universe_size??"—")+
+' · <strong>Next scheduled scans:</strong> every 15 min (best-effort)'+
+' · <strong>Per run:</strong> up to 14 targeted opens, hard cap '+esc(cp.max_new_per_run??"—")+
+' · <strong>Concurrent cap:</strong> '+esc(cp.max_open??"—")+
+' · <strong>Daily cap:</strong> '+esc(cp.max_new_per_utc_day??"—")+'</p>'+
+'<p><strong>Stress-modeled closed:</strong> '+esc(stress.modeled_closes??0)+
+' · <strong>Stress modeled net:</strong> '+esc(usd(stress.net_pnl_usd??0))+
+' · <strong>Extra hypothetical friction:</strong> '+esc(usd(stress.additional_assumed_cost_usd??0))+'</p>'+
+'<p class="muted">The friction model uses available entry bid–ask spreads and an estimated impact buffer. Neither is a real execution result. More trades in one correlated regime do not create independent evidence.</p>';
 const research=report.adaptive_research||{};
 const leaders=research.provisional_leaders||[];
 $("leader-note").textContent=leaders.length
