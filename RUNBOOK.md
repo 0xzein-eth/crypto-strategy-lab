@@ -6,6 +6,12 @@
 
 **Successful run checklist:** check GitHub [Actions](https://github.com/0xzein-eth/crypto-strategy-lab/actions), then `data/report.json`: `status`, `timestamp`, `provider_observations`, `added`, `closed_this_run`, `open`, `pending`, `verified_events` and `ledger_tip_sha256`. A successful run may legitimately add **zero** trades if the rules reject available candidates, or all per-symbol concurrency slots are used. Do not equate status OK with profitable strategies.
 
+## Kebijakan fixed-horizon (tetap; tidak menambahkan SL/TP)
+
+Pengguna memilih eksperimen berbasis durasi, tanpa stop-loss/take-profit. Setelah 1/2/4/8/12/24 jam, hitung hasil menggunakan snapshot publik **pertama yang benar-benar terobservasi** pada/selepas waktu evaluasi, dari instrumen dan penyedia yang sama. Jangan menebak harga tepat di masa lalu jika workflow terlambat; simpan `delay_seconds` dan `late_excluded`. Jangan mencatat floating P&L posisi aktif sebagai hasil `CLOSED`.
+
+Lihat `data/report.json.fixed_horizon_outcomes` untuk hitungan sisi LONG/SHORT, jumlah posisi aktif/closed, menang/kalah, P&L, horizon, strategi, aset dan jumlah `due_unresolved`. Unit notional $10.000 per trade hanya digunakan untuk membandingkan eksperimen, bukan strategi alokasi modal portofolio.
+
 ## Operational errors
 
 | Symptom | Meaning | Correct response |
