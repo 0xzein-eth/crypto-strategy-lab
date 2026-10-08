@@ -26,7 +26,7 @@ STATE = BASE / "data" / "state.json"
 LEGACY = BASE / "data" / "ledger.json"
 UTC = dt.timezone.utc
 SYMBOLS = universe.SYMBOLS
-PROVIDERS = ("bybit-linear", "okx-swap", "binance-futures",
+PROVIDERS = ("okx-swap", "bybit-linear", "binance-futures",
              "kraken-spot-proxy", "coinbase-spot-proxy")
 HORIZONS = (1, 2, 4, 8, 12, 24)
 START_ID = 116
@@ -40,6 +40,9 @@ MAX_NEW_PER_UTC_DAY = 1400
 MAX_NEW_PER_SYMBOL_PER_DAY = 65
 MAX_QUOTE_AGE_SECONDS = 180
 TIMELY_DELAY_SECONDS = 1800
+# A skipped scheduler window must not launch another full batch of correlated trades.
+SCHEDULE_DEGRADED_AFTER_MINUTES = 45
+RECOVERY_MAX_NEW = 2
 MIN_QUOTE_VOLUME = 2_000_000.0
 HTTP_TIMEOUT = 7
 PREV_ZERO = "0" * 64
@@ -593,6 +596,7 @@ def atomic_json(path, obj):
 def run(requested=14, clock=utcnow):
     current = clock()
     records, seq, prev_hash, next_id = replay()
+    previous = None
     if REPORT.exists():
         previous = json.loads(REPORT.read_text(encoding="utf-8"))
         if previous.get("schema_version") == 8:
@@ -600,6 +604,17 @@ def run(requested=14, clock=utcnow):
                 raise ValueError("INTEGRITY_FAILURE: persisted report disagrees with event chain")
     if any(int(r["id"][4:]) >= next_id for r in records.values()):
         raise ValueError("INTEGRITY_FAILURE ID counter")
+    # A report timestamp is a persisted observation, not proof that a cron ran.
+    # On recovery from a long gap, resolve overdue positions first and limit
+    # creation of further likely-late observations; never synthesize exits.
+    prior_gap_minutes = None
+    if previous is not None and previous.get("schema_version") == 8:
+        prior_gap_minutes = round((current - parse(previous["timestamp"])).total_seconds() / 60, 3)
+        if prior_gap_minutes < -5:
+            raise ValueError("CLOCK_INTEGRITY: previous report is in the future")
+    recovery = (prior_gap_minutes is not None and
+                prior_gap_minutes > SCHEDULE_DEGRADED_AFTER_MINUTES)
+    requested_this_run = min(requested, RECOVERY_MAX_NEW) if recovery else requested
     cache, errors, blocked_providers = {}, {}, {}
     def read_quote(symbol, provider=None):
         providers = (provider,) if provider else PROVIDERS
@@ -635,7 +650,7 @@ def run(requested=14, clock=utcnow):
             return []
     def reobserve(symbol, provider):
         return quote(symbol, provider, clock=clock)
-    opens = new_candidates(records, read_quote, current, next_id, requested,
+    opens = new_candidates(records, read_quote, current, next_id, requested_this_run,
                            advanced=advanced, reobserve=reobserve, clock=clock)
     for r in opens:
         records[r["id"]] = r
@@ -657,6 +672,14 @@ def run(requested=14, clock=utcnow):
                   late_closed_this_run=late, missed_due_snapshots=missing,
                   provider_observations=observations, source_errors=errors,
                   blocked_market_providers=blocked_providers,
+                  scheduling_diagnostics={
+                      "prior_observation_gap_minutes": prior_gap_minutes,
+                      "degraded_after_minutes": SCHEDULE_DEGRADED_AFTER_MINUTES,
+                      "recovery_throttled": recovery,
+                      "requested_new_this_run": requested_this_run,
+                      "normal_requested_new": requested,
+                      "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
+                  },
                   verified_events=seq, ledger_tip_sha256=prev_hash,
                   workflow_interval_note="GitHub scheduled triggers are best-effort")
     active = [r for r in records.values() if r["status"] == "OPEN"]

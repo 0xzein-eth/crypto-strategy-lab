@@ -12,8 +12,12 @@ on:
       - 'audit.py'
       - '.github/workflows/lab.yml'
   workflow_dispatch:
+  # Optional external trusted clock using GitHub repository_dispatch (requires
+  # a repository-scoped token on the calling service; never store it here).
+  repository_dispatch:
+    types: [paper-tick]
   schedule:
-    - cron: '07,22,37,52 * * * *'
+    - cron: '03,13,23,33,43,53 * * * *'
 permissions:
   contents: write
 concurrency:
@@ -33,8 +37,11 @@ jobs:
           python-version: '3.12'
       - name: Verify historical event integrity
         run: python engine.py --verify-only
-      - name: Run regression and lifecycle tests
-        run: python -m unittest discover -s tests -v
+      - name: Quick paper-lifecycle checks (full suite belongs to CI)
+        run: |
+          python -m unittest discover -s tests -p 'test_engine.py' -v
+          python -m unittest discover -s tests -p 'test_end_to_end.py' -v
+          python -m unittest discover -s tests -p 'test_scale_and_friction.py' -v
       - name: Capture public market observations and run paper experiments
         run: python engine.py --count 14
       - name: Verify new event history and source files

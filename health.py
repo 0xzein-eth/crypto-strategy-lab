@@ -14,6 +14,8 @@ def check(root=ROOT, moment=None, max_hours=MAX_STALENESS_HOURS):
     now=moment or dt.datetime.now(dt.timezone.utc)
     if now.tzinfo is None:
         raise ValueError("timezone required")
+    if not 0 < max_hours <= 72:
+        raise ValueError("max_hours must be between 0 and 72")
     info=audit.verify(root)
     r=json.loads((root/"data"/"report.json").read_text(encoding="utf-8"))
     last=engine.parse(r["timestamp"])
@@ -25,7 +27,18 @@ def check(root=ROOT, moment=None, max_hours=MAX_STALENESS_HOURS):
                            (age,max_hours))
     if r.get("provider_observations",0)<1:
         raise RuntimeError("DATA_UNAVAILABLE: no live market observations reported")
-    return dict(info, report_age_hours=round(age,3),health="OK")
+    closed = int(r.get("closed", 0))
+    late = int(r.get("late_closures", 0))
+    if closed < 0 or late < 0 or late > closed:
+        raise RuntimeError("INTEGRITY_FAILURE: invalid close/late diagnostics")
+    eligible = r.get("eligible_perpetual_timely", {})
+    scheduling = r.get("scheduling_diagnostics", {})
+    return dict(info, report_age_hours=round(age,3), health="OK",
+                paper_closed=closed, paper_late=late,
+                paper_timely_share=round((closed-late)/closed,4) if closed else None,
+                eligible_perpetual_timely_n=eligible.get("n"),
+                last_gap_minutes=scheduling.get("prior_observation_gap_minutes"),
+                last_run_throttled=bool(scheduling.get("recovery_throttled",False)))
 
 
 if __name__=="__main__":

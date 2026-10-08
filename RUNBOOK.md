@@ -2,7 +2,7 @@
 
 ## What runs automatically?
 
-[Continuous paper strategy lab](.github/workflows/lab.yml) has `workflow_dispatch` (manual option) and `schedule` at **:07, :22, :37 and :52 every hour** (every 15 minutes) (UTC, and therefore the same minutes in WIB). Requires GitHub Actions to remain enabled and the repository Actions token to have **Contents: write**. Scheduled jobs can be delayed/skipped. No computer, password, wallet or exchange trading account is required.
+[Continuous paper strategy lab](.github/workflows/lab.yml) has `workflow_dispatch` (manual option), optional trusted `repository_dispatch`, and `schedule` at **:03, :13, :23, :33, :43 and :53 every hour** (every 10 minutes) (UTC, and therefore the same minutes in WIB). Requires GitHub Actions to remain enabled and the repository Actions token to have **Contents: write**. Scheduled jobs can be delayed/skipped. No computer, password, wallet or exchange trading account is required.
 
 **Successful run checklist:** check GitHub [Actions](https://github.com/0xzein-eth/crypto-strategy-lab/actions), then `data/report.json`: `status`, `timestamp`, `provider_observations`, `added`, `closed_this_run`, `open`, `pending`, `verified_events` and `ledger_tip_sha256`. A successful run may legitimately add **zero** trades if the rules reject available candidates, or all per-symbol concurrency slots are used. Do not equate status OK with profitable strategies.
 
@@ -48,7 +48,7 @@ Funding and liquidation are not modeled, while spread/slippage are only an expli
 
 ## Expanded sampling and capacity
 
-38 frozen assets are grouped by sector, daily movement direction and volatility tier. Entries are still conditional on fresh market quotes and liquidity. At the target 15-minute cadence, up to 14 new paper trades can be sampled per run, subject to daily and concurrent caps. These are correlated observations, not independent replicates. The extra spread/impact stress scenario applies to new event snapshots only; no historical P&L is overwritten.
+38 frozen assets are grouped by sector, daily movement direction and volatility tier. Entries are still conditional on fresh market quotes and liquidity. At the target 10-minute cadence, up to 14 new paper trades can be sampled per run, subject to daily and concurrent caps. These are correlated observations, not independent replicates. The extra spread/impact stress scenario applies to new event snapshots only; no historical P&L is overwritten.
 
 If the repository grows too large, lower scheduling frequency or daily caps by editing future policy parameters. **Never delete or rewrite historical JSONL events**. Do not assume free GitHub repository capacity, Actions availability or public market rate limits are unlimited.
 
@@ -56,4 +56,4 @@ If the repository grows too large, lower scheduling frequency or daily caps by e
 
 The scheduled paper lab now requests 14 new candidate experiments per run (24 maximum), with 850 OPEN across the portfolio, 50 OPEN per asset. See [LEARNING.md](LEARNING.md) for arm catalog, conservative advancement thresholds, calendar-day grouped monitoring split and statistical limitations. The code only changes future experimental allocation; no real capital or arbitrary self-modifying trading code.
 
-[Ledger integrity and schedule watchdog](.github/workflows/health.yml) targets a read-only check every two hours. If its `python health.py` step fails with `STALE_RUN`, inspect recent primary workflow runs and GitHub Actions scheduler/permissions. If it fails with `INTEGRITY_FAILURE`, do not regenerate or delete individual events. If an exchange provider is blocked, inspect source errors in `data/report.json`. This monitor is itself scheduled by GitHub and cannot guarantee alerts during a full GitHub Actions outage.
+[Ledger integrity and schedule watchdog](.github/workflows/health.yml) targets a read-only check twice per hour (:09 and :39 UTC) and fails if the last paper report is older than 75 minutes. If its `python health.py` step fails with `STALE_RUN`, inspect recent primary workflow runs and GitHub Actions scheduler/permissions. If it fails with `INTEGRITY_FAILURE`, do not regenerate or delete individual events. If an exchange provider is blocked, inspect source errors in `data/report.json`. This monitor is itself scheduled by GitHub and cannot guarantee alerts during a full GitHub Actions outage.

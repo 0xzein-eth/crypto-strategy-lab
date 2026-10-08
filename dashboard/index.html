@@ -77,7 +77,9 @@ const report=await r.json();
 let state={records:[],all_events_verified:null};
 const sr=await fetch(base+"state.json"+suffix,{cache:"no-store"});
 if(sr.ok)state=await sr.json();
-$("status").textContent=report.status||"Awaiting first v8 run";
+const ageMinutes=Math.floor((Date.now()-Date.parse(report.timestamp))/60000);
+ const stale=!Number.isFinite(ageMinutes)||ageMinutes>75||ageMinutes < -5;
+ $("status").textContent=stale?"STALE DATA · "+(Number.isFinite(ageMinutes)?ageMinutes+"m":"unknown age"):(report.status||"Awaiting first v8 run");
 const ratio=report.win_rate==null?"—":num(report.win_rate*100,1)+"%";
 const p=report.net_pnl_usd??0, eligible=report.eligible_perpetual_timely||{};
 $("overview").innerHTML=[
@@ -97,7 +99,9 @@ metric("Friction stress net",report.friction_stress_scenario?.modeled_closes?usd
 $("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_events!=null?"Hash-chain verified":"Awaiting v8 first run")+'</p>'+
 '<p><strong>Last check:</strong> '+esc(wib(report.timestamp))+'</p>'+
 '<p><strong>Provider snapshots:</strong> '+esc(report.provider_observations??"—")+'</p>'+
-'<p><strong>Missed due snapshots:</strong> '+esc(report.missed_due_snapshots??"—")+'</p>'+
+'<p><strong>Missed due snapshots:</strong> '+esc(report.missed_due_snapshots??"—")+'</p>'+ 
+ '<p><strong>Latest scheduler gap:</strong> '+esc(report.scheduling_diagnostics?.prior_observation_gap_minutes??"—")+' minutes</p>'+ 
+ '<p><strong>Gap recovery throttle:</strong> '+esc(report.scheduling_diagnostics==null?"Awaiting next update":report.scheduling_diagnostics.recovery_throttled?"Active (2 max)":"Inactive")+'</p>'+
 '<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>';
 const total=Math.max(1,report.closed||0),covered=eligible.n||0;
 $("venue-bar").style.width=(100*covered/total).toFixed(1)+"%";
@@ -106,7 +110,7 @@ $("limitations").innerHTML=(report.limitations||["First v8 run has not yet compl
 $("updated").textContent="Last run: "+wib(report.timestamp)+". Historical LAB-074…115 excluded pending independent verification.";
 const cp=report.capacity_policy||{}, stress=report.friction_stress_scenario||{};
 $("scale").innerHTML='<p><strong>Markets in catalog:</strong> '+esc(report.universe_size??"—")+
-' · <strong>Next scheduled scans:</strong> every 15 min (best-effort)'+
+' · <strong>Next scheduled scans:</strong> every 10 min (best-effort)'+
 ' · <strong>Per run:</strong> up to 14 targeted opens, hard cap '+esc(cp.max_new_per_run??"—")+
 ' · <strong>Concurrent cap:</strong> '+esc(cp.max_open??"—")+
 ' · <strong>Daily cap:</strong> '+esc(cp.max_new_per_utc_day??"—")+'</p>'+
