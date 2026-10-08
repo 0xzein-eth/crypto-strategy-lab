@@ -1,24 +1,53 @@
-name: Ledger integrity and schedule watchdog
+name: Ledger integrity and schedule guardian
+
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scheduler_guard.py'
+      - 'health.py'
+      - '.github/workflows/health.yml'
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Continuous paper strategy lab']
+    types: [completed]
   schedule:
-    - cron: '09,39 * * * *'
+    - cron: '07,22,37,52 * * * *'
+
+# Least privilege: read canonical report and request workflow_dispatch only.
+# Never grant secrets from forks/PRs to this job; it always executes main.
 permissions:
   contents: read
+  actions: write
+
+concurrency:
+  group: schedule-guardian-main
+  cancel-in-progress: false
+
 jobs:
-  watchdog:
+  guardian:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: main
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Verify ledger and detect missed scheduled observations
+      - name: Validate canonical on-disk ledger before any automated dispatch
+        run: python audit.py
+      - name: Recover if main's last committed market observation is overdue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scheduler_guard.py --recover --threshold-minutes 25
+      - name: Verify ledger and alert if market observation remains stale
         run: |
           set -euo pipefail
           python health.py --max-hours 1.25 | tee /tmp/lab-health.json
-          echo '### Paper lab health' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Paper-lab integrity' >> "$GITHUB_STEP_SUMMARY"
           echo '~~~json' >> "$GITHUB_STEP_SUMMARY"
           cat /tmp/lab-health.json >> "$GITHUB_STEP_SUMMARY"
           echo '~~~' >> "$GITHUB_STEP_SUMMARY"
