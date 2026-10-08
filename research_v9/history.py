@@ -73,7 +73,7 @@ def validate_series(candles, min_bars=2):
     return candles
 
 
-def merge_series(existing, incoming, max_bars=6_000):
+def merge_series(existing, incoming, max_bars=12_000):
     if existing:
         validate_series(existing)
     if incoming:
@@ -97,6 +97,33 @@ def merge_series(existing, incoming, max_bars=6_000):
         raise ValueError("max_bars must be at least 200")
     return rows[-max_bars:]
 
+
+
+def extend_older(existing, older, max_bars=12_000):
+    """Extend a continuous confirmed series BACKWARDS without shifting any past bar.
+
+    OKX's 'after' parameter returns candles strictly *older* than its cursor.
+    A new page must touch the existing oldest bar (adjacent or overlapping).
+    """
+    validate_series(existing)
+    if not older:
+        return existing
+    validate_series(older, min_bars=1)
+    if older[-1][0] >= existing[0][0]:
+        merged = {r[0]: r for r in existing}
+        for bar in older:
+            if bar[0] in merged and merged[bar[0]] != bar:
+                raise ValueError("INTEGRITY_FAILURE: conflicting historical candle")
+            merged[bar[0]] = bar
+        out = [merged[ts] for ts in sorted(merged)]
+    else:
+        if older[-1][0] + BAR_MS != existing[0][0]:
+            raise ValueError("DATA_INVALID: backfill has gap before current cache")
+        out = older + existing
+    validate_series(out)
+    if max_bars < 200:
+        raise ValueError("max_bars must be at least 200")
+    return out[-max_bars:]
 
 def cache_path(symbol):
     if not symbol.isascii() or not symbol.isalnum() or symbol.upper() != symbol:
@@ -152,12 +179,15 @@ def okx_page(symbol, after=None, getter=None, sleeper=time.sleep):
 
 
 def refresh_symbol(symbol, cold_pages=16, update_pages=10, now=None,
-                   getter=None, sleeper=time.sleep):
+                   getter=None, sleeper=time.sleep, backfill_pages=10,
+                   max_bars=12_000):
     """Bounded backfill; cache updated only if feed is complete and consistent."""
     existing = load_cache(symbol)
     pages = update_pages if existing else cold_pages
-    if not 1 <= pages <= 60:
-        raise ValueError("pages out of supported 1..60 range")
+    if not 1 <= pages <= 60 or not 0 <= backfill_pages <= 60:
+        raise ValueError("page budgets out of supported bounds")
+    if not 200 <= max_bars <= 30_000:
+        raise ValueError("max_bars out of supported bounds")
     seen = {}
     cursor = None
     oldest = None
@@ -181,7 +211,25 @@ def refresh_symbol(symbol, cold_pages=16, update_pages=10, now=None,
         if index + 1 < pages:
             sleeper(0.11)  # Below documented public endpoint IP rate limit
     fresh = [seen[k] for k in sorted(seen)]
-    merged = merge_series(existing, fresh)
+    merged = merge_series(existing, fresh, max_bars=max_bars)
+    # On each run backfill a finite number of OLDER pages, beyond the original
+    # v9 bootstrap. This is independent from the newest-page refresh loop.
+    if len(merged) < max_bars:
+        cursor = merged[0][0]
+        for _ in range(backfill_pages):
+            payload = okx_page(symbol, after=cursor, getter=getter, sleeper=sleeper)
+            older = parse_confirmed(payload, now=now)
+            if not older:
+                break
+            if older[-1][0] >= cursor:
+                raise ValueError("DATA_INVALID: backwards history cursor made no progress")
+            merged = extend_older(merged, older, max_bars=max_bars)
+            if merged[0][0] >= cursor:
+                raise ValueError("DATA_INVALID: backwards pagination did not extend cache")
+            cursor = merged[0][0]
+            if len(merged) >= max_bars:
+                break
+            sleeper(0.11)
     current = now or dt.datetime.now(dt.timezone.utc)
     age_s = current.timestamp() - (merged[-1][0] + BAR_MS) / 1000
     if age_s > 3 * 3600:
