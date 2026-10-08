@@ -17,9 +17,17 @@ More overlapping entries without a reliable clock would worsen the research.
 1. Prefer confirmed, responsive OKX swap tickers when *opening new*
    experiments. Existing trades **always exit using their original
    exchange, instrument and market type**; this is never overridden.
-2. The default GitHub Actions paper tick is at minutes `:03, :13, :23,
-   :33, :43, :53` each UTC hour (six target opportunities per hour).
-   GitHub does **not guarantee** punctual execution or delivery.
+2. **Three GitHub-native clocks**, all on the default `main` branch:
+   - [Paper workflow](.github/workflows/lab.yml) at UTC minutes
+     `:04, :14, :24, :34, :44, :54` (target one observation each 10 min).
+   - [Redundant recovery](.github/workflows/rescue.yml) at
+     `:02, :12, :22, :32, :42, :52`.
+   - [Ledger health guardian](.github/workflows/health.yml) at
+     `:09, :19, :29, :39, :49, :59`.
+   These schedules are deliberately staggered rather than all starting
+   at the top of an hour. Updating the original primary `cron` also
+   re-registers the workflow's scheduled actor. None of these clocks is
+   guaranteed by GitHub; they share GitHub Actions infrastructure.
 3. At each successful market run, record `scheduling_diagnostics` in the
    *derived report*. `prior_observation_gap_minutes` is measured from the
    last successfully committed market report. It is not the actual time
@@ -29,26 +37,50 @@ More overlapping entries without a reliable clock would worsen the research.
    on-time run resumes normal selection automatically. This rule only
    affects future experiments; all old OPEN/CLOSE entries and their hashes
    are preserved.
-5. **NEW: automated schedule guardian.** The independent `health.yml`
-   workflow targets minutes `:07, :22, :37, :52` (four times/hour), runs
-   after every completed paper workflow, and starts after changes to its
-   own code land on `main`. It fetches the **authoritative** latest report
-   from GitHub's API rather than trusting a possibly stale checkout.
-   If the last persisted market observation is >25 minutes old, it checks
-   whether `lab.yml` is already queued/running or recently executed. Only
-   if neither applies does it use the repository-scoped `GITHUB_TOKEN` with
-   Actions write permission to request **one `workflow_dispatch`**.
-   Queued/stuck runs are never duplicated, and a 12-minute retry cooldown
-   prevents storms. Health still fails when the last report is >75 minutes
-   old, even when a recovery has just been accepted: a dispatch is not
-   evidence of a successful quote or persisted event. No personal access
-   token is required for this in-repository guardian.
-   **Limit:** if all GitHub Action schedulers stop firing, this guardian
-   cannot run either; a truly independent clock is still needed for stronger
-   availability.
+5. **Serialized authenticated recovery, no outside service:**
+   - Both recovery workflows run `scheduler_guard.py --recover` with
+     their repository-scoped builtin `GITHUB_TOKEN` and minimal GitHub
+     permissions (`contents:read`, `actions:write`).
+   - Both share the SAME repository-wide concurrency group
+     `schedule-guardian-main`; this prevents simultaneous recovery
+     attempts from the two workflow definitions.
+   - If the most recent canonical `main` report is older than
+     **14 minutes**, the guardian checks actual `lab.yml` runs.
+     It refuses to trigger when one is in flight, stuck, or recently
+     started (12-minute cooldown). Immediately before a POST, it
+     fetches the canonical report and run queue AGAIN to avoid
+     dispatching based on obsolete information.
+   - Each guardian runs an event-chain audit before the decision and
+     `health.py` afterwards; reports older than **75 minutes** are
+     marked FAILED instead of claiming that a dispatch equaled a
+     successful observation.
+   - Additional triggers: `health.yml` wakes after completed paper
+     lab runs; `rescue.yml` wakes after completed `main` CI or research
+     runs. The privileged `workflow_run` gate refuses events from
+     foreign repositories and pull requests.
+   - No external PAT, exchange trading credentials, external cron,
+     synthetic backfilled trade observations or live exchange orders.
+     An all-GitHub scheduler outage STILL blocks all three clocks; an
+     independent host would be required to avoid that shared failure mode.
 6. Run the full regression suite on CI pushes and PRs. Paper ticks run
    a targeted set of offline lifecycle tests plus full ledger audit;
    this avoids repeatedly running heavy historical research tests.
+
+## Expected operating indicators
+
+With no underlying platform delays, the primary requests **6 paper ticks/hour**
+and each guardian requests **6 checks/hour**; the paper `workflow_run`
+completion can produce additional read-only guardian checks. The new recovery
+guard is not a guarantee of precisely 10-minute observations: evaluate
+`data/report.json.timestamp`, `scheduling_diagnostics.prior_observation_gap_minutes`,
+`closed_this_run`, and `late_closed_this_run`, and inspect the workflow event
+(`schedule` versus `workflow_dispatch`) in the GitHub Actions history.
+
+This approach increases Github-hosted workflow executions (and may consume
+Actions quotas for private or metered runners). Re-evaluate frequency if usage,
+rate limits or repository size become problematic. A failed market provider,
+bad ledger, GitHub outage, disabled schedules, token-permission change, or
+persistent `STUCK_RUN` needs investigation rather than unbounded retry.
 
 ## Optional more reliable clock (manual setup outside repository)
 

@@ -7,12 +7,13 @@ on:
       - 'scheduler_guard.py'
       - 'health.py'
       - '.github/workflows/health.yml'
+      - '.github/workflows/rescue.yml'
   workflow_dispatch:
   workflow_run:
     workflows: ['Continuous paper strategy lab']
     types: [completed]
   schedule:
-    - cron: '07,22,37,52 * * * *'
+    - cron: '09,19,29,39,49,59 * * * *'
 
 # Least privilege: read canonical report and request workflow_dispatch only.
 # Never grant secrets from forks/PRs to this job; it always executes main.
@@ -26,7 +27,7 @@ concurrency:
 
 jobs:
   guardian:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.event != 'pull_request')
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
@@ -42,7 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python scheduler_guard.py --recover --threshold-minutes 25
+        run: python scheduler_guard.py --recover --threshold-minutes 14
       - name: Verify ledger and alert if market observation remains stale
         run: |
           set -euo pipefail
