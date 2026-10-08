@@ -44,7 +44,7 @@ class EndToEnd(unittest.TestCase):
                 current,n,head,next_id=engine.replay(base)
                 self.assertEqual((len(current),n,next_id),(8,14,124))
                 self.assertTrue(head!=engine.PREV_ZERO)
-                self.assertEqual(len({r["id"] for r in current.values()}),12)
+                self.assertEqual(len({r["id"] for r in current.values()}),8)
                 # Every historical full CLOSE and OPEN event is preserved in JSONL.
                 paths=sorted((base/"data"/"events").glob("*.jsonl"))
                 self.assertEqual(len(paths),2)
