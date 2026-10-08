@@ -10,7 +10,7 @@
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
 
-**Jadwal otomatis:** menit **13 dan 43 setiap jam**, menggunakan `schedule` GitHub Actions. Jadwal bersifat best effort; eksekusi dapat terlambat atau sesekali terlewat. Laptop pengguna tidak perlu menyala. Pada kondisi normal engine membuat hingga 6 kandidat baru per run (maksimum 10 bila parameter kode diubah), dengan batas **120 OPEN bersamaan**, **12 OPEN per aset**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
+**Jadwal otomatis:** menit **13 dan 43 setiap jam**, menggunakan `schedule` GitHub Actions. Jadwal bersifat best effort; eksekusi dapat terlambat atau sesekali terlewat. Laptop pengguna tidak perlu menyala. Pada kondisi normal engine membuat hingga 10 kandidat baru per run (maksimum 12 melalui parameter kode), dengan batas **180 OPEN bersamaan**, **16 OPEN per aset**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
 
 ## Struktur repository
 
@@ -41,6 +41,15 @@ Prioritas data: Bybit linear → OKX USDT swap → Binance Futures → Kraken US
 - Jika tak ada feed harga valid, workflow gagal dengan `DATA_UNAVAILABLE`, bukan sukses palsu.
 - Arsip **LAB-074–115** dari scheduler lama **belum dimigrasi**: record asli lengkap belum direkonsiliasi. Statistiknya **tidak dicampur** dengan v8.
 
+## Adaptive continuous research (v1)
+
+The lab now scores a frozen set of **11 auditable paper-only strategy hypotheses** and continuously reallocates *future* experiments. The learner excludes late closes and spot proxies, retains precommitted controls, evaluates day-cluster lower bounds, and maintains a reproducible date-partitioned monitoring sample. Until strict training/monitoring/control thresholds are met, **no strategy is provisionally preferred**. A provisional leader is not proof of profitability. New signal families are versioned rather than generated through unreviewed arbitrary code.
+
+- [Read the learning design](LEARNING.md)
+- Dashboard now displays adaptive arm evidence, monitoring samples and provisional status.
+- Normal target: **10 new experiments per scheduled run** (hard max 12; 180 OPEN overall; 16 OPEN per symbol), if source and strategy filters allow.
+- [Read-only health watchdog](.github/workflows/health.yml) checks event integrity and whether market updates are more than three hours old. Liveness cannot be guaranteed when GitHub Actions or exchanges are unavailable.
+
 ## Menjalankan dan memantau
 
 Otomatisasi telah terpasang; untuk inspeksi buka [GitHub Actions](https://github.com/0xzein-eth/crypto-strategy-lab/actions) dan pilih **Continuous paper strategy lab**. Setiap run yang berhasil akan memperbarui [report](data/report.json) dan [individual events](data/events/). Run hijau tetap perlu dicek `added`, `provider_observations`, `closed_this_run`, `pending` agar tidak salah membaca kegiatan.
@@ -50,7 +59,7 @@ Untuk menjalankan secara lokal tanpa dependensi pihak ketiga:
 ```sh
 python -m unittest discover -s tests -v
 python engine.py --verify-only
-python engine.py --count 6
+python engine.py --count 10
 ```
 
 Dashboard disimpan di `dashboard/index.html` dan dapat diperoleh sebagai artifact workflow `Validate dashboard`. **GitHub Pages belum dianggap aktif** sampai Pages dikonfigurasi/berhasil diterbitkan.
