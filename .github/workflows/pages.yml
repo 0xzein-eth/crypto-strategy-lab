@@ -14,11 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Check static dashboard and JSON
+      - name: Check dashboard, source JSON and frontend JavaScript syntax
         run: |
           test -s dashboard/index.html
-          python -m json.tool data/ledger.json >/dev/null
           python -m json.tool data/report.json >/dev/null
+          python -m json.tool data/state.json >/dev/null
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('dashboard/index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',html,re.S)
+          assert len(scripts)==1,'expected one inline dashboard script'
+          Path('/tmp/lab-dashboard.js').write_text(scripts[0],encoding='utf-8')
+          PY
+          node --check /tmp/lab-dashboard.js
       - uses: actions/upload-artifact@v4
         with:
           name: paper-research-dashboard
