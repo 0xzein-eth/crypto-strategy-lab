@@ -39,3 +39,9 @@ The static UI in `dashboard/index.html` reads the public repository's current re
 Default 6 new candidate attempts per successful run, hard limit 10 per run, maximum 120 simultaneous OPEN and 12 OPEN per symbol. **No lifetime cap** on closed trades. Monthly JSONL files roll automatically at month boundaries; no trade is deleted or compacted. A too-late observation is retained but disqualified from timely evidence.
 
 Funding, slippage and liquidation are not modeled, so results are not a viable basis for real-money futures trading.
+
+## Adaptive learning / health watchdog
+
+The scheduled paper lab now requests ten new candidate experiments per run (12 maximum), with 180 OPEN across the portfolio, 16 OPEN per asset. See [LEARNING.md](LEARNING.md) for arm catalog, conservative advancement thresholds, calendar-day grouped monitoring split and statistical limitations. The code only changes future experimental allocation; no real capital or arbitrary self-modifying trading code.
+
+[Ledger integrity and schedule watchdog](.github/workflows/health.yml) targets a read-only check every three hours. If its `python health.py` step fails with `STALE_RUN`, inspect recent primary workflow runs and GitHub Actions scheduler/permissions. If it fails with `INTEGRITY_FAILURE`, do not regenerate or delete individual events. If an exchange provider is blocked, inspect source errors in `data/report.json`. This monitor is itself scheduled by GitHub and cannot guarantee alerts during a full GitHub Actions outage.
