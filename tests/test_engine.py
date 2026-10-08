@@ -38,7 +38,7 @@ class EngineTests(unittest.TestCase):
         self.assertEqual((len(outputs),late,missing),(1,0,0))
         self.assertEqual(outputs[0]["delay_seconds"],240)
         self.assertEqual(outputs[0]["fee_round_trip_usd"],10.0)
-        self.assertAlmostEqual(abs(outputs[0]["net_pnl_usd"]),110,places=2)
+        self.assertAlmostEqual(outputs[0]["net_pnl_usd"],-110 if r["side"]=="LONG" else 90,places=2)
         self.assertFalse(outputs[0]["late_excluded"])
         stale=dict(self.q,price=99,observed_at=engine.stamp(due-dt.timedelta(seconds=1)))
         self.assertEqual(engine.close_due({r["id"]:r},lambda s,p:stale,due)[0],[])
