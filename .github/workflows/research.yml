@@ -41,7 +41,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_v9.py' -v
       - name: Capture only confirmed same-venue perpetual historical candles
         if: github.event_name != 'pull_request'
-        run: python run_research_v9.py --symbols BTC ETH SOL LINK --cold-pages 16 --update-pages 10 --max-variants 260
+        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --max-variants 260
       - name: Verify cached history and derived research report offline
         if: github.event_name != 'pull_request'
         run: |
