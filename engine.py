@@ -14,6 +14,7 @@ from pathlib import Path
 import urllib.error
 import urllib.request
 import signals
+import learner
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -30,9 +31,9 @@ START_ID = 116
 NOTIONAL_USD = 10000.0
 FEE_SIDE_PCT = 0.05
 RESEARCH_RISK_PCT = 1.5
-MAX_OPEN = 120
-MAX_PER_SYMBOL = 12
-MAX_NEW_PER_RUN = 10
+MAX_OPEN = 180
+MAX_PER_SYMBOL = 16
+MAX_NEW_PER_RUN = 12
 MAX_QUOTE_AGE_SECONDS = 180
 TIMELY_DELAY_SECONDS = 1800
 MIN_QUOTE_VOLUME = 1_000_000.0
@@ -331,29 +332,43 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                 r["symbol"] == symbol and r["status"] == "OPEN" for r in records.values()
         ) >= MAX_PER_SYMBOL:
             continue
-        style = ("BR-proxy-v1", "MR-proxy-v1", "CTRL-v1")[(slot + rank) % 3]
-        if style == "BR-proxy-v1":
-            side = "LONG" if q["pct24h"] >= 0 else "SHORT"
-        elif style == "MR-proxy-v1":
-            side = "SHORT" if q["pct24h"] >= 0 else "LONG"
-        else:
-            # Deterministic randomized control, chosen before outcome is observed.
-            hsh = hashlib.sha256((symbol + ":" + str(slot)).encode()).digest()
-            side = "LONG" if hsh[0] % 2 == 0 else "SHORT"
-        evidence = {"price_change_24h_pct": round(q["pct24h"], 6),
-                    "quote_volume_24h": round(q["quote_volume_24h"], 2),
-                    "price_change_reference": q.get("price_change_reference", "provider-24h-window"),
-                    "signal_rule": "24h trend / contra-trend / deterministic control",
-                    "research_only": True}
-        quality = "exploratory; no tradable-edge claim"
-        if advanced is not None and q["provider"] == "okx-swap":
-            detections = advanced(symbol, q)
-            if detections:
-                pick = detections[(slot + rank) % len(detections)]
-                style, side = pick["strategy"], pick["side"]
-                evidence.update(pick["evidence"])
-                quality = "confirmed historical 15m OHLCV; still experimental"
-        h = HORIZONS[(slot + rank) % len(HORIZONS)]
+        # The online allocator only selects among pre-registered, observable
+        # hypotheses. Controls remain available regardless of apparent results.
+        move=q["pct24h"]
+        baseline=[
+            {"strategy":"BR-proxy-v1","side":"LONG" if move>=0 else "SHORT"},
+            {"strategy":"MR-proxy-v1","side":"SHORT" if move>=0 else "LONG"},
+            {"strategy":"CTRL-v1",
+             "side":"LONG" if hashlib.sha256((symbol+":"+str(slot)).encode()).digest()[0]%2==0 else "SHORT"}]
+        detections=[]
+        if advanced is not None and q["provider"]=="okx-swap":
+            detections=advanced(symbol,q) or []
+        # Indicator-based candidates can never be synthesized from a missing,
+        # stale, unconfirmed or wrong-instrument candle.
+        options=baseline+[
+            {"strategy":x["strategy"],"side":x["side"],"evidence":x["evidence"]}
+            for x in detections
+            if x.get("strategy") in learner.ADVANCED and x.get("side") in ("LONG","SHORT")
+        ]
+        # Deduplicate arm labels without rewriting evidence.
+        options=list({x["strategy"]:x for x in options}.values())
+        h=HORIZONS[(slot+rank)%len(HORIZONS)]
+        chosen, allocation=learner.choose(options, records, symbol, h, slot, rank)
+        if chosen is None:
+            continue
+        style,side=chosen["strategy"],chosen["side"]
+        evidence={"price_change_24h_pct":round(q["pct24h"],6),
+                  "quote_volume_24h":round(q["quote_volume_24h"],2),
+                  "price_change_reference":q.get("price_change_reference","provider-24h-window"),
+                  "signal_rule":"pre-registered confirmed-candle or 24h baseline",
+                  "research_only":True,
+                  "allocation_policy":"learner-v1-fixed-day-holdout",
+                  "selection_mode":allocation,
+                  "signal_catalog_version":"2026-10-08"}
+        quality="exploratory; no tradable-edge claim"
+        if chosen.get("evidence"):
+            evidence.update(chosen["evidence"])
+            quality="confirmed historical 15m OHLCV; still experimental"
         if any(r["status"] == "OPEN" and r["symbol"] == symbol and
                r["provider"] == q["provider"] and r["strategy"] == style and
                r["horizon_hours"] == h for r in records.values()):
@@ -423,6 +438,7 @@ def summarize(records, moment):
             "late_closures": sum(r.get("late_excluded", False) for r in closed),
             "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
             "eligible_perpetual_timely": sample(eligible),
+            "adaptive_research": learner.analysis(records),
             "strategy_horizon": {
                 k: dict(sample(v), evidence="collect" if len(v) < 10 else
                         "hypothesis" if len(v) < 30 else "preliminary, correlated" if len(v) < 50
@@ -468,7 +484,7 @@ def atomic_json(path, obj):
             os.unlink(temp)
 
 
-def run(requested=6, clock=utcnow):
+def run(requested=10, clock=utcnow):
     current = clock()
     records, seq, prev_hash, next_id = replay()
     if REPORT.exists():
@@ -551,7 +567,7 @@ def run(requested=6, clock=utcnow):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Strict prospective paper research")
-    ap.add_argument("--count", type=int, default=6)
+    ap.add_argument("--count", type=int, default=10)
     ap.add_argument("--verify-only", action="store_true")
     args = ap.parse_args()
     if args.verify_only:
