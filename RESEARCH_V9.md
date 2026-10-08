@@ -77,3 +77,48 @@ silently enabled by this change.
 Suggested next stages: additional independent venues, funding-rate snapshots,
 contract-specific bid/ask cost modeling, global-date anchored walk-forward
 comparison, and explicit promotion-gated forward paper candidates.
+
+## V9.1: deeper market history, observed funding, and independent gate
+
+**Daily deeper candle backfill:** \`refresh_symbol\` now extends cache
+*backwards* by up to 12 older history pages on each scheduled execution,
+preserving all existing confirmed data and refusing silent gaps or overlapping
+values that change. The cache holds a bounded 12,000 continuous bars per asset,
+about 125 days of 15m observations. Growth is incremental; a single successful
+execution does **not** mean all 125 days are already available. Endpoint
+pagination uses \`after=oldest_seen_timestamp\` for strictly older records and
+validates every added page. The 8-asset research universe is unchanged.
+
+**Settled funding-rate history:** New \`research_v9/funding.py\` obtains OKX
+USDT-swap settled history and considers **realizedRate**, excluding projected
+rates without confirmed settlement. It persists a compressed, contract-keyed
+cache. Funding coverage requires all source events to span the whole candle
+research interval, with no settlement-time gap larger than 12h. If provider
+history is unavailable or incomplete, the affected asset is still backtested
+for the fee + spread/impact baseline, but **funding-adjusted metrics remain
+unknown** and cannot contribute to an automatic candidate-review pass.
+Hypothetical constant-notional funding cash flow is reported separately from
+base P&L. Real position value and funding payments would vary.
+
+**Liquidation barrier sensitivity:** A 3x leverage and assumed 0.5% of notional
+maintenance-margin threshold yields a very rough adverse-move threshold of
+32.833333%. Historical candle highs/lows are checked for touches while the
+hypothetical position would have been open. This is **NOT exchange liquidation
+modeling**: mark-price liquidation, tiered maintenance margins, fees, subbar
+path, funding and partial liquidation are not established by OHLCV. A touch
+is a risk *flag*, never assumed to be a fill or historical trade closure.
+The user-selected fixed-horizon, no-stop/no-TP exit is unchanged.
+
+**Prospective candidate gate:** \`research_v9/promotion.py\` creates the
+read-only \`research_results/forward_candidates.json\`. It uses strict
+walk-forward, distinct-day, repeated-fold, control-beating, settled-funding and
+margin-proxy checks. This is a **review queue**, not a strategy implementation;
+no v8 paper position is opened, and no parameter changes are automatically
+applied to v8. Even a passed gate is *not proof of tradable alpha*:
+independently frozen future-only tests and human-reviewed implementation are
+required. Real order endpoints remain absent.
+
+**Source-of-truth separation:** The v8 \`data/events/\` chain, state, report
+and its workflow are unchanged. V9.1 commits only the historical cache and
+separate research reports. Network outages fail or are explicitly marked as
+funding coverage gaps instead of creating synthetic settled payments.
