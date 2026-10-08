@@ -63,6 +63,22 @@ class SignalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"gap"):
             signals.parse_okx_candles({"code":"0","data":rows},moment)
 
+    def test_new_confirmed_cross_and_vwap_reclaim(self):
+        z=bars()
+        z[-1].update(open=100,high=102,low=99,close=101,volume=200)
+        names={x["strategy"] for x in signals.classify(z)}
+        self.assertIn("CROSS-v1",names)
+        self.assertIn("VWAP-v1",names)
+
+    def test_new_rsi_extreme_is_observable_without_future_candles(self):
+        z=bars()
+        z[-1].update(open=100,high=101,low=89,close=90,volume=200)
+        f=signals.features(z)
+        self.assertLess(f["rsi14"],22)
+        signals_found=signals.classify(z)
+        self.assertTrue(any(x["strategy"]=="RSI-v1" and x["side"]=="LONG"
+                            for x in signals_found))
+
     def test_nonmatching_provider_not_fetched(self):
         called=[]
         output=signals.from_okx("BTC",{"provider":"kraken-spot-proxy"},
