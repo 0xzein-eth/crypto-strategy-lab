@@ -54,6 +54,11 @@ def features(bars):
     sma20=sum(c[-20:])/20
     sma50=sum(c[-50:])/50
     sma20prev=sum(c[-21:-1])/20
+    sma50prev=sum(c[-51:-1])/50
+    delta=[c[i]-c[i-1] for i in range(len(c)-14,len(c))]
+    gains=sum(max(x,0) for x in delta)
+    losses=sum(max(-x,0) for x in delta)
+    rsi14=(100 if gains>0 else 50) if losses==0 else (100-100/(1+gains/losses))
     window=c[-20:]
     var=sum((x-sma20)**2 for x in window)/20
     sd=math.sqrt(var)
@@ -65,10 +70,18 @@ def features(bars):
     prev_low=min(l[-21:-1])
     vol20=sum(v[-21:-1])/20
     cur=bars[-1]
+    def vwap(candles):
+        tot=sum(b["volume"] for b in candles)
+        return (sum(((b["high"]+b["low"]+b["close"])/3)*b["volume"]
+                    for b in candles)/tot if tot>0 else None)
+    vw20=vwap(bars[-20:])
+    vw20prev=vwap(bars[-21:-1])
     return {"last_close":cur["close"],"last_open":cur["open"],
             "last_high":cur["high"],"last_low":cur["low"],
             "last_volume":cur["volume"],"c_prev":c[-2],
             "sma20":sma20,"sma50":sma50,"sma20prev":sma20prev,
+            "sma50prev":sma50prev,"rsi14":rsi14,
+            "vwap20":vw20,"vwap20prev":vw20prev,
             "z20":(c[-1]-sma20)/sd if sd>0 else 0,
             "atr14":atr,"prev_high20":prev_high,"prev_low20":prev_low,
             "vol_ratio":cur["volume"]/vol20 if vol20>0 else 0,
@@ -139,6 +152,23 @@ def classify(bars):
         add("RANGE-v1","SHORT","range-like trend, z20>=1.5, upper wick>=35%")
     if abs(trend) < 0.65 and f["z20"] <= -1.5 and lower_wick >= .35:
         add("RANGE-v1","LONG","range-like trend, z20<=-1.5, lower wick>=35%")
+    # Distinct pre-registered momentum cross, all values confirmed at bar close.
+    if f["sma20prev"] <= f["sma50prev"] and f["sma20"] > f["sma50"]:
+        if f["vol_ratio"] >= 0.9:
+            add("CROSS-v1","LONG","confirmed SMA20 crossed above SMA50, volume >=0.9x")
+    if f["sma20prev"] >= f["sma50prev"] and f["sma20"] < f["sma50"] and f["vol_ratio"] >= 0.9:
+        add("CROSS-v1","SHORT","confirmed SMA20 crossed below SMA50, volume >=0.9x")
+    # RSI Wilder-independent simple 14-interval momentum ratio, pre-registered.
+    if f["rsi14"]<=22 and trend > -2.5:
+        add("RSI-v1","LONG","RSI14 <=22, trend not extremely one-sided")
+    if f["rsi14"]>=78 and trend < 2.5:
+        add("RSI-v1","SHORT","RSI14 >=78, trend not extremely one-sided")
+    # Volume-weighted mean reclaim/rejection on confirmed 15m closes.
+    if f["vwap20"] is not None and f["vwap20prev"] is not None and f["vol_ratio"]>=1.2:
+        if f["c_prev"]<=f["vwap20prev"] and p>f["vwap20"] and p>f["last_open"]:
+            add("VWAP-v1","LONG","confirmed 20-bar typical-price VWAP reclaim with volume")
+        if f["c_prev"]>=f["vwap20prev"] and p<f["vwap20"] and p<f["last_open"]:
+            add("VWAP-v1","SHORT","confirmed 20-bar typical-price VWAP rejection with volume")
     return events
 
 
