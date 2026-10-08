@@ -2,7 +2,7 @@ name: Ledger integrity and schedule watchdog
 on:
   workflow_dispatch:
   schedule:
-    - cron: '07 */3 * * *'
+    - cron: '04 */2 * * *'
 permissions:
   contents: read
 jobs:
@@ -15,4 +15,4 @@ jobs:
         with:
           python-version: '3.12'
       - name: Verify complete source history and derived reports
-        run: python health.py --max-hours 3
+        run: python health.py --max-hours 2.5
