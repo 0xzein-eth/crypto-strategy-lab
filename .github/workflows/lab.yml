@@ -38,6 +38,7 @@ jobs:
         run: |
           python engine.py --verify-only
           python audit.py
+          python health.py --max-hours 1
           python -m json.tool data/report.json > /dev/null
           python -m json.tool data/state.json > /dev/null
           git diff --check
