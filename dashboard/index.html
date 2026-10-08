@@ -27,6 +27,10 @@ footer{padding:24px 0;font-size:12px;color:#7f91aa}
 <section class="panel"><div class="overline"><h2>Recent closed-trade equity</h2><span class="muted">Last 80 closures only</span></div><svg id="equity" class="chart" role="img" aria-label="Recent cumulative hypothetical closed-trade equity" viewBox="0 0 680 174" preserveAspectRatio="none"></svg><p class="muted" id="equity-note">Awaiting closed experiments.</p></section>
 <section class="panel"><h2>Research integrity</h2><div id="integrity"><p>Loading audit state.</p></div><div class="bar"><div class="fill" id="venue-bar"></div></div><p class="muted" id="venue-caption"></p><p class="note">Correlated positions are not independent evidence of a trading edge. No order fills, funding variation, slippage, or liquidation simulation.</p></section>
 </div>
+<section class="panel"><div class="overline"><h2>Adaptive research allocator</h2><span class="muted">Only timely perpetual closes; 20% calendar-day monitoring partition</span></div>
+<p class="muted" id="leader-note">No provisional leader. Collecting prospective observations.</p>
+<div id="adaptive" class="scroll"><div class="empty">Waiting for evidence.</div></div>
+<p class="note">“Candidate for validation” is not a proven trading edge. The learning policy preserves controls and baseline exploration. Allocation decisions apply only to new paper experiments.</p></section>
 <section class="panel"><div class="overline"><h2>Strategy × horizon</h2><span class="muted">Research thresholds: 10 / 30 / 50 closures</span></div><div id="strategies" class="scroll"></div></section>
 <section class="panel"><div class="overline"><h2>Individual experiment ledger</h2><span class="muted">All active + 80 most recent closes; full history in event files</span></div><div id="trades" class="scroll"></div></section>
 <section class="panel"><h2>Research limitations</h2><ul class="warnings" id="limitations"><li>Waiting for reports.</li></ul>
@@ -87,6 +91,15 @@ $("venue-bar").style.width=(100*covered/total).toFixed(1)+"%";
 $("venue-caption").textContent=covered+" of "+(report.closed??0)+" closes are timely observations of perpetual quotes (not real fills).";
 $("limitations").innerHTML=(report.limitations||["First v8 run has not yet completed."]).map(x=>"<li>"+esc(x)+"</li>").join("");
 $("updated").textContent="Last run: "+wib(report.timestamp)+". Historical LAB-074…115 excluded pending independent verification.";
+const research=report.adaptive_research||{};
+const leaders=research.provisional_leaders||[];
+$("leader-note").textContent=leaders.length
+  ?"Provisional candidate: "+leaders.join(", ")+". Separate forward validation is still required."
+  :"No validated leader yet. Continue diversified prospective collection; no profitable edge is established.";
+const arms=Object.entries(research.arms||{});
+$("adaptive").innerHTML=arms.length?'<table><thead><tr><th>Hypothesis</th><th>Eligible</th><th>Training</th><th>Held-out monitoring</th><th>Cluster LCB (R)</th><th>Stage</th></tr></thead><tbody>'+
+ arms.map(([k,v])=>'<tr>'+[k,v.n,v.train_n,v.holdout_n,num(v.train_cluster_lcb_R,3),v.stage].map(td).join("")+'</tr>').join("")+
+ '</tbody></table>':'<div class="empty">Awaiting learner-v1 policy report from the next verified run.</div>';
 const cohorts=Object.entries(report.strategy_horizon||{});
 $("strategies").innerHTML=cohorts.length?'<table><thead><tr><th>Strategy / horizon</th><th>Closes</th><th>Net R</th><th>Mean R</th><th>Research status</th></tr></thead><tbody>'+cohorts.map(([k,v])=>'<tr>'+[k,v.n,num(v.net_R,3),num(v.expectancy_R,3),v.evidence].map(td).join("")+'</tr>').join("")+"</tbody></table>":'<div class="empty">No completed strategy cohorts yet.</div>';
 const records=state.records||[];
