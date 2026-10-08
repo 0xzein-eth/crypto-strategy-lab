@@ -77,7 +77,7 @@ class ScaleAndCostTests(unittest.TestCase):
             folder=base/"data"/"events"
             folder.mkdir(parents=True)
             historical=engine.seal(1,engine.PREV_ZERO,"OPEN",original)
-            (folder/"2026-10.jsonl").write_text(engine.canonical(historical)+"\\n")
+            (folder/"2026-10.jsonl").write_text(engine.canonical(historical)+"\n")
             with patch.object(engine,"EVENTS",folder):
                 seq,tip=engine.append_events([("CLOSE",closed)],1,historical["hash"],due)
             self.assertEqual(seq,2)
