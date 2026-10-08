@@ -1,0 +1,50 @@
+# Adaptive strategy research, v1
+
+## What the software actually learns
+The paper lab does **not** write code, place real exchange orders, forecast certain returns, or promise to discover a profitable strategy. It continuously tests a **pre-registered catalog** of falsifiable hypotheses, then changes **future paper-experiment allocation** based on completed observations. It **never** changes an OPEN/CLOSE historical event.
+
+Current hypotheses:
+
+| Arm | Signal |
+|---|---|
+| BR-proxy-v1 | 24-hour directional continuation baseline |
+| MR-proxy-v1 | 24-hour contrarian baseline |
+| CTRL-v1 | Deterministic, price-independent long/short control |
+| TP-v3 | Confirmed 15m SMA trend pullback and reclaim |
+| BR-v3 | Confirmed 15m ATR/volume breakout |
+| MR-v3 | Confirmed 15m range-normalized z-score extreme |
+| LS-v3 | Confirmed wick sweep and range re-entry |
+| FB-v3 | Confirmed failure of previous bar's breakout |
+| TREND-v1 | Confirmed 15m trend-separation continuation with volume |
+| VOL-v1 | Confirmed 15m range/volume expansion |
+| RANGE-v1 | Confirmed weak-trend rejection wick at statistical extreme |
+
+New variants are **versioned, predeclared rules** added to `signals.py`; the learner cannot hallucinate an indicator when its market inputs are missing. A new rule affects *new* prospective experiments only.
+
+## Continuous allocation, with safeguards
+Each run begins by replaying and verifying the complete SHA-256 event chain. Due positions are resolved at the first available fresh same-venue observation **after their evaluation time**. Only then does the system consider opening up to ten new paper hypotheses. All decisions are frozen into each complete OPEN event as `allocation_policy`, `selection_mode`, and versioned signal evidence.
+
+The `learner.py` policy:
+
+- Considers **CLOSED perpetual-market experiments resolved no more than 30 minutes late**. Spot proxies, still-OPEN, missing and late records are excluded from *learning*, while all records remain in the public historical ledger.
+- Splits calendar dates reproducibly by SHA-256 into about **80% development / 20% monitoring**. Entire UTC dates are together in one partition to reduce intraday leakage, though dates and assets are still correlated.
+- Computes each arm's descriptive lower confidence bound from **one clipped mean-R per distinct UTC day**, not from hundreds of statistically independent-looking simultaneous trades. Results are NOT formal hypothesis-test p-values or proof of alpha.
+- With fewer than ten eligible training closes, continues collecting. A preliminary arm additionally needs four distinct training days and positive day-cluster lower bound.
+- **Provisional leadership**, and additional new-paper allocation, requires ≥30 training observations, ≥7 training dates, ≥10 monitoring observations on ≥3 dates, positive train/monitor daily bounds, positive monitoring net R, and stronger training average than the concurrently sampled CTRL-v1 arm (which itself needs ≥10 training observations).
+- **Preserves at least a planned 20% control allocation**, baseline and confirmed-signal exploration. Winner-take-all is deliberately disallowed; changing regimes can break apparent performance.
+- If there is no qualified provisional leader, allocation stays diversified. No strategy is deleted for performing badly; old versions remain in the ledger, and new observations can alter the ranking.
+
+This is a *repeatedly inspected monitoring split*, **NOT an untouched final holdout**. Repeated trials, adaptive assignment and correlated markets introduce selection bias. Even a provisional leader requires a separately frozen, forward out-of-sample assessment in multiple regimes before a tradable edge can be argued. Actual execution profitability is not tested.
+
+## Capacity and schedule
+The workflow targets GitHub Actions at minutes :13 and :43 (best effort), using ten prospective experiments per run when qualifying liquid quotes and per-symbol limits permit. Limit: 12 candidates per run in code, 180 concurrently OPEN, 16 per symbol. There is no lifetime cap; event storage rolls monthly as append-only JSONL.
+
+The independent `health.py` watchdog targets every three hours and **fails** if the last committed report is more than three hours old, no source observations exist, or audit/source-of-truth consistency fails. Failed Actions require troubleshooting; self-healing is NOT guaranteed for blocked APIs, GitHub outages, or changes to Actions privileges.
+
+## Interpreting results
+- `data/report.json → adaptive_research`: counts per strategy, training and monitoring splits, daily lower bounds, provisional leader and warnings.
+- `data/events/YYYY-MM.jsonl`: immutable-by-policy full OPEN/CLOSE records and original feature evidence; hash chain plus Git commits. Git admins can rewrite history.
+- `data/state.json`: active positions plus most recent 80 closed for public dashboard.
+- All net P&L is hypothetical; constant 0.05% per side fee, zero modeled funding, and no spread, slippage, liquidation or real fill simulation. Do **not** treat R as actual stop-based account risk.
+
+This lab is for continuous research, not unattended capital deployment.
