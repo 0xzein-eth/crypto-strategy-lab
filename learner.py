@@ -129,7 +129,7 @@ def analysis(records):
     }
 
 
-def choose(options,records,symbol,horizon,slot,rank):
+def choose(options,records,symbol,horizon,slot,rank,profile=None):
     """Pick a pre-registered eligible arm, preserving controls and exploration.
 
     Cannot choose an advanced signal unless it is explicitly in options
@@ -155,7 +155,7 @@ def choose(options,records,symbol,horizon,slot,rank):
         return available[pick],"baseline_exploration"
     # Learning/preservation: only reproducible, held-out and control-aware
     # candidates receive extra allocation. All other arms keep their slots.
-    profile=analysis(records)
+    profile=analysis(records) if profile is None else profile
     leaders=[s for s in profile["provisional_leaders"] if s in available]
     if leaders and bucket>=75:
         best=leaders[0]
