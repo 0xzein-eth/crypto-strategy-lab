@@ -153,6 +153,9 @@ class CliTests(unittest.TestCase):
             self.assertEqual(report["forward_paper_trades_created"], 0)
             self.assertFalse(report["proven_edge"])
             self.assertEqual(report["symbols_analyzed"], ["BTC", "ETH"])
+            self.assertAlmostEqual(report["historical_overlap_days"], 1000/96, delta=0.01)
+            self.assertFalse(report["ninety_day_overlap_reached"])
+            self.assertEqual(report["historical_cache_cap_bars_per_instrument"], 12000)
             self.assertEqual(json.loads(destination.read_text())["schema_version"], 1)
             self.assertFalse((root/"data"/"ledger.json").exists())
 
