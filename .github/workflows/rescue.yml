@@ -12,6 +12,7 @@ on:
   workflow_run:
     workflows: ['Historical Research Factory v9', 'CI tests']
     types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -42,5 +43,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python scheduler_guard.py --recover --threshold-minutes 14
-      - name: Surface an unresolved stale run instead of reporting false health
-        run: python health.py --max-hours 1.25
+      - name: Verify freshest main ledger and surface real unresolved staleness
+        run: |
+          set -euo pipefail
+          # The paper run may commit while the guardian is already executing.
+          git fetch --quiet origin main
+          git reset --hard FETCH_HEAD
+          python health.py --max-hours 1.25

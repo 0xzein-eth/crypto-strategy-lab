@@ -50,10 +50,12 @@ More overlapping entries without a reliable clock would worsen the research.
      started (12-minute cooldown). Immediately before a POST, it
      fetches the canonical report and run queue AGAIN to avoid
      dispatching based on obsolete information.
-   - Each guardian runs an event-chain audit before the decision and
-     `health.py` afterwards; reports older than **75 minutes** are
-     marked FAILED instead of claiming that a dispatch equaled a
-     successful observation.
+   - Each guardian runs an event-chain audit before the decision. Just
+     before the strict `health.py` check, it fetches and checks out the
+     **latest main commit**. This prevents a false stale alarm if the paper
+     workflow committed a new report after the guardian first checked out.
+     Reports actually older than **75 minutes** still fail; accepting a
+     dispatch is not treated as proof of a fresh market observation.
    - Additional triggers: `health.yml` wakes after completed paper
      lab runs; `rescue.yml` wakes after completed `main` CI or research
      runs. The privileged `workflow_run` gate refuses events from

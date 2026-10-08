@@ -98,9 +98,15 @@ class GuardianTests(unittest.TestCase):
                 self.assertIn("actions: write", s)
                 self.assertIn("contents: read", s)
                 self.assertIn("ref: main", s)
+                self.assertIn("    branches: [main]", s)
                 self.assertIn("head_repository.full_name == github.repository", s)
                 self.assertIn("github.event.workflow_run.event != 'pull_request'", s)
                 self.assertIn("scheduler_guard.py --recover --threshold-minutes 14", s)
+                # Health must validate the SAME newly committed main history
+                # inspected by the guardian API, not an older runner checkout.
+                self.assertIn("git fetch --quiet origin main", s)
+                self.assertIn("git reset --hard FETCH_HEAD", s)
+                self.assertIn("python health.py --max-hours 1.25", s)
                 self.assertNotIn("  pull_request:", s)
         paper = (root / "lab.yml").read_text(encoding="utf-8")
         self.assertIn("group: continuous-canonical-paper-ledger", paper)
