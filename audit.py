@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Independent, read-only consistency audit for canonical v8 data."""
+import json
+from pathlib import Path
+import engine
+
+ROOT = Path(__file__).resolve().parent
+
+def verify(root=ROOT):
+    records, seq, tip, next_id = engine.replay(root)
+    report_path = root / "data" / "report.json"
+    state_path = root / "data" / "state.json"
+    if not report_path.exists() or not state_path.exists():
+        raise ValueError("INTEGRITY_FAILURE: missing derived report/state")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    if report.get("schema_version") != 8 or state.get("schema_version") != 8:
+        raise ValueError("INTEGRITY_FAILURE: derived schema mismatch")
+    if report.get("verified_events") != seq or report.get("ledger_tip_sha256") != tip:
+        raise ValueError("INTEGRITY_FAILURE: report hash/sequence mismatch")
+    if state.get("all_events_verified") != seq or state.get("ledger_tip_sha256") != tip:
+        raise ValueError("INTEGRITY_FAILURE: state hash/sequence mismatch")
+    summary = engine.summarize(records, engine.parse(report["timestamp"]))
+    for key in ("created", "closed", "open", "pending", "wins", "losses",
+                "net_pnl_usd", "net_R", "win_rate", "profit_factor",
+                "late_closures", "spot_proxy_closures", "total_round_trip_fees_usd",
+                "strategy_horizon", "eligible_perpetual_timely"):
+        if report.get(key) != summary.get(key):
+            raise ValueError("INTEGRITY_FAILURE: report derived field mismatch: " + key)
+    active = {key: value for key, value in records.items() if value["status"] == "OPEN"}
+    expected_state = set(active)
+    latest_closed = sorted(
+        (r for r in records.values() if r["status"] == "CLOSED"),
+        key=lambda r: (r["resolved_at"], r["id"]), reverse=True)[:80]
+    expected_state.update(x["id"] for x in latest_closed)
+    actual_state = {r["id"]: r for r in state.get("records", [])}
+    if len(actual_state) != len(state.get("records", [])) or set(actual_state) != expected_state:
+        raise ValueError("INTEGRITY_FAILURE: state coverage mismatch")
+    for ident, row in actual_state.items():
+        if row != records[ident]:
+            raise ValueError("INTEGRITY_FAILURE: altered derived trade " + ident)
+    if report.get("provider_observations", 0) <= 0:
+        raise ValueError("DATA_UNAVAILABLE: report has no valid market observations")
+    return {"verified": True, "events": seq, "trades": len(records),
+            "closed": summary["closed"], "next_id": next_id, "tip": tip}
+
+if __name__ == "__main__":
+    print(json.dumps(verify(), indent=2))
