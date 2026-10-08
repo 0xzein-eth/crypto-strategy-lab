@@ -1,35 +1,60 @@
-# Crypto Strategy Lab — PAPER ONLY
+# Crypto Strategy Lab v8 — PAPER ONLY
 
-Automated, prospective research simulator. **No orders, API keys, real capital, or live trading.**
+![CI](https://github.com/0xzein-eth/crypto-strategy-lab/actions/workflows/ci.yml/badge.svg)
 
-## Current prototype
-GitHub Actions triggers every hour at minute 17, best effort (it can be delayed or skipped). Python 3.12 retrieves Binance **spot** ticker snapshots, not perpetual mark prices. It attempts to close overdue and pending paper experiments using the first *observed* eligible snapshot from an execution; records delay; then creates up to 5 new diversified, exploratory candidates. Missing prices leave experiments pending.
+**Lab eksperimen strategi kripto otomatis, berjalan lewat GitHub Actions, tanpa transaksi riil.**
 
-Complete individual records are stored in `data/ledger.json`; Git history provides an audit trail, though repo administrators can rewrite history. `data/report.json` has the summary.
+✅ [Hasil simulasi terakhir](data/report.json) · 📚 [Event ledger permanen](data/events/) · 📊 [Dashboard source](dashboard/index.html) · ⚙️ [Workflow otomatis](.github/workflows/lab.yml) · 🧪 [Pengujian](tests/)
 
-The **historical** LAB-074..115 ledger is NOT migrated because original full individual records have not been independently verified in GitHub. Historical aggregates must NOT be blended with new results. Fresh IDs start at LAB-116; new ledger is capped at 80 records.
+## Status operasional
 
-Each simulated trade: $10,000 notional, hypothetical 3x leverage, 0.05% fee per side. Normalized R = (signed return percent - 0.10%)/research risk percent. Funding assumed zero for this prototype; spread, slippage, liquidation and actual perp funding not modeled.
+Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
 
-**Research warning:** current BR-v3/MR-v3 signal labels are simple 24-hour momentum/countertrend exploratory proxies, NOT complete strategy implementations. TP-v3, LS-v3, FB-v3, CTRL-v1, multi-regime analysis, effective sample size and funding/slippage modeling are future work. Do not claim a proven edge. Strategy/horizon groups below 10 closed only collect data.
+**Jadwal otomatis:** menit **13 dan 43 setiap jam**, menggunakan `schedule` GitHub Actions. Jadwal bersifat best effort; eksekusi dapat terlambat atau sesekali terlewat. Laptop pengguna tidak perlu menyala. Pada kondisi normal engine membuat hingga 6 kandidat baru per run (maksimum 10 bila parameter kode diubah), dengan batas **120 OPEN bersamaan**, **12 OPEN per aset**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
 
-## Usage
-1. In GitHub Settings > Actions > General, ensure Actions can run and workflow has read/write contents permission.
-2. In Actions > Paper research lab, select Run workflow, or await scheduled execution.
-3. Inspect workflow logs, `data/ledger.json`, and `data/report.json`. Failed runs must not be mistaken for successful experiments.
+## Struktur repository
 
-Locally: `python lab.py` (Python standard library only).
+| File | Fungsi |
+|---|---|
+| `engine.py` | Mesin prospektif event-sourcing v8; harga publik, buka/tutup simulasi, audit |
+| `signals.py` | Hipotesis TP-v3, BR-v3, MR-v3, LS-v3, FB-v3 dengan OHLCV **15m confirmed** |
+| `data/events/YYYY-MM.jsonl` | **Sumber kebenaran tunggal**: OPEN & CLOSE record **lengkap**, baris append-only, rantai SHA-256 |
+| `data/report.json` | Seluruh statistik hasil observasi dan peringatan kualitas |
+| `data/state.json` | Semua posisi OPEN dan 80 CLOSED terbaru untuk dashboard |
+| `dashboard/index.html` | Dashboard mandiri yang membaca data publik langsung dari GitHub |
+| `.github/workflows/lab.yml` | Pengambilan harga, tes, eksekusi, validasi, dan atomic Git commit |
+| `.github/workflows/ci.yml` | Pengujian lokal-lingkungan runner otomatis |
+| `lab.py`, `data/ledger.json` | **Legacy v7 (non-operasional)**; tidak dipakai v8 dan tidak boleh dihitung ganda |
 
-Every run resolves positions before creating new experiments. Workflow uses serialized concurrency and commits the ledger. If Git push conflicts, the job fails rather than overwrite other writes.
+Strategi berbasis candle aktif **hanya jika** data OHLCV dari **instrumen OKX perpetual yang sama** tersedia dan candle telah dikonfirmasi selesai. Jika tidak, mesin mencoba baseline BR-proxy, MR-proxy dan CTRL-v1, selalu diberi label sebagai hipotesis sederhana. Strategi yang tidak memenuhi sinyal tidak direkayasa.
 
-**This is not financial advice and is strictly a paper research system.**
+## Sumber harga & aturan integritas
 
-## October 8 build expansion
-- Public perpetual ticker priority: Bybit linear -> OKX swap -> Binance futures.
-- When all futures feeds are inaccessible, an **explicit Kraken USD spot proxy** is attempted. Proxy records are marked `kraken-spot-proxy` and `USD spot proxy`, never presented as futures fills.
-- No valid market snapshot now causes a failing workflow (not a misleading green run).
-- `tests/test_lab.py` covers prospective opening, due resolution, pending recovery, immutable CLOSED outcome, capacity and missing-ledger failure. CI runs on pushes.
-- Static responsive dashboard lives at `dashboard/index.html`; the `Validate dashboard` workflow uploads it as an artifact. To publish on GitHub Pages, configure Pages separately; Pages deployment is not claimed enabled.
-- Hourly paper workflow remains the only writer of `data/ledger.json`. No credentials are required.
+Prioritas data: Bybit linear → OKX USDT swap → Binance Futures → Kraken USD spot proxy → Coinbase USD spot proxy. Beberapa penyedia bisa memblokir runner GitHub berdasarkan wilayah; kode membedakan kesalahan HTTP 403/451 dan mencoba sumber alternatif. **Harga exit selalu harus dari provider, tipe pasar, dan instrumen yang sama dengan entry.** Spot proxy tidak pernah dihitung sebagai sampel valid untuk bukti edge perpetual.
 
-**Important:** An earlier successful GitHub workflow run created **zero** trades. A green workflow alone does not establish market-data availability or actual paper-trade generation. Check `added`, `market_snapshots`, and `market_errors` in the report after the NEXT run.
+- Simulasi `$10,000` notional per eksperimen, leverage hipotesis `3x`, fee `0,05%` per sisi.
+- `normalized_R = (signed_return_pct − 0,10%) / research_risk_pct`. Risk denominator riset awal `1,5%`, **bukan stop-loss aktual**.
+- Keterlambatan exit dihitung nyata; **lebih dari 30 menit** masuk kelompok `late_excluded`, bukan performa eligible tepat waktu.
+- Jika harga tidak tersedia, trade tetap OPEN dan menjadi DUE/PENDING; tidak boleh di-backfill.
+- Event OPEN/CLOSE yang sudah disimpan tidak diedit, disingkat, atau dihapus. Semua hash event diverifikasi setiap run.
+- Perubahan merusak hash, hilangnya source-of-truth, atau ketidaksesuaian laporan menyebabkan `INTEGRITY_FAILURE` (fail-closed).
+- Jika tak ada feed harga valid, workflow gagal dengan `DATA_UNAVAILABLE`, bukan sukses palsu.
+- Arsip **LAB-074–115** dari scheduler lama **belum dimigrasi**: record asli lengkap belum direkonsiliasi. Statistiknya **tidak dicampur** dengan v8.
+
+## Menjalankan dan memantau
+
+Otomatisasi telah terpasang; untuk inspeksi buka [GitHub Actions](https://github.com/0xzein-eth/crypto-strategy-lab/actions) dan pilih **Continuous paper strategy lab**. Setiap run yang berhasil akan memperbarui [report](data/report.json) dan [individual events](data/events/). Run hijau tetap perlu dicek `added`, `provider_observations`, `closed_this_run`, `pending` agar tidak salah membaca kegiatan.
+
+Untuk menjalankan secara lokal tanpa dependensi pihak ketiga:
+
+```sh
+python -m unittest discover -s tests -v
+python engine.py --verify-only
+python engine.py --count 6
+```
+
+Dashboard disimpan di `dashboard/index.html` dan dapat diperoleh sebagai artifact workflow `Validate dashboard`. **GitHub Pages belum dianggap aktif** sampai Pages dikonfigurasi/berhasil diterbitkan.
+
+[Lihat metodologi & keterbatasan](METHODOLOGY.md) · [Lihat troubleshooting](RUNBOOK.md)
+
+> **Penting:** Ini simulasi penelitian, bukan sistem trading real. Tidak ada API key exchange, order, wallet, deposit, atau posisi asli. Performa simulasi tidak memodelkan pendanaan variabel, slippage, spread, order fill dan likuidasi. **Tidak ada bukti strategi menguntungkan secara riil.**
