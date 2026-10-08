@@ -13,6 +13,7 @@ from collections import defaultdict
 from itertools import product
 
 from research_v9.history import BAR_MS, validate_series
+from research_v9.funding import payment_pct, validate_rates
 
 HORIZONS = (4, 8, 16, 32, 96)  # 1h, 2h, 4h, 8h, 24h on 15m candles
 FEE_PCT = 0.10                # 0.05% each side (hypothetical)
@@ -155,12 +156,22 @@ def signal(f, v, closed):
 
 
 def backtest(candles, variant, symbol="BTC", fee_pct=FEE_PCT,
-             extra_cost_pct=STRESS_PCT):
-    """Historical approximation; exit at a future candle OPEN (no stop/TP)."""
+             extra_cost_pct=STRESS_PCT, funding_events=None,
+             leverage=3.0, maintenance_margin_pct=0.5):
+    """Hypothetical next-bar fills, funding sensitivities and barrier-only risk.
+
+    Never claims actual exchange liquidation: high/low do not reveal tick path,
+    exact maintenance margin or bankruptcy price. Neither SL nor TP is used.
+    """
     f = Features(candles)
     total_cost = fee_pct + extra_cost_pct
     if not (0 <= total_cost < 5):
         raise ValueError("invalid cost assumption")
+    if not (1 <= leverage <= 20 and 0 <= maintenance_margin_pct < 100/leverage):
+        raise ValueError("invalid hypothetical margin assumptions")
+    if funding_events is not None:
+        validate_rates(funding_events)
+    barrier_pct = 100/leverage - maintenance_margin_pct
     events = []
     i = LOOKBACK_BARS + 1
     while i + variant.horizon < len(f.ts):
@@ -171,12 +182,27 @@ def backtest(candles, variant, symbol="BTC", fee_pct=FEE_PCT,
         entry_price, exit_price = f.open[i], f.open[i+variant.horizon]
         signed_pct = 100 * side * (exit_price/entry_price-1)
         net_pct = signed_pct-total_cost
+        # Trade exists from bar OPEN[i] until OPEN[i+h]; only intrabar
+        # extremes for indices i..i+h-1 can trigger a hypothetical barrier.
+        touched = (min(f.low[i:i+variant.horizon]) <=
+                   entry_price*(1-barrier_pct/100)) if side == 1 else (
+                   max(f.high[i:i+variant.horizon]) >=
+                   entry_price*(1+barrier_pct/100))
+        paid = (payment_pct(funding_events, side, f.ts[i],
+                            f.ts[i+variant.horizon]) if funding_events is not None
+                else None)
+        funded = net_pct-paid if paid is not None else None
         events.append({
             "symbol": symbol, "variant": variant.id, "entry_ts": f.ts[i],
             "exit_ts": f.ts[i+variant.horizon], "side": "LONG" if side > 0 else "SHORT",
             "signed_pct": round(signed_pct, 9),
             "net_pct": round(net_pct, 9),
             "net_R": round(net_pct/R_DENOMINATOR_PCT, 9),
+            "settled_funding_paid_pct": round(paid, 9) if paid is not None else None,
+            "funding_adjusted_net_pct": round(funded, 9) if funded is not None else None,
+            "funding_adjusted_R": round(funded/R_DENOMINATOR_PCT, 9) if funded is not None else None,
+            "barrier_touch_proxy": bool(touched),
+            "barrier_adverse_move_pct": round(barrier_pct, 6),
         })
         i += variant.horizon  # nonoverlapping per strategy and symbol
     return events
@@ -199,8 +225,15 @@ def statistics_for(rows):
     if len(day_means) >= 4:
         daily_lcb = statistics.mean(day_means) - 1.96 * (
             statistics.stdev(day_means) / math.sqrt(len(day_means)))
+    measured = [r["funding_adjusted_R"] for r in rows
+                if r.get("funding_adjusted_R") is not None]
     return {
         "n": count, "days": len(days),
+        "measured_funding_n": len(measured),
+        "funding_adjusted_avg_R": round(statistics.mean(measured), 6)
+                                  if count and len(measured) == count else None,
+        "barrier_touches": sum(bool(r.get("barrier_touch_proxy")) for r in rows),
+        "barrier_model": "high-low threshold flag only; NOT simulated exchange liquidation",
         "win_rate": round(sum(r["net_pct"] > 0 for r in rows)/count, 5) if count else None,
         "avg_R": round(statistics.mean(values), 6) if count else None,
         "day_mean_R": round(statistics.mean(day_means), 6) if days else None,
@@ -210,7 +243,8 @@ def statistics_for(rows):
     }
 
 
-def walk_forward(datasets, max_variants=300, selections_per_fold=4):
+def walk_forward(datasets, max_variants=300, selections_per_fold=4,
+                 funding_by_symbol=None):
     """Three chronological expanding-window trials with 96-bar purging.
 
     Only training data chooses each fold's candidates. Validation is examined
@@ -222,6 +256,9 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4):
         raise ValueError("invalid selection budget")
     for bars in datasets.values():
         validate_series(bars, min_bars=400)
+    funding_by_symbol = funding_by_symbol or {}
+    if any(symbol not in datasets for symbol in funding_by_symbol):
+        raise ValueError("unknown symbol in funding mapping")
     start = max(rows[0][0] for rows in datasets.values())
     end = min(rows[-1][0] for rows in datasets.values())
     if end-start < 700*BAR_MS:
@@ -234,7 +271,8 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4):
     for variant in variants:
         trades = []
         for symbol, rows in sorted(datasets.items()):
-            trades.extend(backtest(rows, variant, symbol))
+            trades.extend(backtest(rows, variant, symbol,
+                                   funding_events=funding_by_symbol.get(symbol)))
         per_variant[variant.id] = trades
 
     fold_reports = []
@@ -297,6 +335,10 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4):
         "schema_version": 1, "factory_version": "v9-param-grid-1",
         "validation_method": "expanding_train_three_chronological_folds_purged_96bars",
         "historical_only": True, "proven_edge": False, "champion": None,
+        "measured_funding_symbols": sorted(funding_by_symbol),
+        "margin_scenario": {"hypothetical_leverage": 3,
+                            "maintenance_margin_pct_assumed": 0.5,
+                            "not_actual_liquidation": True},
         "candidates_evaluated": len(variants),
         "datasets_evaluated": len(datasets),
         "common_bars": n_bars,
@@ -304,7 +346,9 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4):
         "limitations": [
             "All signals use the last confirmed candle and hypothetical next-bar OPEN.",
             "Historical OHLCV trading is not an executed or forward paper trade.",
-            "No order fills, funding, exchange liquidation or true slippage are simulated.",
+            "No actual fills, exchange liquidation or true slippage are simulated.",
+            "Settled historical funding is a constant-notional sensitivity only where coverage is complete.",
+            "Intrabar high/low margin proxy does not confirm real liquidation, margin tier or path.",
             "0.10% roundtrip fees plus 0.12% additional hypothetical friction.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
