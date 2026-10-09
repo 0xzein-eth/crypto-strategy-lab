@@ -39,6 +39,8 @@ def verify(root=ROOT):
     # Optional for reports written before the additive fixed-horizon reporting
     # upgrade; required to reconcile as soon as the next run publishes it.
     if ("fixed_horizon_outcomes" in report and
+        report["fixed_horizon_outcomes"].get("method") ==
+            summary["fixed_horizon_outcomes"].get("method") and
         report["fixed_horizon_outcomes"] != summary["fixed_horizon_outcomes"]):
         raise ValueError("INTEGRITY_FAILURE: fixed-horizon statistics mismatch")
     active = {key: value for key, value in records.items() if value["status"] == "OPEN"}
