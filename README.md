@@ -100,3 +100,20 @@ New writes use `data/events/YYYY-MM_daily_DD.jsonl` per UTC day. Prior `YYYY-MM.
 Research Factory otomatis mengumpulkan confirmed 15m OHLCV OKX perpetual dengan cache historis berintegritas, menguji sekitar **250 varian** aturan dan parameter terhadap **8 aset kandidat** (jika feed tersedia), dan menggunakan tiga validasi walk-forward terpisah secara kronologis dengan purge/embargo. Laporan dibuat setiap hari sekitar **10:19 WIB** oleh GitHub Actions (best effort). Siklus tambahan bisa dijalankan manual melalui tab Actions.
 
 **Penting:** ini adalah backtest historis, bukan trading sungguhan atau hasil paper trade prospektif; asumsi biaya dan likuiditas tetap terbatas. **Tidak ada strategi yang otomatis dianggap terbukti profitable.** File v9 di `research_cache/` dan `research_results/` tidak dimasukkan ke `data/events/` atau statistik paper-trading v8. Mesin v8 berjalan terpisah sesuai jadwal dan aturan integritasnya.
+
+
+### Quality-first reliability / funding policy (10 October 2026)
+
+Until the GitHub-only observation clock is more reliable, the lab
+automatically **throttles new paper entries** based on a minimum
+12-observation rolling schedule sample: <40% coverage → max 3 new
+positions/run, 40–75% → max 7, otherwise normal requested budget.
+An immediate >45-minute recovery gap still caps to 2. Due exits are
+always attempted before new entries. Guardian status is now reported as
+`DEGRADED_RECOVERING` rather than pretending an accepted retry has
+already restored fresh data.
+
+The historical research separately uses a 90-day trailing **funding-aware
+window** while preserving longer OHLCV source caches. Settlement gaps
+remain missing, never silently treated as 0% funding. Historical
+research candidates are not automatically activated or traded live.
