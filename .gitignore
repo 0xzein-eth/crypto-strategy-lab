@@ -1,0 +1,17 @@
+# Python generates bytecode during the offline tests, audit and market engine.
+# These volatile artifacts must not be treated as changes to the canonical
+# append-only paper ledger during an unattended recovery window.
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+.venv/
+venv/
+.env
+
+# DO NOT ignore data/, data/events/, research_cache/ or research_results/.
+# These are auditable outputs and must remain visible to Git.
