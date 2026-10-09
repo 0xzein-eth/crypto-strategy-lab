@@ -57,6 +57,22 @@ class OutcomeStatsTests(unittest.TestCase):
         self.assertEqual(result["side"]["LONG"]["timely_closes"],0)
         self.assertEqual(result["eligible_timely_perpetual_closures"],0)
 
+    def test_eligible_cohorts_exclude_late_and_spot_closes(self):
+        good=row("G","LONG",2,status="CLOSED",pnl=150)
+        late=row("L","LONG",2,status="CLOSED",pnl=999,late=True)
+        proxy=row("S","LONG",2,status="CLOSED",pnl=999)
+        proxy["market_type"]="spot_proxy"
+        r=outcome_stats.summarize([good,late,proxy],self.m)
+        x=r["side"]["LONG"]
+        self.assertEqual(r["method"],"fixed_horizon_v2")
+        self.assertEqual(x["closed"],3)
+        self.assertEqual(x["eligible_timely_perpetual_closed"],1)
+        self.assertEqual(x["eligible_timely_perpetual_win_rate"],1.0)
+        self.assertEqual(x["eligible_timely_perpetual_net_R"],1.0)
+        self.assertEqual(x["eligible_timely_perpetual_expectancy_R"],1.0)
+        self.assertAlmostEqual(x["eligible_timely_perpetual_share"],1/3,places=4)
+        self.assertEqual(r["eligible_timely_perpetual_closures"],1)
+
     def test_zero_trades_stays_defined(self):
         result=outcome_stats.summarize([],self.m)
         self.assertEqual(result["symbol"],{})
