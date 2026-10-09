@@ -20,7 +20,9 @@ def _cohort(records):
     wins=sum(r["net_pnl_usd"]>0 for r in closed)
     losses=sum(r["net_pnl_usd"]<0 for r in closed)
     breakeven=len(closed)-wins-losses
-    timely=sum(not r.get("late_excluded",False) for r in closed)
+    timely=sum(r.get("late_excluded") is False for r in closed)
+    eligible=[r for r in closed if r.get("late_excluded") is False
+              and r["market_type"]=="perpetual"]
     return {
         "opened":len(records),
         "active":sum(r["status"]=="OPEN" for r in records),
@@ -32,6 +34,13 @@ def _cohort(records):
         "closed_expectancy_R":round(sum(r["normalized_R"] for r in closed)/len(closed),5) if closed else None,
         "timely_closes":timely,
         "late_closes":len(closed)-timely,
+        "eligible_timely_perpetual_closed":len(eligible),
+        "eligible_timely_perpetual_share":round(len(eligible)/len(closed),4) if closed else None,
+        "eligible_timely_perpetual_win_rate":round(
+            sum(r["net_pnl_usd"]>0 for r in eligible)/len(eligible),4) if eligible else None,
+        "eligible_timely_perpetual_net_R":round(sum(r["normalized_R"] for r in eligible),5),
+        "eligible_timely_perpetual_expectancy_R":round(
+            sum(r["normalized_R"] for r in eligible)/len(eligible),5) if eligible else None,
     }
 
 
@@ -51,7 +60,7 @@ def summarize(records, moment):
              moment<_utc(r["evaluate_at"])<=moment+dt.timedelta(hours=24)]
     completed=[r for r in rows if r["status"]=="CLOSED"]
     return {
-        "method":"fixed_horizon_v1",
+        "method":"fixed_horizon_v2",
         "exit_policy":"first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
         "side":{k:_cohort(v) for k,v in sorted(groups["side"].items())},
         "horizon_hours":{k:_cohort(v) for k,v in sorted(groups["horizon_hours"].items(),key=lambda x:int(x[0]))},
