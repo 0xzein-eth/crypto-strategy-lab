@@ -36,6 +36,10 @@ def verify(root=ROOT):
         report["adaptive_research"].get("method") == summary["adaptive_research"].get("method") and
         report["adaptive_research"] != summary["adaptive_research"]):
         raise ValueError("INTEGRITY_FAILURE: adaptive research statistics mismatch")
+    # Derived evidence-quality fields are additive and must match when present.
+    if ("evidence_quality" in report and
+        report["evidence_quality"] != summary["evidence_quality"]):
+        raise ValueError("INTEGRITY_FAILURE: evidence quality statistics mismatch")
     # Optional for reports written before the additive fixed-horizon reporting
     # upgrade; required to reconcile as soon as the next run publishes it.
     if ("fixed_horizon_outcomes" in report and
