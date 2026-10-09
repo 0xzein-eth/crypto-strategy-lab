@@ -54,6 +54,33 @@ class LearningTests(unittest.TestCase):
         self.assertIsNone(p2["champion"])
         self.assertLess(p2["arms"]["BR-v3"]["holdout_net_R"],0)
 
+    def test_monitoring_outcomes_never_change_allocation(self):
+        # A monitoring result can change the displayed candidate, but must
+        # NEVER alter next-run selections. Only training evidence may do that.
+        dates=[(dt.date(2026,1,1)+dt.timedelta(days=i)).isoformat() for i in range(100)]
+        rows=[]
+        for day in dates:
+            for _ in range(2):
+                rows.append(trade("BR-v3",day,1.0))
+                rows.append(trade("CTRL-v1",day,-0.1))
+        stressed=[dict(x) for x in rows]
+        for x in stressed:
+            if x["strategy"]=="BR-v3" and learner.stable_bucket(
+                    "holdout:"+learner.day_of(x),5)==0:
+                x["normalized_R"]=-2.0
+        good=learner.analysis(rows)
+        bad=learner.analysis(stressed)
+        self.assertNotEqual(good["provisional_leaders"],bad["provisional_leaders"])
+        self.assertEqual(good["allocation_leaders"],bad["allocation_leaders"])
+        self.assertIn("BR-v3",good["allocation_leaders"])
+        options=[{"strategy":"BR-v3","side":"LONG"},
+                 {"strategy":"CTRL-v1","side":"SHORT"}]
+        for slot in range(120):
+            args=("BTC",2,slot,0)
+            self.assertEqual(
+                learner.choose(options,rows,*args,profile=good),
+                learner.choose(options,stressed,*args,profile=bad))
+
     def test_allocations_deterministic_and_control_preserved(self):
         options=[
             {"strategy":"BR-proxy-v1","side":"LONG"},
