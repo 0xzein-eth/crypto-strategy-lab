@@ -137,6 +137,28 @@ class FactoryTests(unittest.TestCase):
             previous = fold["validation_end_exclusive_utc"]
 
 
+class ResearchWindowTests(unittest.TestCase):
+    def test_trailing_window_preserves_raw_cache_and_never_zero_fills(self):
+        from research_v9 import funding
+        bars = market(11000)
+        raw = {"BTC":bars, "ETH":market(11000,base=220)}
+        clipped=cli.trim_research_window(raw,window_days=90)
+        self.assertEqual(len(clipped["BTC"]),8640)
+        self.assertEqual(len(raw["BTC"]),11000)
+        self.assertEqual(clipped["ETH"][0][0],clipped["BTC"][0][0])
+        funding_events=[[bars[i][0],0.0001] for i in range(15*96,11000,32)]
+        self.assertFalse(funding.coverage(funding_events,bars[0][0],
+                                          bars[-1][0]+history.BAR_MS))
+        self.assertTrue(funding.coverage(funding_events,clipped["BTC"][0][0],
+                                         clipped["BTC"][-1][0]+history.BAR_MS))
+        with self.assertRaises(ValueError):
+            cli.trim_research_window(raw,window_days=5)
+
+    def test_too_short_window_fails_closed(self):
+        with self.assertRaisesRegex(ValueError,"DATA_INSUFFICIENT"):
+            cli.trim_research_window({"BTC":market(400),"ETH":market(400)},90)
+
+
 class CliTests(unittest.TestCase):
     def test_offline_research_does_not_touch_paper_ledger(self):
         with tempfile.TemporaryDirectory() as directory:
