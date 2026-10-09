@@ -21,7 +21,10 @@ import urllib.request
 WORKFLOW = "lab.yml"
 MAX_REPORT_AGE_MINUTES = 25
 RECENT_RUN_COOLDOWN_MINUTES = 12
-PENDING_RUN_ALERT_MINUTES = 45
+# Paper workflow can intentionally run a bounded 6x10min recovery window.
+# Its Actions job timeout is 85min; allow runner-queue overhead before
+# treating an active job as stuck. Still fail closed at 100min.
+PENDING_RUN_ALERT_MINUTES = 100
 BASE = "https://api.github.com"
 UTC = dt.timezone.utc
 REPOSITORY_RE = re.compile(r"^[a-zA-Z0-9_][a-zA-Z0-9_.-]*/[a-zA-Z0-9_][a-zA-Z0-9_.-]*$")
