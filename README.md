@@ -51,7 +51,7 @@ The lab now scores a frozen set of **14 auditable paper-only strategy hypotheses
 - [Read the learning design](LEARNING.md)
 - Dashboard now displays adaptive arm evidence, monitoring samples and provisional status.
 - Normal target: **14 new experiments per scheduled run** (hard max 24; 850 OPEN overall; 50 OPEN per symbol; UTC day cap 1,400), if source and strategy filters allow.
-- [Schedule guardian](.github/workflows/health.yml) dan [redundant clock](.github/workflows/rescue.yml) memeriksa integritas event, mencegah pemicu berulang, dan memicu pemulihan jika perlu. **Baru:** setelah run yang terlambat berhasil, [recovery_window.py](recovery_window.py) dapat mengambil maksimal dua snapshot baru dengan jarak nyata 10 menit, lalu berhenti. Indikator `estimated_10m_slot_coverage` dalam [report](data/report.json) memperlihatkan perkiraan slot yang berhasil dari 72 jeda observasi terakhir; perlu minimal 12 jeda untuk interpretasi. Semua tetap penelitian tanpa order riil; cron GitHub tidak menjamin 24/7.
+- [Schedule guardian](.github/workflows/health.yml) dan [redundant clock](.github/workflows/rescue.yml) memeriksa integritas event, mencegah pemicu berulang, dan memicu pemulihan jika perlu. **Baru:** setelah run yang terlambat berhasil, [recovery_window.py](recovery_window.py) dapat mengambil maksimal enam snapshot baru dengan jarak nyata 10 menit, lalu berhenti. Indikator `estimated_10m_slot_coverage` dalam [report](data/report.json) memperlihatkan perkiraan slot yang berhasil dari 72 jeda observasi terakhir; perlu minimal 12 jeda untuk interpretasi. Semua tetap penelitian tanpa order riil; cron GitHub tidak menjamin 24/7.
 
 ## Peningkatan kapasitas dan kualitas sampel (Oktober 2026)
 
