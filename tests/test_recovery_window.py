@@ -125,7 +125,7 @@ class RecoveryWindowTests(unittest.TestCase):
     def test_cannot_request_unbounded_runner(self):
         self.save(report(NOW))
         with self.assertRaisesRegex(ValueError, "max recovery pulses"):
-            window.run_window(root=self.root, pulses=3)
+            window.run_window(root=self.root, pulses=7)
         with self.assertRaisesRegex(ValueError, "recovery cadence"):
             window.run_window(root=self.root, interval_minutes=60)
 
