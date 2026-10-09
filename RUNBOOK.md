@@ -52,6 +52,25 @@ Funding and liquidation are not modeled, while spread/slippage are only an expli
 
 If the repository grows too large, lower scheduling frequency or daily caps by editing future policy parameters. **Never delete or rewrite historical JSONL events**. Do not assume free GitHub repository capacity, Actions availability or public market rate limits are unlimited.
 
+## Bounded real-time recovery and rolling slot coverage
+
+When a successful paper observation follows a scheduler gap over 45 minutes,
+the same serialized `lab.yml` job may remain open long enough to record
+six additional **real current-time** observations, 10 minutes apart.
+Each new observation is audited and safely committed before the next one;
+no missed historical prices are invented, and the job remains capped at
+85 minutes. It is **not** a background service or unconditional run loop.
+Inspect the Actions step named "Bounded recovery window". In normal healthy
+runs it exits immediately.
+
+The report now tracks at most 72 intervals in
+`scheduling_diagnostics.recent_observation_gaps_minutes` and estimates
+`estimated_missed_10m_slots` as well as
+`estimated_10m_slot_coverage`. These are derived from persisted report
+timestamps, not exact GitHub cron execution times or eligible paper closes.
+`health.py` reports whether the sample is sufficient (12 intervals) and
+whether estimated coverage reaches 80%; insufficient sample remains explicit.
+
 ## Adaptive learning / health watchdog
 
 The scheduled paper lab now requests 14 new candidate experiments per run (24 maximum), with 850 OPEN across the portfolio, 50 OPEN per asset. See [LEARNING.md](LEARNING.md) for arm catalog, conservative advancement thresholds, calendar-day grouped monitoring split and statistical limitations. The code only changes future experimental allocation; no real capital or arbitrary self-modifying trading code.

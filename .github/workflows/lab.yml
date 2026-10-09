@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'engine.py'
+      - 'recovery_window.py'
       - 'signals.py'
       - 'learner.py'
       - 'universe.py'
@@ -26,7 +27,7 @@ concurrency:
 jobs:
   observe-and-commit:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 85
     steps:
       - uses: actions/checkout@v5
         with:
@@ -42,6 +43,8 @@ jobs:
           python -m unittest discover -s tests -p 'test_engine.py' -v
           python -m unittest discover -s tests -p 'test_end_to_end.py' -v
           python -m unittest discover -s tests -p 'test_scale_and_friction.py' -v
+          python -m unittest discover -s tests -p 'test_recovery_window.py' -v
+          python -m unittest discover -s tests -p 'test_schedule_coverage.py' -v
       - name: Capture public market observations and run paper experiments
         run: python engine.py --count 14
       - name: Verify new event history and source files
@@ -78,3 +81,5 @@ jobs:
             echo "PERSISTENCE_FAILURE: unable to push after three safe retries."
             exit 1
           fi
+      - name: Bounded recovery window (6 actual-time observations, only after missed cron)
+        run: python recovery_window.py --pulses 6 --interval-minutes 10

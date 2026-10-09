@@ -38,7 +38,15 @@ def check(root=ROOT, moment=None, max_hours=MAX_STALENESS_HOURS):
                 paper_timely_share=round((closed-late)/closed,4) if closed else None,
                 eligible_perpetual_timely_n=eligible.get("n"),
                 last_gap_minutes=scheduling.get("prior_observation_gap_minutes"),
-                last_run_throttled=bool(scheduling.get("recovery_throttled",False)))
+                last_run_throttled=bool(scheduling.get("recovery_throttled",False)),
+                recent_observed_intervals=scheduling.get("recent_observed_intervals"),
+                estimated_missed_10m_slots=scheduling.get("estimated_missed_10m_slots"),
+                estimated_10m_slot_coverage=scheduling.get("estimated_10m_slot_coverage"),
+                schedule_quality=("INSUFFICIENT_SAMPLE"
+                                  if (scheduling.get("recent_observed_intervals") or 0) < 12
+                                  else ("BELOW_TARGET"
+                                        if (scheduling.get("estimated_10m_slot_coverage") or 0) < 0.8
+                                        else "ON_TARGET")))
 
 
 if __name__=="__main__":

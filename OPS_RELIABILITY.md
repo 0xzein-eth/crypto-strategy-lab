@@ -68,6 +68,53 @@ More overlapping entries without a reliable clock would worsen the research.
    a targeted set of offline lifecycle tests plus full ledger audit;
    this avoids repeatedly running heavy historical research tests.
 
+## Bounded catch-up of real-time observations (new)
+
+A single healthy GitHub cron execution cannot make up for all the
+observations missed during a multi-hour outage. After a **verified initial
+paper run** with a previous report gap >45 minutes, `lab.yml` now holds
+its *existing canonical ledger concurrency lock* for a maximum of six more
+current-time paper observations, separated by 10 minutes each. Each observation
+replays and audits the entire event history, fetches a **fresh** same-venue
+market snapshot, and commits only new derived report/state and append-only
+events to Git. The next primary run may queue and must not write concurrently.
+
+Recovery windows are **not** started on ordinary healthy runs; the first
+new report must already have been committed, have `recovery_throttled=true`,
+and be no more than 10 minutes old. Total additional idle time is capped
+at about 60 minutes per degraded job; job timeout is 85 minutes. On a missing
+or invalid quote, unsafe git state, failed audit, or conflict with concurrent
+Git changes, the job fails without inventing backfilled prices or force-pushing
+the ledger.
+
+No recursive dispatch loops, no always-on services, and no external schedulers.
+This improves *coverage after a successful late tick*, not the probability
+that GitHub launches that first tick. Scheduled workflows can still be dropped.
+
+## Honest rolling schedule reliability estimate (new)
+
+Each successful market report now retains at most **72 measured intervals**
+between its own verified timestamp and the previous committed report. The
+report publishes `estimated_missed_10m_slots` and
+`estimated_10m_slot_coverage`. We count each observed interval as one
+successful 10-minute slot, estimate missing slots from its elapsed time,
+and allow three minutes of clock jitter. The dashboard does not present
+the percentage until at least 12 observations exist. This is an **estimated
+observation-slot coverage**, not GitHub workflow uptime or statistically
+independent trading outcomes. A prolonged outage remains visible for at
+least the next 72 measured intervals.
+
+A second check is available through `python health.py --max-hours 1.25`.
+Its `schedule_quality` field is `INSUFFICIENT_SAMPLE`, `BELOW_TARGET`,
+or `ON_TARGET`; the code does not claim high availability solely from a
+single new run.
+
+The repository is public and uses a **standard Ubuntu GitHub-hosted runner**;
+GitHub documents that such usage is free. It nonetheless consumes shared
+capacity, so bounded sessions are used instead of running a runner asleep
+24/7. If the repository becomes private or switches to a larger runner,
+review GitHub billing before keeping these long recovery windows enabled.
+
 ## Expected operating indicators
 
 With no underlying platform delays, the primary requests **6 paper ticks/hour**

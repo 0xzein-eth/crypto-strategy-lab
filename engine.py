@@ -63,6 +63,45 @@ def parse(value):
     return result.astimezone(UTC)
 
 
+def recent_schedule_coverage(previous_report, latest_gap_minutes, limit=72):
+    """Observed inter-run gaps vs nominal 10-minute slots (not GitHub uptime).
+
+    A short streak must not erase a multi-hour outage from the diagnostics.
+    A three-minute tolerance prevents minor runner/commit jitter from being
+    counted as a missed slot. This is a rolling estimate, NOT an SLA.
+    """
+    if not 1 <= limit <= 144:
+        raise ValueError("invalid scheduling history bound")
+    raw = ((previous_report or {}).get("scheduling_diagnostics") or {}).get(
+        "recent_observation_gaps_minutes", [])
+    if not isinstance(raw, list):
+        raise ValueError("INTEGRITY_FAILURE: non-list schedule gaps")
+    gaps = []
+    for item in raw[-(limit - 1):]:
+        if (isinstance(item, bool) or not isinstance(item, (int, float)) or
+                not math.isfinite(item) or item < 0):
+            raise ValueError("INTEGRITY_FAILURE: invalid previous schedule gap")
+        gaps.append(round(item, 3))
+    if latest_gap_minutes is not None:
+        if (not isinstance(latest_gap_minutes, (int, float)) or
+                not math.isfinite(latest_gap_minutes) or latest_gap_minutes < 0):
+            raise ValueError("INTEGRITY_FAILURE: invalid latest schedule gap")
+        gaps.append(round(latest_gap_minutes, 3))
+    missed = sum(max(0, math.ceil((gap - 3) / 10) - 1) for gap in gaps)
+    expected = len(gaps) + missed
+    ratio = round(len(gaps) / expected, 4) if expected else None
+    return {
+        "recent_observation_gaps_minutes": gaps,
+        "recent_observed_intervals": len(gaps),
+        "estimated_missed_10m_slots": missed,
+        "estimated_10m_slot_coverage": ratio,
+        "max_observed_gap_minutes": max(gaps) if gaps else None,
+        "target_minutes": 10,
+        "jitter_tolerance_minutes": 3,
+        "note": "Derived from persisted report-to-report gaps, not guaranteed cron or real exchange fills",
+    }
+
+
 def positive(value):
     v = float(value)
     if v <= 0 or not math.isfinite(v):
@@ -615,6 +654,7 @@ def run(requested=14, clock=utcnow):
     recovery = (prior_gap_minutes is not None and
                 prior_gap_minutes > SCHEDULE_DEGRADED_AFTER_MINUTES)
     requested_this_run = min(requested, RECOVERY_MAX_NEW) if recovery else requested
+    coverage = recent_schedule_coverage(previous, prior_gap_minutes)
     cache, errors, blocked_providers = {}, {}, {}
     def read_quote(symbol, provider=None):
         providers = (provider,) if provider else PROVIDERS
@@ -673,6 +713,7 @@ def run(requested=14, clock=utcnow):
                   provider_observations=observations, source_errors=errors,
                   blocked_market_providers=blocked_providers,
                   scheduling_diagnostics={
+                      **coverage,
                       "prior_observation_gap_minutes": prior_gap_minutes,
                       "degraded_after_minutes": SCHEDULE_DEGRADED_AFTER_MINUTES,
                       "recovery_throttled": recovery,
