@@ -150,3 +150,30 @@ Every non-PR research run uploads the local research reports and caches as a
 Artifacts are diagnostic snapshots and may contain the previous report if
 capture failed; inspect report timestamps and run status before using them.
 The canonical successful report remains the one committed on `main`.
+
+
+## Funding-aware rolling research window (October 2026)
+
+The v9 researcher now keeps the original audited **up to 125-day raw candle
+cache**, but defaults its actual walk-forward evaluation to the latest **90
+days** common to the requested OKX USDT perpetual instruments. This matters
+because the observed settled funding archive began June 29 while the full
+candles began June 6: treating the missing earlier settlements as zero
+would bias the 125-day funding-adjusted estimates.
+
+Every instrument must independently pass actual settled funding coverage
+checks across the **exact selected 90-day research window** before its
+funding-adjusted results are computed. Symbols with missing settlements
+continue as *unfunded historical sensitivity only* and remain ineligible
+for the funding-complete review gate. The report explicitly separates
+`raw_cached_history_overlap_days`, `historical_overlap_days`,
+`funding_aware_research_window_days`, `research_bars_by_symbol`, and
+per-symbol settlement provenance. Longer source candles are never deleted
+or represented as live/future paper experiments.
+
+A shorter comparison window is a **trade-off**, not an evidence upgrade:
+it reduces market-regime diversity and cannot establish an edge or enable
+live trading. To inspect a longer frozen historic window manually, run
+`python run_research_v9.py --offline --funding-window-days 120` and expect
+incomplete funding for missing early settlements. Historical screening
+still requires independent prospective validation.
