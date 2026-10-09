@@ -575,6 +575,7 @@ def summarize(records, moment):
         peak = max(peak, balance)
         max_dd = max(max_dd, peak - balance)
     stress_rows=[r for r in closed if "stress_net_pnl_usd" in r]
+    adaptive = learner.analysis(records)
     sample = lambda arr: {
         "n": len(arr),
         "net_R": round(sum(r["normalized_R"] for r in arr), 5),
@@ -607,7 +608,16 @@ def summarize(records, moment):
             "late_closures": sum(r.get("late_excluded", False) for r in closed),
             "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
             "eligible_perpetual_timely": sample(eligible),
-            "adaptive_research": learner.analysis(records),
+            "adaptive_research": adaptive,
+            "evidence_quality": {
+                "eligible_timely_perpetual_closes":len(eligible),
+                "eligible_share_of_all_closes":round(len(eligible)/len(closed),4) if closed else None,
+                "distinct_utc_days":adaptive["eligible_days"],
+                "minimum_training_days":learner.MIN_TRAIN_DAYS,
+                "training_day_coverage_ready":adaptive["eligible_days"]>=learner.MIN_TRAIN_DAYS,
+                "validation_status":"NOT_PROVEN",
+                "note":"Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
+            },
             "fixed_horizon_outcomes": outcome_stats.summarize(records, moment),
             "strategy_horizon": {
                 k: dict(sample(v), evidence="collect" if len(v) < 10 else
