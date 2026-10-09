@@ -89,8 +89,8 @@ jobs:
           path = os.environ.get('GITHUB_STEP_SUMMARY')
           if path:
               with open(path, 'a', encoding='utf-8') as f:
-                  f.write('\\n'.join(rows) + '\\n')
-          print('\\n'.join(rows))
+                  f.write('\n'.join(rows) + '\n')
+          print('\n'.join(rows))
           PY
       - name: Commit only v9 historical cache and research report
         if: github.event_name != 'pull_request'
@@ -115,3 +115,13 @@ jobs:
             echo "PERSISTENCE_FAILURE: could not push without overwrite."
             exit 1
           fi
+      - name: Preserve research diagnostics even if capture or persistence fails
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-v9-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            research_results/
+            research_cache/
+          retention-days: 7
+          if-no-files-found: warn

@@ -119,8 +119,9 @@ def fetch_page(symbol, after=None, getter=None, sleeper=time.sleep):
 
 
 def refresh_symbol(symbol, pages=5, now=None, getter=None, sleeper=time.sleep,
-                   max_events=4_000):
-    if not 1 <= pages <= 60 or not 100 <= max_events <= 10_000:
+                   max_events=4_000, first_bar_ms=None, backfill_pages=5):
+    if (not 1 <= pages <= 60 or not 100 <= max_events <= 10_000
+            or not 0 <= backfill_pages <= 60):
         raise ValueError("invalid funding pagination budget")
     existing = load_cache(symbol)
     observed = {}
@@ -139,7 +140,7 @@ def refresh_symbol(symbol, pages=5, now=None, getter=None, sleeper=time.sleep,
                 raise ValueError("DATA_INVALID: conflicting funding history pages")
             observed[row[0]] = row
         cursor = batch[0][0]
-        if existing and cursor < existing[0][0]:
+        if existing and cursor <= existing[-1][0]:
             break
         if index + 1 < pages:
             sleeper(0.11)
@@ -148,6 +149,25 @@ def refresh_symbol(symbol, pages=5, now=None, getter=None, sleeper=time.sleep,
         if row[0] in merged and merged[row[0]] != row:
             raise ValueError("INTEGRITY_FAILURE: historical funding settlement changed")
         merged[row[0]] = row
+    # Refresh newest settlements first; extend older history separately so
+    # daily refreshes do not repeatedly spend every page on the same range.
+    if first_bar_ms is not None and merged:
+        cursor = min(merged)
+        for _ in range(backfill_pages):
+            if cursor <= first_bar_ms:
+                break
+            sleeper(0.11)
+            batch = parse_settled(fetch_page(symbol, after=cursor, getter=getter,
+                                           sleeper=sleeper), symbol, now=now)
+            if not batch:
+                break
+            if batch[-1][0] >= cursor:
+                raise ValueError("DATA_INVALID: funding backfill did not progress")
+            for row in batch:
+                if row[0] in merged and merged[row[0]] != row:
+                    raise ValueError("INTEGRITY_FAILURE: historical funding settlement changed")
+                merged[row[0]] = row
+            cursor = batch[0][0]
     result = [merged[ts] for ts in sorted(merged)][-max_events:]
     validate_rates(result)
     save_cache(symbol, result)

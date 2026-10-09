@@ -248,6 +248,46 @@ class FundingAndRiskTests(unittest.TestCase):
         self.assertFalse(funding.coverage(missing, bars[0][0], bars[-1][0]))
         self.assertFalse(funding.coverage([], bars[0][0], bars[-1][0]))
 
+    def test_funding_refresh_extends_target_window_without_refetching_all_history(self):
+        from research_v9 import funding
+        from urllib.parse import parse_qs, urlsplit
+        rows = [[BASE_TS+i*3600_000, 0.0001] for i in range(400)]
+        calls = []
+        def getter(url):
+            query = parse_qs(urlsplit(url).query)
+            cursor = int(query["after"][0]) if "after" in query else None
+            calls.append(cursor)
+            batch = [r for r in rows if cursor is None or r[0] < cursor][-100:]
+            return {"code": "0", "data": [
+                {"instId": "BTC-USDT-SWAP", "fundingTime": str(t),
+                 "realizedRate": str(rate)} for t, rate in reversed(batch)]}
+        now = dt.datetime.fromtimestamp(rows[-1][0]/1000+1, dt.timezone.utc)
+        with tempfile.TemporaryDirectory() as folder, patch.object(
+                funding, "CACHE_DIR", Path(folder)):
+            funding.save_cache("BTC", rows[200:390])
+            updated = funding.refresh_symbol("BTC", pages=5, now=now,
+                getter=getter, sleeper=lambda _: None,
+                first_bar_ms=rows[50][0], backfill_pages=2)
+            self.assertEqual(updated, rows)
+            self.assertEqual(calls, [None, rows[200][0], rows[100][0]])
+            calls.clear()
+            funding.refresh_symbol("BTC", pages=5, now=now,
+                getter=getter, sleeper=lambda _: None,
+                first_bar_ms=rows[50][0], backfill_pages=2)
+            self.assertEqual(calls, [None])
+
+    def test_funding_refresh_rejects_revised_cached_settlement(self):
+        from research_v9 import funding
+        with tempfile.TemporaryDirectory() as folder, patch.object(
+                funding, "CACHE_DIR", Path(folder)):
+            funding.save_cache("BTC", [[BASE_TS, 0.0001]])
+            payload = {"code": "0", "data": [{"instId": "BTC-USDT-SWAP",
+                "fundingTime": str(BASE_TS), "realizedRate": "0.0002"}]}
+            with self.assertRaisesRegex(ValueError, "settlement changed"):
+                funding.refresh_symbol("BTC", getter=lambda _: payload,
+                    sleeper=lambda _: None)
+            self.assertEqual(funding.load_cache("BTC"), [[BASE_TS, 0.0001]])
+
     def test_funded_results_separate_from_base_pnl(self):
         funded = self.events(800)
         v = factory.Variant("long_control", 0, 0.0, 0, 32)

@@ -54,7 +54,9 @@ def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
     for symbol, candles in sorted(datasets.items()):
         try:
             rates = (funding.load_cache(symbol) if offline else
-                     funding.refresh_symbol(symbol, pages=funding_pages, now=now))
+                     funding.refresh_symbol(symbol, pages=funding_pages, now=now,
+                                            first_bar_ms=candles[0][0],
+                                            backfill_pages=funding_pages))
             is_complete = funding.coverage(
                 rates, candles[0][0], candles[-1][0] + 15*60_000)
             funding_coverage[symbol] = {

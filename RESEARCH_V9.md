@@ -136,3 +136,17 @@ strategies or independent sampling.
 these alongside strategy-count statistics and the strict forward-review gate.
 Backfill cannot alter `data/events/`, v8 paper P&L, or historical experiment
 outcomes. All published v9 results remain purely hypothetical.
+
+## Funding refresh and run diagnostics
+
+Funding capture now refreshes recent settlements until it reaches the cached
+newest timestamp, then uses a separate bounded backfill budget to extend toward
+the oldest candle in each instrument's research window. Each budget uses
+`--funding-pages`; missing rates still exclude that instrument from measured
+funding analysis. Confirmed historical settlements remain immutable.
+
+Every non-PR research run uploads the local research reports and caches as a
+7-day Actions artifact, including after capture or Git persistence failure.
+Artifacts are diagnostic snapshots and may contain the previous report if
+capture failed; inspect report timestamps and run status before using them.
+The canonical successful report remains the one committed on `main`.
