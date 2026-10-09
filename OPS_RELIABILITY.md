@@ -73,7 +73,7 @@ More overlapping entries without a reliable clock would worsen the research.
 A single healthy GitHub cron execution cannot make up for all the
 observations missed during a multi-hour outage. After a **verified initial
 paper run** with a previous report gap >45 minutes, `lab.yml` now holds
-its *existing canonical ledger concurrency lock* for a maximum of two more
+its *existing canonical ledger concurrency lock* for a maximum of six more
 current-time paper observations, separated by 10 minutes each. Each observation
 replays and audits the entire event history, fetches a **fresh** same-venue
 market snapshot, and commits only new derived report/state and append-only
@@ -82,7 +82,7 @@ events to Git. The next primary run may queue and must not write concurrently.
 Recovery windows are **not** started on ordinary healthy runs; the first
 new report must already have been committed, have `recovery_throttled=true`,
 and be no more than 10 minutes old. Total additional idle time is capped
-at about 20 minutes per degraded job; job timeout is 48 minutes. On a missing
+at about 60 minutes per degraded job; job timeout is 85 minutes. On a missing
 or invalid quote, unsafe git state, failed audit, or conflict with concurrent
 Git changes, the job fails without inventing backfilled prices or force-pushing
 the ledger.
