@@ -15,6 +15,7 @@ import datetime as dt
 import json
 import os
 import re
+from pathlib import Path
 import urllib.error
 import urllib.request
 
@@ -209,12 +210,27 @@ def main():
                         help="Dispatch a missed lab workflow if safely necessary")
     parser.add_argument("--threshold-minutes", type=int,
                         default=MAX_REPORT_AGE_MINUTES)
+    parser.add_argument("--status-file", type=Path, default=None,
+                        help="Write an atomic decision receipt for the following health check")
     args = parser.parse_args()
     repo = os.environ.get("GITHUB_REPOSITORY", "")
     api = GithubAPI(os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"))
     state = execute(repo, api, allow_dispatch=args.recover,
                     threshold_minutes=args.threshold_minutes)
     print(json.dumps(state, indent=2, sort_keys=True))
+    if args.status_file is not None:
+        import tempfile
+        fd, temporary = tempfile.mkstemp(prefix=".guardian-", dir=args.status_file.parent)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                json.dump(state, handle, sort_keys=True)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, args.status_file)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as out:
             out.write("### Schedule guardian\n\n")
