@@ -107,6 +107,8 @@ $("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_eve
 '<p><strong>Provider snapshots:</strong> '+esc(report.provider_observations??"—")+'</p>'+
 '<p><strong>Missed due snapshots:</strong> '+esc(report.missed_due_snapshots??"—")+'</p>'+ 
  '<p><strong>Latest scheduler gap:</strong> '+esc(report.scheduling_diagnostics?.prior_observation_gap_minutes??"—")+' minutes</p>'+ 
+ '<p><strong>Observed 10-minute slot coverage (rolling estimate):</strong> '+esc((report.scheduling_diagnostics?.recent_observed_intervals??0)>=12&&report.scheduling_diagnostics?.estimated_10m_slot_coverage!=null?num(report.scheduling_diagnostics.estimated_10m_slot_coverage*100,1)+'% from '+report.scheduling_diagnostics.recent_observed_intervals+' recorded gaps':'Collecting baseline (at least 12 intervals required)')+'</p>'+ 
+ '<p><strong>Estimated missed 10-minute slots:</strong> '+esc(report.scheduling_diagnostics?.estimated_missed_10m_slots??"—")+'</p>'+ 
  '<p><strong>Gap recovery throttle:</strong> '+esc(report.scheduling_diagnostics==null?"Awaiting next update":report.scheduling_diagnostics.recovery_throttled?"Active (2 max)":"Inactive")+'</p>'+
 '<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>';
 const total=Math.max(1,report.closed||0),covered=eligible.n||0;
