@@ -2,7 +2,7 @@
 
 A long scheduler gap makes a SINGLE successful GitHub cron tick insufficient
 for timely-horizon research. After a real recovered paper tick is persisted,
-retain the SAME serialized lab job for at most two later observations spaced
+retain the SAME serialized lab job for at most six later observations spaced
 10 minutes apart. Every follow-up uses a *new current public market quote*,
 is audited, and is independently committed; NO historical fill is fabricated.
 
@@ -20,7 +20,7 @@ import time
 import engine
 
 ROOT = Path(__file__).resolve().parent
-MAX_PULSES = 2
+MAX_PULSES = 6
 DEFAULT_INTERVAL_MINUTES = 10
 MAX_INITIAL_AGE_MINUTES = 10
 UTC = dt.timezone.utc
@@ -100,7 +100,7 @@ def run_window(root=ROOT, pulses=MAX_PULSES, interval_minutes=DEFAULT_INTERVAL_M
     schedule jobs may queue, but cannot concurrently write to main ledger.
     """
     if not 0 <= pulses <= MAX_PULSES:
-        raise ValueError("max recovery pulses must be 0..2")
+        raise ValueError("max recovery pulses must be 0..6")
     if not 5 <= interval_minutes <= 15:
         raise ValueError("recovery cadence must be 5..15 minutes")
     current = now or (lambda: dt.datetime.now(UTC))
