@@ -1,6 +1,7 @@
 """Offline deterministic tests for short bounded recovery observation windows."""
 import datetime as dt
 import json
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -30,6 +31,26 @@ class RecoveryWindowTests(unittest.TestCase):
     def save(self, obj):
         (self.root / "data" / "report.json").write_text(
             json.dumps(obj), encoding="utf-8")
+
+    def test_python_cache_is_ignored_but_paper_ledger_stays_visible(self):
+        source = (Path(__file__).resolve().parents[1] / ".gitignore")
+        (self.root / ".gitignore").write_text(
+            source.read_text(encoding="utf-8"), encoding="utf-8")
+        subprocess.run(["git", "init", "-q"], cwd=self.root,
+                       check=True, capture_output=True)
+        pycache = self.root / "__pycache__"
+        pycache.mkdir()
+        (pycache / "engine.cpython-312.pyc").write_bytes(b"synthetic")
+        (self.root / "data" / "events").mkdir()
+        (self.root / "data" / "events" / "test.jsonl").write_text(
+            '{"paper":true}\\n', encoding="utf-8")
+        status = subprocess.run(
+            ["git", "status", "--short", "--untracked-files=all"],
+            cwd=self.root, check=True, capture_output=True,
+            text=True).stdout
+        self.assertNotIn("__pycache__", status)
+        self.assertNotIn(".pyc", status)
+        self.assertIn("data/events/test.jsonl", status)
 
     def test_does_not_hold_runner_open_on_healthy_report(self):
         self.save(report(NOW, gap=5, recover=False))
