@@ -55,3 +55,28 @@ Two independent GitHub-native recovery clock workflows target six checks per hou
 - All net P&L is hypothetical: canonical base retains 0.05% fee per side, and new records additionally report a hypothetical frozen spread/market-impact **stress** scenario. It is not a real bid/ask fill model; funding remains zero and liquidation is unmodeled. Do **not** treat R as actual stop-based account risk.
 
 This lab is for continuous research, not unattended capital deployment.
+
+
+## Research integrity revision — 2026-10-09
+
+The v3 learner **never feeds monitoring-partition results into future
+experiment selection**. The `allocation_leaders` field is calculated
+only from training rows (minimum 30 trades across 7 UTC days, a positive
+day-cluster lower bound, positive aggregate net R, and a 7-day/10-trade
+minimum control comparator). Even these rankings are *exploratory* and
+may receive at most the pre-existing non-control 25% bucket; the fixed
+control fraction and broad randomized exploration remain.
+
+`provisional_leaders` and `champion` are **descriptive monitoring
+statistics**, NOT inputs to `choose()`, and never establish profitable
+trading. Previous lab versions did repeatedly consult the monitoring
+partition to allocate experiments, so earlier results **cannot be
+rebranded as a genuinely untouched final test**. Any proof-of-edge claim
+requires a separately frozen, independent future test not inspected
+while selecting strategies. All historical OPEN/CLOSE events are unchanged.
+
+Fixed-horizon diagnostics v2 additionally separate full hypothetical
+closed trade returns (including late observations) from *timely,
+same-market perpetual* outcome counts and net R by side, horizon,
+strategy, symbol and market type. A cohort with zero valid closes has
+a null eligible win rate/expectancy, never an invented profitable result.
