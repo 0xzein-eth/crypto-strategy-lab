@@ -41,7 +41,7 @@ footer{padding:24px 0;font-size:12px;color:#7f91aa}
 <section class="panel"><div class="overline"><h2>Adaptive research allocator</h2><span class="muted">Only timely perpetual closes; 20% calendar-day monitoring partition</span></div>
 <p class="muted" id="leader-note">No provisional leader. Collecting prospective observations.</p>
 <div id="adaptive" class="scroll"><div class="empty">Waiting for evidence.</div></div>
-<p class="note">“Candidate for validation” is not a proven trading edge. The learning policy preserves controls and baseline exploration. Allocation decisions apply only to new paper experiments.</p></section>
+<p class="note">“Candidate for validation” is not a proven trading edge. Only training scores can influence future allocations; monitoring outcomes never select trades. Earlier monitoring periods were previously exposed to the allocator and must not be treated as an untouched final test.</p></section>
 <section class="panel"><div class="overline"><h2>Historical strategy research v9</h2><span class="muted">Independent backtests — never counted as paper-trading results</span></div>
 <div class="overview" id="history-metrics" style="margin:0 0 12px"><div class="metric"><span class="k">Historical data</span><strong class="v">Loading…</strong></div></div>
 <p class="muted" id="history-note">Historical experiment outcomes must not be treated as live fills or profitable strategies.</p>
@@ -133,11 +133,13 @@ $("fixed-horizon-note").textContent=fixed.method
   :"Awaiting updated fixed-horizon report from a verified run. Existing experiment ledger remains unchanged.";
 function fixedTable(groups, labelName){
   const entries=Object.entries(groups||{});
-  return entries.length?'<table><thead><tr><th>'+esc(labelName)+'</th><th>OPEN</th><th>CLOSED</th><th>Wins</th><th>Losses</th><th>Win rate</th><th>Closed net</th></tr></thead><tbody>'+
+  return entries.length?'<table><thead><tr><th>'+esc(labelName)+'</th><th>OPEN</th><th>All closed</th><th>All wins</th><th>All losses</th><th>All win rate</th><th>All closed net</th><th>Timely perpetual n</th><th>Timely net R</th></tr></thead><tbody>'+
   entries.map(([name,v])=>'<tr>'+[
     name,v.active,v.closed,v.wins,v.losses,
     v.win_rate==null?"—":num(v.win_rate*100,1)+"%",
-    v.closed>0?usd(v.closed_net_usd):"—"
+    v.closed>0?usd(v.closed_net_usd):"—",
+    v.eligible_timely_perpetual_closed??"—",
+    v.eligible_timely_perpetual_closed==null?"—":num(v.eligible_timely_perpetual_net_R,3)
   ].map(td).join("")+'</tr>').join("")+'</tbody></table>':
   '<div class="empty">No experiments in this group yet.</div>';
 }
@@ -147,8 +149,8 @@ $("position-strategies").innerHTML=fixedTable(fixed.strategy,"Strategy");
 const research=report.adaptive_research||{};
 const leaders=research.provisional_leaders||[];
 $("leader-note").textContent=leaders.length
-  ?"Provisional candidate: "+leaders.join(", ")+". Separate forward validation is still required."
-  :"No validated leader yet. Continue diversified prospective collection; no profitable edge is established.";
+  ?"Monitoring candidate: "+leaders.join(", ")+". Allocation uses training-only rankings; independent future validation required."
+  :"No monitoring-confirmed leader. Training-only allocation remains exploratory; no profitable edge is established.";
 const arms=Object.entries(research.arms||{});
 $("adaptive").innerHTML=arms.length?'<table><thead><tr><th>Hypothesis</th><th>Eligible</th><th>Training</th><th>Held-out monitoring</th><th>Cluster LCB (R)</th><th>Stage</th></tr></thead><tbody>'+
  arms.map(([k,v])=>'<tr>'+[k,v.n,v.train_n,v.holdout_n,num(v.train_cluster_lcb_R,3),v.stage].map(td).join("")+'</tr>').join("")+
