@@ -42,11 +42,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python scheduler_guard.py --recover --threshold-minutes 14
+        run: python scheduler_guard.py --recover --threshold-minutes 14 --status-file /tmp/lab-guardian.json
       - name: Verify freshest main ledger and surface real unresolved staleness
         run: |
           set -euo pipefail
           # The paper run may commit while the guardian is already executing.
           git fetch --quiet origin main
           git reset --hard FETCH_HEAD
-          python health.py --max-hours 1.25
+          python health.py --max-hours 1.25 --guardian-state-file /tmp/lab-guardian.json

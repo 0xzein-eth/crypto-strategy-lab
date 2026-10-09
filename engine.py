@@ -102,6 +102,30 @@ def recent_schedule_coverage(previous_report, latest_gap_minutes, limit=72):
     }
 
 
+def prospective_entry_budget(requested, coverage, recovery=False):
+    """Quality-first throttle only on NEW paper positions, never on due exits.
+
+    A poor scheduler cannot produce trustworthy 1h/2h outcome observations;
+    spawning 14 correlated trades each run would mostly create excluded late
+    samples. Rolling coverage needs >=12 observed intervals before acting.
+    """
+    if requested < 0:
+        raise ValueError("invalid requested paper experiment count")
+    if recovery:
+        return min(requested, RECOVERY_MAX_NEW), "recovery_gap"
+    n = coverage.get("recent_observed_intervals", 0)
+    ratio = coverage.get("estimated_10m_slot_coverage")
+    if n < 12 or ratio is None:
+        return requested, "collect_scheduler_baseline"
+    if not 0 <= ratio <= 1:
+        raise ValueError("INTEGRITY_FAILURE: invalid estimated schedule coverage")
+    if ratio < 0.40:
+        return min(requested, 3), "severe_scheduler_coverage"
+    if ratio < 0.75:
+        return min(requested, 7), "degraded_scheduler_coverage"
+    return requested, "adequate_scheduler_coverage"
+
+
 def positive(value):
     v = float(value)
     if v <= 0 or not math.isfinite(v):
@@ -551,6 +575,7 @@ def summarize(records, moment):
         peak = max(peak, balance)
         max_dd = max(max_dd, peak - balance)
     stress_rows=[r for r in closed if "stress_net_pnl_usd" in r]
+    adaptive = learner.analysis(records)
     sample = lambda arr: {
         "n": len(arr),
         "net_R": round(sum(r["normalized_R"] for r in arr), 5),
@@ -583,7 +608,16 @@ def summarize(records, moment):
             "late_closures": sum(r.get("late_excluded", False) for r in closed),
             "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
             "eligible_perpetual_timely": sample(eligible),
-            "adaptive_research": learner.analysis(records),
+            "adaptive_research": adaptive,
+            "evidence_quality": {
+                "eligible_timely_perpetual_closes":len(eligible),
+                "eligible_share_of_all_closes":round(len(eligible)/len(closed),4) if closed else None,
+                "distinct_utc_days":adaptive["eligible_days"],
+                "minimum_training_days":learner.MIN_TRAIN_DAYS,
+                "training_day_coverage_ready":adaptive["eligible_days"]>=learner.MIN_TRAIN_DAYS,
+                "validation_status":"NOT_PROVEN",
+                "note":"Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
+            },
             "fixed_horizon_outcomes": outcome_stats.summarize(records, moment),
             "strategy_horizon": {
                 k: dict(sample(v), evidence="collect" if len(v) < 10 else
@@ -653,8 +687,9 @@ def run(requested=14, clock=utcnow):
             raise ValueError("CLOCK_INTEGRITY: previous report is in the future")
     recovery = (prior_gap_minutes is not None and
                 prior_gap_minutes > SCHEDULE_DEGRADED_AFTER_MINUTES)
-    requested_this_run = min(requested, RECOVERY_MAX_NEW) if recovery else requested
     coverage = recent_schedule_coverage(previous, prior_gap_minutes)
+    requested_this_run, quality_reason = prospective_entry_budget(
+        requested, coverage, recovery=recovery)
     cache, errors, blocked_providers = {}, {}, {}
     def read_quote(symbol, provider=None):
         providers = (provider,) if provider else PROVIDERS
@@ -719,6 +754,8 @@ def run(requested=14, clock=utcnow):
                       "recovery_throttled": recovery,
                       "requested_new_this_run": requested_this_run,
                       "normal_requested_new": requested,
+                      "entry_sampling_quality_gate": quality_reason,
+                      "throttle_applies_to": "new OPEN only; existing due exits still attempted",
                       "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
                   },
                   verified_events=seq, ledger_tip_sha256=prev_hash,

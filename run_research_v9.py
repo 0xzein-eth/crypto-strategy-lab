@@ -9,7 +9,7 @@ from pathlib import Path
 
 import universe
 from research_v9.factory import walk_forward
-from research_v9.history import load_cache, refresh_symbol
+from research_v9.history import BAR_MS, load_cache, refresh_symbol
 from research_v9 import funding
 from research_v9.promotion import build_queue
 
@@ -24,9 +24,30 @@ def dataset_digest(bars):
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
+def trim_research_window(datasets, window_days=90):
+    """Use a common, recent CLOSED-candle window, never gap-fill funding.
+
+    GitHub may retain 125d of OHLCV while OKX provides a shorter settled
+    funding window. Keep full-price cache/provenance, but research on a
+    strictly shorter predeclared window rather than assuming zero funding
+    for unavailable early settlements.
+    """
+    if not 30 <= window_days <= 120:
+        raise ValueError("research window must span 30..120 days")
+    if not datasets:
+        raise ValueError("DATA_UNAVAILABLE: no historical datasets")
+    latest_common = min(bars[-1][0] for bars in datasets.values())
+    first_allowed = latest_common - (window_days * 96 - 1) * BAR_MS
+    result = {symbol:[bar for bar in bars if bar[0] >= first_allowed]
+              for symbol,bars in datasets.items()}
+    if any(len(bars)<800 for bars in result.values()):
+        raise ValueError("DATA_INSUFFICIENT: research window leaves fewer than 800 bars")
+    return result
+
+
 def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
             update_pages=10, max_variants=260, now=None,
-            backfill_pages=10, funding_pages=5):
+            backfill_pages=10, funding_pages=5, funding_window_days=90):
     now = now or dt.datetime.now(dt.timezone.utc)
     if now.tzinfo is None:
         raise ValueError("timestamp must be timezone-aware")
@@ -51,6 +72,11 @@ def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
     if len(datasets) < 2:
         raise RuntimeError("DATA_UNAVAILABLE: need two verified perpetual instruments; errors=" +
                            json.dumps(problems, sort_keys=True))
+    # Do not discard the 125d source caches. Only cap the analysis window.
+    source_datasets = datasets
+    raw_common_bars = (min(b[-1][0] for b in datasets.values()) -
+                       max(b[0][0] for b in datasets.values())) // BAR_MS + 1
+    datasets = trim_research_window(datasets, funding_window_days)
     for symbol, candles in sorted(datasets.items()):
         try:
             rates = (funding.load_cache(symbol) if offline else
@@ -82,10 +108,21 @@ def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
         "generated_at_utc": now.astimezone(dt.timezone.utc).isoformat(),
         "research_status": "EXPLORATORY_HISTORICAL_ONLY",
         "historical_overlap_days": round(metrics["common_bars"] / 96, 2),
+        "raw_cached_history_overlap_days": round(raw_common_bars / 96, 2),
+        "funding_aware_research_window_days": funding_window_days,
+        "window_policy": "trailing common confirmed 15m candles; funding never zero-filled",
+        "window_start_utc": dt.datetime.fromtimestamp(
+            max(b[0][0] for b in datasets.values())/1000,
+            dt.timezone.utc).isoformat(),
+        "window_end_utc": dt.datetime.fromtimestamp(
+            min(b[-1][0] for b in datasets.values())/1000,
+            dt.timezone.utc).isoformat(),
+        "research_bars_by_symbol": {k:len(v) for k,v in sorted(datasets.items())},
         "historical_cache_cap_bars_per_instrument": 12_000,
         "ninety_day_overlap_reached": bool(metrics["common_bars"] >= 90 * 96),
-        "history_quality_note": ("Overlapping observations across requested symbols; "
-                                 "number of days does not establish distinct market regimes"),
+        "history_quality_note": ("Trailing window is bounded to improve settlement coverage; "
+                                 "shortening data reduces regime diversity, not proof of edge. "
+                                 "Raw caches retain their longer auditable histories."),
         "data_source": "OKX public history-candles; confirmed 15m USDT perpetual",
         "backtest_entry_exit": "next 15m bar OPEN, fixed horizon; approximate, no actual fill",
         "symbols_requested": list(symbols),
@@ -99,7 +136,9 @@ def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
                           "3x hypothetical leverage and 0.5% assumed maintenance margin",
         "config": {"offline": offline, "cold_pages": cold_pages,
                    "update_pages": update_pages, "backfill_pages": backfill_pages,
-                   "funding_pages": funding_pages, "max_variants": max_variants},
+                   "funding_pages": funding_pages,
+                   "funding_window_days": funding_window_days,
+                   "max_variants": max_variants},
         "data_provenance": {
             symbol: {
                 "bars": len(rows), "sha256": dataset_digest(rows),
@@ -107,7 +146,7 @@ def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
                     rows[0][0]/1000, dt.timezone.utc).isoformat(),
                 "last_candle_utc": dt.datetime.fromtimestamp(
                     rows[-1][0]/1000, dt.timezone.utc).isoformat(),
-            } for symbol, rows in sorted(datasets.items())
+            } for symbol, rows in sorted(source_datasets.items())
         },
         "v8_event_ledger_modified": False,
         "forward_paper_trades_created": 0,
@@ -134,13 +173,15 @@ def main():
     parser.add_argument("--cold-pages", type=int, default=16)
     parser.add_argument("--update-pages", type=int, default=10)
     parser.add_argument("--backfill-pages", type=int, default=10)
-    parser.add_argument("--funding-pages", type=int, default=5)
+    parser.add_argument("--funding-pages", type=int, default=8)
+    parser.add_argument("--funding-window-days", type=int, default=90)
     parser.add_argument("--max-variants", type=int, default=260)
     args = parser.parse_args()
     report = produce(args.symbols, args.offline, args.cold_pages,
                      args.update_pages, args.max_variants,
                      backfill_pages=args.backfill_pages,
-                     funding_pages=args.funding_pages)
+                     funding_pages=args.funding_pages,
+                     funding_window_days=args.funding_window_days)
     print(json.dumps({
         "research_status": report["research_status"],
         "symbols": report["symbols_analyzed"],

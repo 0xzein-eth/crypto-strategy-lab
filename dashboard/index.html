@@ -110,7 +110,12 @@ $("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_eve
  '<p><strong>Observed 10-minute slot coverage (rolling estimate):</strong> '+esc((report.scheduling_diagnostics?.recent_observed_intervals??0)>=12&&report.scheduling_diagnostics?.estimated_10m_slot_coverage!=null?num(report.scheduling_diagnostics.estimated_10m_slot_coverage*100,1)+'% from '+report.scheduling_diagnostics.recent_observed_intervals+' recorded gaps':'Collecting baseline (at least 12 intervals required)')+'</p>'+ 
  '<p><strong>Estimated missed 10-minute slots:</strong> '+esc(report.scheduling_diagnostics?.estimated_missed_10m_slots??"—")+'</p>'+ 
  '<p><strong>Gap recovery throttle:</strong> '+esc(report.scheduling_diagnostics==null?"Awaiting next update":report.scheduling_diagnostics.recovery_throttled?"Active (2 max)":"Inactive")+'</p>'+
-'<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>';
+'<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>'+
+'<p><strong>New-entry scheduler gate:</strong> '+esc(report.scheduling_diagnostics?.entry_sampling_quality_gate??"—")+
+' · Budget '+esc(report.scheduling_diagnostics?.requested_new_this_run??"—")+'/run</p>'+
+'<p><strong>Valid observation-day breadth:</strong> '+esc(report.evidence_quality?.distinct_utc_days??"—")+
+' / '+esc(report.evidence_quality?.minimum_training_days??"—")+
+' minimum training days · '+esc(report.evidence_quality?.validation_status??"NOT_PROVEN")+'</p>';
 const total=Math.max(1,report.closed||0),covered=eligible.n||0;
 $("venue-bar").style.width=(100*covered/total).toFixed(1)+"%";
 $("venue-caption").textContent=covered+" of "+(report.closed??0)+" closes are timely observations of perpetual quotes (not real fills).";
@@ -119,7 +124,8 @@ $("updated").textContent="Last run: "+wib(report.timestamp)+". Historical LAB-07
 const cp=report.capacity_policy||{}, stress=report.friction_stress_scenario||{};
 $("scale").innerHTML='<p><strong>Markets in catalog:</strong> '+esc(report.universe_size??"—")+
 ' · <strong>Next scheduled scans:</strong> every 10 min (best-effort)'+
-' · <strong>Per run:</strong> up to 14 targeted opens, hard cap '+esc(cp.max_new_per_run??"—")+
+' · <strong>Current new-entry budget:</strong> '+esc(report.scheduling_diagnostics?.requested_new_this_run??"—")+
+' (normal target 14), hard cap '+esc(cp.max_new_per_run??"—")+
 ' · <strong>Concurrent cap:</strong> '+esc(cp.max_open??"—")+
 ' · <strong>Daily cap:</strong> '+esc(cp.max_new_per_utc_day??"—")+'</p>'+
 '<p><strong>Stress-modeled closed:</strong> '+esc(stress.modeled_closes??0)+
