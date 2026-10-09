@@ -41,7 +41,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_v9.py' -v
       - name: Capture only confirmed same-venue perpetual historical candles
         if: github.event_name != 'pull_request'
-        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 60 --funding-pages 5 --max-variants 260
+        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 60 --funding-pages 8 --funding-window-days 90 --max-variants 260
       - name: Verify cached history and derived research report offline
         if: github.event_name != 'pull_request'
         run: |
@@ -80,7 +80,9 @@ jobs:
           coverage = float(report.get('historical_overlap_days', 0))
           rows = [
               '### V9 historical research coverage',
-              f'- Overlapping confirmed OHLCV: **{coverage:.1f} days**',
+              f'- Window used for funding-aware analysis: **{coverage:.1f} days**',
+              f'- Full cached OHLCV overlap preserved: **{report.get("raw_cached_history_overlap_days", 0):.1f} days**',
+              f'- Complete settled funding for: **{len(report["measured_funding_symbols"])} of {len(report["symbols_analyzed"])}**',
               f'- Number of historical variants evaluated: **{report["candidates_evaluated"]}**',
               f'- Instruments: **{len(report["symbols_analyzed"])}**',
               f'- Passed forward-review candidates: **{len(json.loads(Path("research_results/forward_candidates.json").read_text())["eligible_for_forward_code_review"])}**',
