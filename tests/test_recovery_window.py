@@ -96,6 +96,35 @@ class RecoveryWindowTests(unittest.TestCase):
         self.assertTrue(all(x["status"] == "PUBLISHED"
                             for x in result["observations"]))
 
+    def test_six_pulses_span_one_hour_for_one_hour_paper_horizon(self):
+        now = [NOW]
+        entered = NOW - dt.timedelta(seconds=30)
+        self.save(report(entered))
+        commit_times = []
+        def sleeper(seconds):
+            now[0] += dt.timedelta(seconds=seconds)
+        def runner(args, root):
+            if args[:2] == ["git", "status"]:
+                return ""
+            if args[:4] == ["git", "diff", "--cached", "--name-only"]:
+                return "data/report.json"
+            if args[:3] == ["python", "engine.py", "--count"]:
+                self.save(report(now[0], gap=10, recover=False))
+            if args[:2] == ["git", "commit"]:
+                commit_times.append(now[0])
+            return ""
+        result = window.run_window(root=self.root, pulses=6,
+                                   now=lambda: now[0], sleeper=sleeper,
+                                   runner=runner)
+        self.assertEqual(result["completed_pulses"], 6)
+        self.assertEqual(len(commit_times), 6)
+        self.assertEqual(commit_times[0], entered + dt.timedelta(minutes=10))
+        self.assertEqual(commit_times[-1], entered + dt.timedelta(minutes=60))
+        self.assertTrue(all(
+            (commit_times[i] - commit_times[i-1]).total_seconds() == 600
+            for i in range(1, len(commit_times))))
+        self.assertLessEqual((now[0] - NOW).total_seconds(), 3600)
+
     def test_new_remote_observation_is_not_overwritten(self):
         now = [NOW]
         self.save(report(NOW))
