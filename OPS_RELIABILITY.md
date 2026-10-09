@@ -179,3 +179,30 @@ endpoint** can perform a dispatch.
 If `scheduling_diagnostics.recovery_throttled` stays true over repeated
 runs, investigate GitHub scheduling and API availability. Do not lower the
 integrity criteria merely to make a dashboard look profitable.
+
+
+## Scheduler-quality-aware sampling and pending recovery
+
+After at least 12 real report-to-report intervals, the live paper engine
+uses the rolling best-effort 10-minute slot coverage estimate solely to
+cap **NEW** entries: below 40% coverage, at most 3; from 40% to below
+75%, at most 7; otherwise the usual requested budget (normally 14).
+A freshly recovered >45 minute gap still caps new entries at 2, regardless
+of the rolling estimate. Due exits run FIRST and are never blocked by this
+entry rule. This is a sample quality safeguard, not a promised SLA.
+
+Both guardian workflows now persist a timestamped receipt of their
+GitHub-API schedule decision. If a report is older than 75 minutes but
+the guardian has **just** requested a recovery or verified an active
+not-stuck lab run, the next health step still audits the full event chain
+and emits `DEGRADED_RECOVERING` (with a GitHub Actions warning), NOT
+`health=OK`. The receipt expires after five minutes. Absent/expired
+receipts, cooldowns, corrupt ledgers, or stuck workers cause a failing
+check as before. A dispatch alone is never treated as a fresh quote.
+This avoids misleading recovery-workflow failures immediately after a
+legitimate dispatch while preserving visibility of true outages.
+
+No workflow in this repository can guarantee GitHub's own scheduled
+delivery or 90% uptime. The real rolling coverage metric must improve
+before such a target can be claimed; an independent scheduler would
+be required to remove the shared GitHub Actions failure domain.
