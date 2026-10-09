@@ -56,10 +56,10 @@ If the repository grows too large, lower scheduling frequency or daily caps by e
 
 When a successful paper observation follows a scheduler gap over 45 minutes,
 the same serialized `lab.yml` job may remain open long enough to record
-two additional **real current-time** observations, 10 minutes apart.
+six additional **real current-time** observations, 10 minutes apart.
 Each new observation is audited and safely committed before the next one;
 no missed historical prices are invented, and the job remains capped at
-48 minutes. It is **not** a background service or unconditional run loop.
+85 minutes. It is **not** a background service or unconditional run loop.
 Inspect the Actions step named "Bounded recovery window". In normal healthy
 runs it exits immediately.
 
