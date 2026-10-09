@@ -88,7 +88,8 @@ def analysis(records):
         # Never promote based on cherry-picked training results alone.
         controls=groups["CTRL-v1"]
         control_train=[r for r in controls if stable_bucket("holdout:"+day_of(r),5)!=0]
-        baseline_ready=len(control_train)>=MIN_TRAIN
+        baseline_ready=(len(control_train)>=MIN_TRAIN and
+                        len({day_of(r) for r in control_train})>=MIN_TRAIN_DAYS)
         ctrl_avg=(mean([research_R(r) for r in control_train])
                   if baseline_ready else None)
         arm_train_avg=(mean([research_R(r) for r in train]) if train else None)
@@ -100,6 +101,14 @@ def analysis(records):
                    t_lcb is not None and t_lcb>0 and
                    h_lcb is not None and h_lcb>0 and
                    test_net>0 and beats_control)
+        # Forward allocation MUST NOT consult the monitoring partition.
+        # Monitoring-based nominations are reporting diagnostics only, never
+        # inputs to choose(). This prevents holdout feedback leakage.
+        train_only_ready=(arm!="CTRL-v1" and
+                          len(train)>=PREFER_TRAIN and
+                          train_days>=MIN_TRAIN_DAYS and
+                          train_net>0 and t_lcb is not None and t_lcb>0 and
+                          beats_control)
         preliminary=(len(train)>=MIN_TRAIN and train_days>=4 and
                      t_lcb is not None and t_lcb>0)
         summary[arm]={
@@ -112,20 +121,29 @@ def analysis(records):
             "stage":("candidate_for_validation" if nominated else
                      "preliminary_explore" if preliminary else "collect"),
             "preferential":bool(nominated),
+            "allocation_train_only":bool(train_only_ready),
         }
+    allocation_candidates=[name for name,stats in summary.items()
+                           if stats["allocation_train_only"]]
+    allocation_candidates.sort(
+        key=lambda name: (-(summary[name]["train_cluster_lcb_R"] or 0),name))
     candidates=[k for k,v in summary.items() if v["preferential"]]
     candidates.sort(key=lambda name:(-(summary[name]["holdout_cluster_lcb_R"] or 0),
                                      -(summary[name]["train_cluster_lcb_R"] or 0),name))
     return {
-        "method":"v2-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
-                   "; entry-spread/impact stress R with legacy haircut; 20% calendar-day monitoring and clustered daily lower bound",
+        "method":"v3-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
+                   "; training-only allocation; 20% day monitoring withheld from selection; clustered daily lower bound",
         "eligible_closed":len(all_eligible),
         "eligible_days":len({day_of(r) for r in all_eligible}),
         "arms":summary,
         "provisional_leaders":candidates,
+        "allocation_leaders":allocation_candidates,
         "champion":candidates[0] if candidates else None,
         "warning":("No strategy has demonstrated a reliable tradable edge. "
-                   "Selection is observational, multi-tested and correlated.")
+                   "Training-only allocations never access monitoring results. "
+                   "Historical monitoring was previously used for allocations, "
+                   "so it is not an untouched final holdout. "
+                   "Selection remains observational, multi-tested and correlated.")
     }
 
 
@@ -156,10 +174,12 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
     # Learning/preservation: only reproducible, held-out and control-aware
     # candidates receive extra allocation. All other arms keep their slots.
     profile=analysis(records) if profile is None else profile
-    leaders=[s for s in profile["provisional_leaders"] if s in available]
+    # Only training-only rankings may alter future sampling.
+    # Never route monitoring/holdout outcomes back into action selection.
+    leaders=[s for s in profile.get("allocation_leaders",[]) if s in available]
     if leaders and bucket>=75:
         best=leaders[0]
-        return available[best],"provisional_leader_allocation"
+        return available[best],"train_only_exploratory_allocation"
     # Deterministic balanced exploration, including baselines and signals.
     ordered=sorted(available)
     pick=ordered[stable_bucket("explore:%s:%s:%s"%(symbol,horizon,slot),len(ordered))]

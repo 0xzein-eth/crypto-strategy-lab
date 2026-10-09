@@ -489,7 +489,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "price_change_reference":q.get("price_change_reference","provider-24h-window"),
                   "signal_rule":"pre-registered confirmed-candle or 24h baseline",
                   "research_only":True,
-                  "allocation_policy":"learner-v1-fixed-day-holdout",
+                  "allocation_policy":"learner-v3-train-only-monitoring-separated",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
                   "signal_catalog_version":"2026-10-08",
