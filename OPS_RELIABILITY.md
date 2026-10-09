@@ -47,7 +47,12 @@ More overlapping entries without a reliable clock would worsen the research.
    - If the most recent canonical `main` report is older than
      **14 minutes**, the guardian checks actual `lab.yml` runs.
      It refuses to trigger when one is in flight, stuck, or recently
-     started (12-minute cooldown). Immediately before a POST, it
+     started (12-minute cooldown). A canonical paper job may now run
+     for up to **85 minutes** when a missed-cron recovery window is
+     active; an in-flight job is classified as truly stuck only after
+     **100 minutes** from the workflow run creation timestamp. This
+     avoids false stuck alerts during a valid six-pulse recovery, while
+     still surfacing real stalls. Immediately before a POST, it
      fetches the canonical report and run queue AGAIN to avoid
      dispatching based on obsolete information.
    - Each guardian runs an event-chain audit before the decision. Just
