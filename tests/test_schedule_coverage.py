@@ -35,6 +35,22 @@ class ScheduleCoverageTests(unittest.TestCase):
         self.assertEqual(r["max_observed_gap_minutes"], 10)
         self.assertEqual(r["estimated_10m_slot_coverage"], 1.0)
 
+    def test_quality_gate_caps_only_new_entries(self):
+        severe={"recent_observed_intervals":42,"estimated_10m_slot_coverage":0.2877}
+        poor={"recent_observed_intervals":22,"estimated_10m_slot_coverage":0.65}
+        enough={"recent_observed_intervals":14,"estimated_10m_slot_coverage":0.9}
+        self.assertEqual(engine.prospective_entry_budget(14,severe),(3,"severe_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(14,poor),(7,"degraded_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(14,enough),(14,"adequate_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(14,severe,True),(2,"recovery_gap"))
+        self.assertEqual(engine.prospective_entry_budget(14,
+            {"recent_observed_intervals":11,"estimated_10m_slot_coverage":0.01}),
+            (14,"collect_scheduler_baseline"))
+        self.assertEqual(engine.prospective_entry_budget(1,severe)[0],1)
+        with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
+            engine.prospective_entry_budget(14,
+                {"recent_observed_intervals":14,"estimated_10m_slot_coverage":1.2})
+
     def test_invalid_history_fails_closed(self):
         for bad in (None, "30", [float("nan")], [-2], [True]):
             with self.subTest(bad=bad):
