@@ -44,7 +44,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python scheduler_guard.py --recover --threshold-minutes 14
+        run: python scheduler_guard.py --recover --threshold-minutes 14 --status-file /tmp/lab-guardian.json
       - name: Verify ledger and alert if market observation remains stale
         run: |
           set -euo pipefail
@@ -52,7 +52,7 @@ jobs:
           # A paper run may have committed after checkout, causing false STALE_RUN.
           git fetch --quiet origin main
           git reset --hard FETCH_HEAD
-          python health.py --max-hours 1.25 | tee /tmp/lab-health.json
+          python health.py --max-hours 1.25 --guardian-state-file /tmp/lab-guardian.json | tee /tmp/lab-health.json
           echo '### Paper-lab integrity' >> "$GITHUB_STEP_SUMMARY"
           echo '~~~json' >> "$GITHUB_STEP_SUMMARY"
           cat /tmp/lab-health.json >> "$GITHUB_STEP_SUMMARY"
