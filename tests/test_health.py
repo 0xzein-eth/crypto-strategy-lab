@@ -64,9 +64,13 @@ class HealthTests(unittest.TestCase):
             with patch.object(health.audit,"verify",return_value={"verified":True}):
                 self.assertEqual(health.check_guarded(root,moment=at,max_hours=1.25,
                     guardian_decision=receipt)["health"],"DEGRADED_RECOVERING")
+                self.assertEqual(health.check_guarded(
+                    root,moment=at,max_hours=1.25,
+                    guardian_decision=dict(receipt,pending_age_minutes=210)
+                    )["health"],"DEGRADED_RECOVERING")
                 with self.assertRaisesRegex(RuntimeError,"STALE_RUN"):
                     health.check_guarded(root,moment=at,max_hours=1.25,
-                        guardian_decision=dict(receipt,pending_age_minutes=111))
+                        guardian_decision=dict(receipt,pending_age_minutes=241))
 
 
 if __name__=="__main__":
