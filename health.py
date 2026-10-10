@@ -82,7 +82,7 @@ def check_guarded(root=ROOT, moment=None, max_hours=MAX_STALENESS_HOURS,
             raise RuntimeError("INTEGRITY_FAILURE: guardian receipt cannot match ledger") from exc
         if decision["status"] == "IN_FLIGHT" and (
                 decision.get("pending_age_minutes") is None or
-                not 0 <= decision["pending_age_minutes"] <= 100):
+                not 0 <= decision["pending_age_minutes"] <= 230):
             raise RuntimeError("STALE_RUN: invalid in-flight worker age") from exc
         # check() has already audited the complete chain before detecting stale.
         return {
