@@ -37,6 +37,11 @@ footer{padding:24px 0;font-size:12px;color:#7f91aa}
 </div>
 <div class="overline"><h2>Per-strategy completed outcomes</h2><span class="muted">No interim exits or implied floating profit</span></div>
 <div class="scroll" id="position-strategies"><div class="empty">Waiting for completed evaluations.</div></div>
+<div class="two">
+<div><h2>Precommitted entry regime</h2><div class="scroll" id="position-regimes"><div class="empty">Awaiting next report.</div></div></div>
+<div><h2>Entry time (UTC)</h2><div class="scroll" id="position-dayparts"><div class="empty">Awaiting next report.</div></div></div>
+</div>
+<p class="note">Regime/time-of-day statistics use labels frozen at OPEN and do not provide independent profitability evidence.</p>
 <p class="note">The sum of overlapping $10,000 paper notionals is not portfolio capital. Outcomes use the first valid fresh same-instrument quote observed at or after each due time; a late result is explicitly labeled.</p></section>
 <section class="panel"><div class="overline"><h2>Adaptive research allocator</h2><span class="muted">Only timely perpetual closes; 20% calendar-day monitoring partition</span></div>
 <p class="muted" id="leader-note">No provisional leader. Collecting prospective observations.</p>
@@ -107,8 +112,9 @@ $("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_eve
 '<p><strong>Provider snapshots:</strong> '+esc(report.provider_observations??"—")+'</p>'+
 '<p><strong>Missed due snapshots:</strong> '+esc(report.missed_due_snapshots??"—")+'</p>'+ 
  '<p><strong>Latest scheduler gap:</strong> '+esc(report.scheduling_diagnostics?.prior_observation_gap_minutes??"—")+' minutes</p>'+ 
- '<p><strong>Observed 10-minute slot coverage (rolling estimate):</strong> '+esc((report.scheduling_diagnostics?.recent_observed_intervals??0)>=12&&report.scheduling_diagnostics?.estimated_10m_slot_coverage!=null?num(report.scheduling_diagnostics.estimated_10m_slot_coverage*100,1)+'% from '+report.scheduling_diagnostics.recent_observed_intervals+' recorded gaps':'Collecting baseline (at least 12 intervals required)')+'</p>'+ 
- '<p><strong>Estimated missed 10-minute slots:</strong> '+esc(report.scheduling_diagnostics?.estimated_missed_10m_slots??"—")+'</p>'+ 
+ '<p><strong>Observed 10-minute slot coverage (rolling estimate):</strong> '+esc((report.scheduling_diagnostics?.recent_observed_intervals??0)>=12&&report.scheduling_diagnostics?.estimated_10m_slot_coverage!=null?num(report.scheduling_diagnostics.estimated_10m_slot_coverage*100,1)+'% from '+(report.scheduling_diagnostics.estimated_distinct_10m_observation_intervals??report.scheduling_diagnostics.recent_observed_intervals)+' non-rapid intervals':'Collecting baseline (at least 12 intervals required)')+'</p>'+ 
+ '<p><strong>Estimated missed 10-minute slots:</strong> '+esc(report.scheduling_diagnostics?.estimated_missed_10m_slots??"—")+'</p>'+
+'<p><strong>Rapid duplicate intervals (&lt;5m, excluded from covered 10m slots):</strong> '+esc(report.scheduling_diagnostics?.near_duplicate_fast_intervals??"—")+'</p>'+ 
  '<p><strong>Gap recovery throttle:</strong> '+esc(report.scheduling_diagnostics==null?"Awaiting next update":report.scheduling_diagnostics.recovery_throttled?"Active (2 max)":"Inactive")+'</p>'+
 '<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>'+
 '<p><strong>New-entry scheduler gate:</strong> '+esc(report.scheduling_diagnostics?.entry_sampling_quality_gate??"—")+
@@ -152,6 +158,8 @@ function fixedTable(groups, labelName){
 $("position-sides").innerHTML=fixedTable(fixed.side,"Side");
 $("position-horizons").innerHTML=fixedTable(fixed.horizon_hours,"Horizon (h)");
 $("position-strategies").innerHTML=fixedTable(fixed.strategy,"Strategy");
+$("position-regimes").innerHTML=fixedTable(fixed.entry_regime,"Entry regime");
+$("position-dayparts").innerHTML=fixedTable(fixed.entry_utc_daypart,"UTC daypart");
 const research=report.adaptive_research||{};
 const leaders=research.provisional_leaders||[];
 $("leader-note").textContent=leaders.length

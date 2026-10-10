@@ -78,3 +78,23 @@ Universe is defined in `universe.py` (38 assets). A deterministic 15-minute-slot
 More samples in a single day do not resolve small effective sample size: `learner.py` uses daily clustered scores and keeps a control arm and held-out monitoring partition, and reports no proven tradable edge without further independent validation. Maintenance can add new *versioned, explicit* strategies without revising older frozen rules or outcomes.
 
 New writes use `data/events/YYYY-MM_daily_DD.jsonl` per UTC day. Prior `YYYY-MM.jsonl` is preserved verbatim, and the hash chain is continuous across both formats; the loader verifies files in deterministic chronological order. Daily sharding mitigates growth of each individual Git blob but is not unlimited storage.
+
+
+## Derived entry-regime and daypart diagnostics (v3, 2026-10-10)
+
+The v8 append-only OPEN/CLOSE source is preserved. The derived
+`fixed_horizon_outcomes` v3 additionally reports **frozen-at-entry**
+`entry_regime` and **UTC entry daypart** (00–05/06–11/12–17/18–23).
+Every grouping shows the number of **eligible timely perpetual CLOSES**,
+their hypothetical aggregate net R, their **distinct UTC entry days**,
+and their late-closure share. Legacy events without an entry regime
+or timestamp receive an explicit `unknown` label instead of a guessed
+regime; they are not relabeled using later price performance.
+
+The `eligible_day_breadth_ready` flag indicates only that at least
+seven calendar entry dates occur in a group; it does NOT constitute
+statistical independence, significance, out-of-sample validation or
+evidence of a tradable edge. These are descriptive breakdowns, not new
+strategy rules. Previous fixed-horizon v2 reports are still audited
+against v2 while the next successful observation upgrades the derived
+report to v3; the event hashes are unchanged.

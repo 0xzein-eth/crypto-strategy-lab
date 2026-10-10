@@ -87,18 +87,25 @@ def recent_schedule_coverage(previous_report, latest_gap_minutes, limit=72):
                 not math.isfinite(latest_gap_minutes) or latest_gap_minutes < 0):
             raise ValueError("INTEGRITY_FAILURE: invalid latest schedule gap")
         gaps.append(round(latest_gap_minutes, 3))
+    # Very close snapshots (e.g. the queued primary cron catching up
+    # immediately after a recovery job) are NOT independent ten-minute
+    # intervals. Counting them as full covered slots inflated uptime.
+    rapid = sum(gap < 5 for gap in gaps)
+    observed_slots = len(gaps) - rapid
     missed = sum(max(0, math.ceil((gap - 3) / 10) - 1) for gap in gaps)
-    expected = len(gaps) + missed
-    ratio = round(len(gaps) / expected, 4) if expected else None
+    expected = observed_slots + missed
+    ratio = round(observed_slots / expected, 4) if expected else None
     return {
         "recent_observation_gaps_minutes": gaps,
         "recent_observed_intervals": len(gaps),
+        "estimated_distinct_10m_observation_intervals": observed_slots,
+        "near_duplicate_fast_intervals": rapid,
         "estimated_missed_10m_slots": missed,
         "estimated_10m_slot_coverage": ratio,
         "max_observed_gap_minutes": max(gaps) if gaps else None,
         "target_minutes": 10,
         "jitter_tolerance_minutes": 3,
-        "note": "Derived from persisted report-to-report gaps, not guaranteed cron or real exchange fills",
+        "note": "Rolling proxy from persisted report gaps; intervals shorter than 5m do NOT count as separate covered 10m slots; NOT guaranteed cron or exchange fills",
     }
 
 

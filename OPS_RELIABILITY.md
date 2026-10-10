@@ -238,3 +238,23 @@ Actions compute and queued schedules can be coalesced; it does NOT
 guarantee that GitHub starts the first job or delivers 90% coverage.
 Future reliability claims must be based on measured report-to-report
 intervals, not the intended cron configuration.
+
+
+## Duplicate-interval correction to observed 10m schedule coverage
+
+Previously each report-to-report gap counted as a successful ten-minute
+slot, including fast sequential runs only seconds apart during a
+guardian/paper recovery collision. This inflated coverage without
+representing distinct time slots. The rolling estimator now excludes
+**sub-five-minute gaps** from the successful-slot numerator (but keeps
+them visible in the complete bounded gap history). It reports both
+`near_duplicate_fast_intervals` and
+`estimated_distinct_10m_observation_intervals`, plus the older
+`recent_observed_intervals` count for backward-compatible diagnostics.
+
+Long genuine gaps still contribute all estimated missed slots and stay
+visible for 72 gaps; no missed price is backfilled. This is a
+timestamp-gap proxy rather than a formally certified ten-minute slot
+accounting or scheduler SLA. Any lower displayed coverage immediately
+after the change is a **measurement correction**, not proof that
+GitHub uptime itself deteriorated.

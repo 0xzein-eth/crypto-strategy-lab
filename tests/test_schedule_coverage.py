@@ -17,6 +17,22 @@ class ScheduleCoverageTests(unittest.TestCase):
         self.assertEqual(r["estimated_missed_10m_slots"], 0)
         self.assertEqual(r["estimated_10m_slot_coverage"], 1.0)
 
+    def test_sub_five_minute_recovery_duplicates_do_not_inflate_coverage(self):
+        previous={"scheduling_diagnostics":{
+            "recent_observation_gaps_minutes":[10,10,0.4,10,70,0.3]}}
+        r=engine.recent_schedule_coverage(previous,0.2)
+        self.assertEqual(r["recent_observed_intervals"],7)
+        self.assertEqual(r["near_duplicate_fast_intervals"],3)
+        self.assertEqual(r["estimated_distinct_10m_observation_intervals"],4)
+        self.assertEqual(r["estimated_missed_10m_slots"],6)
+        self.assertEqual(r["estimated_10m_slot_coverage"],0.4)
+
+    def test_only_rapid_reobservations_have_no_independent_10m_slots(self):
+        r=engine.recent_schedule_coverage(None,0.4)
+        self.assertEqual(r["near_duplicate_fast_intervals"],1)
+        self.assertEqual(r["estimated_distinct_10m_observation_intervals"],0)
+        self.assertIsNone(r["estimated_10m_slot_coverage"])
+
     def test_hours_long_gap_remains_visible_through_next_short_runs(self):
         initial = engine.recent_schedule_coverage(None, 149.486)
         self.assertGreater(initial["estimated_missed_10m_slots"], 10)

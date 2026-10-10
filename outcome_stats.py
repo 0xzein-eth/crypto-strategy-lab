@@ -23,6 +23,8 @@ def _cohort(records):
     timely=sum(r.get("late_excluded") is False for r in closed)
     eligible=[r for r in closed if r.get("late_excluded") is False
               and r["market_type"]=="perpetual"]
+    eligible_dates={_utc(r["created_at"]).date().isoformat()
+                    for r in eligible if r.get("created_at")}
     return {
         "opened":len(records),
         "active":sum(r["status"]=="OPEN" for r in records),
@@ -34,7 +36,10 @@ def _cohort(records):
         "closed_expectancy_R":round(sum(r["normalized_R"] for r in closed)/len(closed),5) if closed else None,
         "timely_closes":timely,
         "late_closes":len(closed)-timely,
+        "late_share_of_closed":round((len(closed)-timely)/len(closed),4) if closed else None,
         "eligible_timely_perpetual_closed":len(eligible),
+        "eligible_distinct_entry_utc_days":len(eligible_dates),
+        "eligible_day_breadth_ready":len(eligible_dates)>=7,
         "eligible_timely_perpetual_share":round(len(eligible)/len(closed),4) if closed else None,
         "eligible_timely_perpetual_win_rate":round(
             sum(r["net_pnl_usd"]>0 for r in eligible)/len(eligible),4) if eligible else None,
@@ -49,10 +54,22 @@ def summarize(records, moment):
     rows=list(records.values()) if isinstance(records,dict) else list(records)
     groups={"side":defaultdict(list),"horizon_hours":defaultdict(list),
             "strategy":defaultdict(list),"symbol":defaultdict(list),
-            "market_type":defaultdict(list)}
+            "market_type":defaultdict(list),
+            "entry_regime":defaultdict(list),
+            "entry_utc_daypart":defaultdict(list)}
     for r in rows:
-        for dimension in groups:
+        for dimension in ("side","horizon_hours","strategy","symbol","market_type"):
             groups[dimension][str(r[dimension])].append(r)
+        # Pre-recorded regime at OPEN: NEVER label from future outcomes.
+        groups["entry_regime"][str(r.get("regime") or "unknown")].append(r)
+        # Coarse UTC hour bins expose missing scheduled observations.
+        if r.get("created_at"):
+            hour = _utc(r["created_at"]).hour
+            daypart = ("00-05 UTC" if hour<6 else "06-11 UTC" if hour<12
+                       else "12-17 UTC" if hour<18 else "18-23 UTC")
+        else:
+            daypart="unknown"
+        groups["entry_utc_daypart"][daypart].append(r)
     due=[r for r in rows if r["status"]=="OPEN" and _utc(r["evaluate_at"])<=moment]
     next_60=[r for r in rows if r["status"]=="OPEN" and
              moment<_utc(r["evaluate_at"])<=moment+dt.timedelta(hours=1)]
@@ -60,13 +77,17 @@ def summarize(records, moment):
              moment<_utc(r["evaluate_at"])<=moment+dt.timedelta(hours=24)]
     completed=[r for r in rows if r["status"]=="CLOSED"]
     return {
-        "method":"fixed_horizon_v2",
+        "method":"fixed_horizon_v3",
         "exit_policy":"first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
         "side":{k:_cohort(v) for k,v in sorted(groups["side"].items())},
         "horizon_hours":{k:_cohort(v) for k,v in sorted(groups["horizon_hours"].items(),key=lambda x:int(x[0]))},
         "strategy":{k:_cohort(v) for k,v in sorted(groups["strategy"].items())},
         "symbol":{k:_cohort(v) for k,v in sorted(groups["symbol"].items())},
         "market_type":{k:_cohort(v) for k,v in sorted(groups["market_type"].items())},
+        "entry_regime":{k:_cohort(v) for k,v in sorted(groups["entry_regime"].items())},
+        "entry_utc_daypart":{k:_cohort(v) for k,v in sorted(groups["entry_utc_daypart"].items())},
+        "selection_note":"Regime/daypart labels frozen at entry, descriptive and correlated. " +
+                         "Group-level seven-day breadth is only a MINIMUM collection check, not proof of edge.",
         "due_unresolved":len(due),
         "evaluation_next_hour":len(next_60),
         "evaluation_next_24_hours":len(next_24),

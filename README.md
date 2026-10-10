@@ -117,3 +117,19 @@ The historical research separately uses a 90-day trailing **funding-aware
 window** while preserving longer OHLCV source caches. Settlement gaps
 remain missing, never silently treated as 0% funding. Historical
 research candidates are not automatically activated or traded live.
+
+
+### October 2026 research quality upgrade
+
+The ten-minute coverage estimate now treats rapid consecutive reports
+less than five minutes apart as **additional snapshots, not distinct
+covered ten-minute slots**. The dashboard exposes the number of near
+duplicates alongside missed slots. This corrects an optimistic artifact
+of schedule guardians and long recovery windows; it is not a promise
+that GitHub cron will achieve the nominal cadence.
+
+The derived v3 fixed-horizon report additionally compares outcomes
+across **entry-time precommitted rising/falling regimes** and UTC
+dayparts, with distinct entry-day counts and late sample shares.
+These descriptive breakdowns cannot prove profitability, and no
+new strategy receives automatic promotion or real-money access.

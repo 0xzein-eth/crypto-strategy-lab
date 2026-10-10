@@ -64,7 +64,7 @@ class OutcomeStatsTests(unittest.TestCase):
         proxy["market_type"]="spot_proxy"
         r=outcome_stats.summarize([good,late,proxy],self.m)
         x=r["side"]["LONG"]
-        self.assertEqual(r["method"],"fixed_horizon_v2")
+        self.assertEqual(r["method"],"fixed_horizon_v3")
         self.assertEqual(x["closed"],3)
         self.assertEqual(x["eligible_timely_perpetual_closed"],1)
         self.assertEqual(x["eligible_timely_perpetual_win_rate"],1.0)
@@ -73,9 +73,31 @@ class OutcomeStatsTests(unittest.TestCase):
         self.assertAlmostEqual(x["eligible_timely_perpetual_share"],1/3,places=4)
         self.assertEqual(r["eligible_timely_perpetual_closures"],1)
 
+    def test_precommitted_regime_daypart_and_day_breadth(self):
+        records=[]
+        for day, pnl, regime in [(8,150,"24h_up"),(9,-90,"24h_down"),
+                                  (10,240,"24h_up")]:
+            r=row(str(day),"LONG",8,status="CLOSED",pnl=pnl)
+            r["created_at"]=f"2026-10-{day:02d}T14:00:00Z"
+            r["regime"]=regime
+            records.append(r)
+        late=row("late","SHORT",2,status="CLOSED",pnl=500,late=True)
+        late["created_at"]="2026-10-09T14:00:00Z"
+        late["regime"]="24h_up"
+        records.append(late)
+        result=outcome_stats.summarize(records,self.m)
+        self.assertEqual(result["entry_regime"]["24h_up"]["eligible_timely_perpetual_closed"],2)
+        self.assertEqual(result["entry_regime"]["24h_down"]["eligible_timely_perpetual_closed"],1)
+        self.assertEqual(result["entry_utc_daypart"]["12-17 UTC"]["closed"],4)
+        self.assertEqual(result["entry_utc_daypart"]["12-17 UTC"]["eligible_distinct_entry_utc_days"],3)
+        self.assertFalse(result["entry_utc_daypart"]["12-17 UTC"]["eligible_day_breadth_ready"])
+        self.assertEqual(result["entry_regime"]["24h_up"]["late_share_of_closed"],round(1/3,4))
+
     def test_zero_trades_stays_defined(self):
         result=outcome_stats.summarize([],self.m)
         self.assertEqual(result["symbol"],{})
+        self.assertEqual(result["entry_regime"],{})
+        self.assertEqual(result["entry_utc_daypart"],{})
         self.assertEqual(result["due_unresolved"],0)
         self.assertEqual(result["total_research_notional_usd"],0)
 
