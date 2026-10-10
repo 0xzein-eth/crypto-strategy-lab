@@ -616,7 +616,7 @@ def summarize(records, moment):
                 "minimum_training_days":learner.MIN_TRAIN_DAYS,
                 "training_day_coverage_ready":adaptive["eligible_days"]>=learner.MIN_TRAIN_DAYS,
                 "validation_status":"NOT_PROVEN",
-                "note":"Correlated multi-day observations do not prove edge; funding, slippage and margin not actual fills",
+                "note":"Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
             },
             "fixed_horizon_outcomes": outcome_stats.summarize(records, moment),
             "strategy_horizon": {
