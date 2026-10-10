@@ -2,8 +2,8 @@
 
 A long scheduler gap makes a SINGLE successful GitHub cron tick insufficient
 for timely-horizon research. After a real recovered paper tick is persisted,
-retain the SAME serialized lab job for at most six later observations spaced
-10 minutes apart. Every follow-up uses a *new current public market quote*,
+retain the SAME serialized lab job for a bounded, adaptive 6/12/18 later
+observations spaced 10 minutes apart. Every follow-up uses a *new current public market quote*,
 is audited, and is independently committed; NO historical fill is fabricated.
 
 Only starts on a *degraded* recent main report. No unconditional/recursive
@@ -20,7 +20,8 @@ import time
 import engine
 
 ROOT = Path(__file__).resolve().parent
-MAX_PULSES = 6
+MAX_PULSES = 18
+DEFAULT_PULSES = 6
 DEFAULT_INTERVAL_MINUTES = 10
 MAX_INITIAL_AGE_MINUTES = 10
 UTC = dt.timezone.utc
@@ -44,6 +45,32 @@ def recovery_eligible(report, now=None):
     return (diagnostics.get("recovery_throttled") is True and
             diagnostics.get("prior_observation_gap_minutes", 0) > 45 and
             0 <= age <= MAX_INITIAL_AGE_MINUTES)
+
+
+def adaptive_pulse_budget(report, requested_pulses):
+    """Allocate 1/2/3-hour recovery to genuinely observed schedule quality.
+
+    A short or missing history never activates the longer runner. Keeps
+    existing tracked 10-minute cadence and the same serialized ledger lock;
+    does not auto-dispatch new workflows or create retrospective observations.
+    """
+    if not 0 <= requested_pulses <= MAX_PULSES:
+        raise ValueError("max recovery pulses must be 0..18")
+    metrics = report.get("scheduling_diagnostics") or {}
+    n = metrics.get("recent_observed_intervals", 0)
+    ratio = metrics.get("estimated_10m_slot_coverage")
+    if not isinstance(n, int) or isinstance(n, bool) or n < 0:
+        raise ValueError("INTEGRITY_FAILURE: invalid schedule history size")
+    if n < 12 or ratio is None:
+        return min(requested_pulses, DEFAULT_PULSES)
+    if (isinstance(ratio, bool) or not isinstance(ratio, (int, float))
+            or not 0 <= ratio <= 1):
+        raise ValueError("INTEGRITY_FAILURE: invalid schedule coverage")
+    if ratio < 0.4:
+        return min(requested_pulses, 18)
+    if ratio < 0.75:
+        return min(requested_pulses, 12)
+    return min(requested_pulses, DEFAULT_PULSES)
 
 
 def remaining_seconds(last_timestamp, now, interval_minutes):
@@ -92,15 +119,15 @@ def publish(root, runner):
     raise RuntimeError("PERSISTENCE_FAILURE: could not safely push observation")
 
 
-def run_window(root=ROOT, pulses=MAX_PULSES, interval_minutes=DEFAULT_INTERVAL_MINUTES,
-               now=None, sleeper=time.sleep, runner=run_checked):
+def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERVAL_MINUTES,
+               now=None, sleeper=time.sleep, runner=run_checked, adaptive=False):
     """Keep at most one GitHub-hosted recovery job alive for a bounded time.
 
     This holds the *existing* canonical paper lab concurrency lock. New
     schedule jobs may queue, but cannot concurrently write to main ledger.
     """
     if not 0 <= pulses <= MAX_PULSES:
-        raise ValueError("max recovery pulses must be 0..6")
+        raise ValueError("max recovery pulses must be 0..18")
     if not 5 <= interval_minutes <= 15:
         raise ValueError("recovery cadence must be 5..15 minutes")
     current = now or (lambda: dt.datetime.now(UTC))
@@ -108,12 +135,13 @@ def run_window(root=ROOT, pulses=MAX_PULSES, interval_minutes=DEFAULT_INTERVAL_M
     if not pulses or not recovery_eligible(initial, current()):
         return {"status": "SKIPPED_NO_RECOVERY", "requested_pulses": pulses,
                 "completed_pulses": 0}
+    selected_pulses = adaptive_pulse_budget(initial, pulses) if adaptive else pulses
     if runner(["git", "status", "--porcelain"], root):
         raise RuntimeError("INTEGRITY_FAILURE: dirty checkout before recovery window")
     total = 0
     last_stamp = initial["timestamp"]
     observations = []
-    for index in range(pulses):
+    for index in range(selected_pulses):
         delay = remaining_seconds(last_stamp, current(), interval_minutes)
         if delay:
             sleeper(delay)
@@ -144,7 +172,10 @@ def run_window(root=ROOT, pulses=MAX_PULSES, interval_minutes=DEFAULT_INTERVAL_M
                              "new_paper_experiments": updated.get("added", 0),
                              "closed_this_run": updated.get("closed_this_run", 0)})
     outcome = {"status": "RECOVERY_WINDOW_COMPLETE",
-               "requested_pulses": pulses, "completed_pulses": total,
+               "requested_pulses": selected_pulses,
+               "hard_cap_pulses": pulses,
+               "adaptive": adaptive,
+               "completed_pulses": total,
                "observations": observations,
                "note": "Each recovery observation is actual-time paper data; no backfill"}
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -152,7 +183,7 @@ def run_window(root=ROOT, pulses=MAX_PULSES, interval_minutes=DEFAULT_INTERVAL_M
         with open(summary, "a", encoding="utf-8") as out:
             out.write("### Bounded paper recovery window\n\n")
             out.write("Additional fresh observations committed: **" +
-                      str(total) + "/" + str(pulses) + "**.\n\n")
+                      str(total) + "/" + str(selected_pulses) + "**.\n\n")
             out.write("Late historical closures remain excluded from eligible evidence.\n")
     print(json.dumps(outcome, indent=2, sort_keys=True))
     return outcome
@@ -160,11 +191,14 @@ def run_window(root=ROOT, pulses=MAX_PULSES, interval_minutes=DEFAULT_INTERVAL_M
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pulses", type=int, default=MAX_PULSES)
+    parser.add_argument("--pulses", type=int, default=DEFAULT_PULSES)
+    parser.add_argument("--adaptive", action="store_true",
+                        help="Use measured coverage to choose up to 6/12/18 real-time pulses")
     parser.add_argument("--interval-minutes", type=int,
                         default=DEFAULT_INTERVAL_MINUTES)
     args = parser.parse_args()
-    run_window(pulses=args.pulses, interval_minutes=args.interval_minutes)
+    run_window(pulses=args.pulses, interval_minutes=args.interval_minutes,
+               adaptive=args.adaptive)
 
 
 if __name__ == "__main__":
