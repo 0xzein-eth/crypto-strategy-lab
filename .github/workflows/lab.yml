@@ -28,7 +28,7 @@ concurrency:
 jobs:
   observe-and-commit:
     runs-on: ubuntu-latest
-    timeout-minutes: 85
+    timeout-minutes: 210
     steps:
       - uses: actions/checkout@v5
         with:
@@ -82,5 +82,5 @@ jobs:
             echo "PERSISTENCE_FAILURE: unable to push after three safe retries."
             exit 1
           fi
-      - name: Bounded recovery window (6 actual-time observations, only after missed cron)
-        run: python recovery_window.py --pulses 6 --interval-minutes 10
+      - name: Adaptive bounded recovery (6/12/18 real-time observations after missed cron)
+        run: python recovery_window.py --pulses 18 --interval-minutes 10 --adaptive

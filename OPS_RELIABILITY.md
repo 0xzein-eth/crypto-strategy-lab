@@ -206,3 +206,35 @@ No workflow in this repository can guarantee GitHub's own scheduled
 delivery or 90% uptime. The real rolling coverage metric must improve
 before such a target can be claimed; an independent scheduler would
 be required to remove the shared GitHub Actions failure domain.
+
+
+## Adaptive long recovery after multi-hour GitHub scheduling gaps (2026-10-10)
+
+Rolling schedule quality reached approximately **29.5%** over 67 recorded
+intervals, including repeated missed observation gaps exceeding two to
+four hours. A previous **six-pulse / one-hour** recovery did not cover
+those gaps. To improve observed continuity using GitHub alone, the
+verified-after-gap recovery window now dynamically budgets:
+
+- Below 40% measured slot coverage: **18 new observations over 3 hours**.
+- From 40% to below 75%: **12 new observations over 2 hours**.
+- At least 75%, or insufficient history (<12 intervals): **6 new
+  observations over 1 hour**.
+
+Every observation still uses a fresh same-venue public ticker and the
+same serialized ledger concurrency lock, verifies the append-only hash
+chain, and commits separately. All due exits run first. New entries
+remain quality-throttled. An ordinary on-time run does **not** start a
+long window; a verified preceding >45-minute gap is required. A new
+runner cannot create historical observations for skipped time.
+
+Maximum job timeout is 210 minutes, safely longer than the 180-minute
+maximum window. Guardian distinguishes legitimate in-flight recovery
+up to 230 minutes from stalled workers; its health status remains
+`DEGRADED_RECOVERING` when persisted observations are stale.
+
+**Trade-off:** holding a GitHub-hosted runner for hours consumes more
+Actions compute and queued schedules can be coalesced; it does NOT
+guarantee that GitHub starts the first job or delivers 90% coverage.
+Future reliability claims must be based on measured report-to-report
+intervals, not the intended cron configuration.

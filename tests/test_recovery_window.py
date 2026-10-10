@@ -172,10 +172,53 @@ class RecoveryWindowTests(unittest.TestCase):
                               runner=lambda *_: " M data/report.json",
                               sleeper=lambda *_: self.fail("must not sleep"))
 
+    def test_adaptive_budget_respects_coverage_and_hard_limit(self):
+        report_=report(NOW)
+        quality=report_["scheduling_diagnostics"]
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),6)
+        quality.update(recent_observed_intervals=42,
+                       estimated_10m_slot_coverage=0.2952)
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
+        self.assertEqual(window.adaptive_pulse_budget(report_,2),2)
+        quality["estimated_10m_slot_coverage"]=0.6
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
+        quality["estimated_10m_slot_coverage"]=0.9
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),6)
+        quality["estimated_10m_slot_coverage"]=float("nan")
+        with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
+            window.adaptive_pulse_budget(report_,18)
+
+    def test_adaptive_eighteen_pulses_commit_prospectively(self):
+        now=[NOW]
+        current=report(NOW)
+        current["scheduling_diagnostics"].update(
+            recent_observed_intervals=67, estimated_10m_slot_coverage=0.2952)
+        self.save(current)
+        commits=[]
+        def runner(command, root):
+            if command[:2]==["git","status"]:
+                return ""
+            if command[:4]==["git","diff","--cached","--name-only"]:
+                return "data/report.json"
+            if command[:3]==["python","engine.py","--count"]:
+                self.save(report(now[0],gap=10,recover=False))
+            if command[:2]==["git","commit"]:
+                commits.append(now[0])
+            return ""
+        def sleeper(seconds):
+            now[0]+=dt.timedelta(seconds=seconds)
+        result=window.run_window(root=self.root,pulses=18,adaptive=True,
+                                 now=lambda:now[0],sleeper=sleeper,runner=runner)
+        self.assertEqual(result["requested_pulses"],18)
+        self.assertEqual(result["completed_pulses"],18)
+        self.assertEqual(len(commits),18)
+        self.assertEqual((commits[-1]-commits[0]).total_seconds(),17*600)
+        self.assertEqual((commits[-1]-NOW).total_seconds(),180*60)
+
     def test_cannot_request_unbounded_runner(self):
         self.save(report(NOW))
         with self.assertRaisesRegex(ValueError, "max recovery pulses"):
-            window.run_window(root=self.root, pulses=7)
+            window.run_window(root=self.root, pulses=19)
         with self.assertRaisesRegex(ValueError, "recovery cadence"):
             window.run_window(root=self.root, interval_minutes=60)
 

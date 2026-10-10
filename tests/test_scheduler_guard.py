@@ -163,7 +163,7 @@ class GuardianTests(unittest.TestCase):
                 self.assertEqual(len(api.calls), 2)
 
     def test_stuck_active_job_is_detected_not_duplicated(self):
-        api = FakeApi(report(115), [run(105, "in_progress")])
+        api = FakeApi(report(255), [run(235, "in_progress")])
         with self.assertRaisesRegex(RuntimeError, "STUCK_RUN"):
             guard.execute("0xzein-eth/crypto-strategy-lab",
                           api, NOW, allow_dispatch=True)
@@ -171,7 +171,7 @@ class GuardianTests(unittest.TestCase):
 
     def test_bounded_recovery_window_is_not_mistaken_for_stuck_job(self):
         # Recovery window can intentionally run six ten-minute observations.
-        for elapsed in (44, 61, 86, 99):
+        for elapsed in (44, 61, 86, 99, 160, 220, 229):
             with self.subTest(elapsed_minutes=elapsed):
                 api = FakeApi(report(110), [run(elapsed, "in_progress")])
                 state = guard.execute("0xzein-eth/crypto-strategy-lab",
@@ -181,7 +181,7 @@ class GuardianTests(unittest.TestCase):
                 self.assertEqual(len(api.calls), 2)
 
     def test_stalled_run_is_not_redispatched_even_after_timeout(self):
-        api = FakeApi(report(130), [run(111, "queued")])
+        api = FakeApi(report(250), [run(241, "queued")])
         with self.assertRaisesRegex(RuntimeError, "STUCK_RUN"):
             guard.execute("0xzein-eth/crypto-strategy-lab",
                           api, NOW, allow_dispatch=True)
