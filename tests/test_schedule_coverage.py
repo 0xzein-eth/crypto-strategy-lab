@@ -67,6 +67,25 @@ class ScheduleCoverageTests(unittest.TestCase):
             engine.prospective_entry_budget(14,
                 {"recent_observed_intervals":14,"estimated_10m_slot_coverage":1.2})
 
+    def test_quality_aware_horizon_bands(self):
+        baseline={"estimated_distinct_10m_observation_intervals":5,
+                  "estimated_10m_slot_coverage":0.25}
+        self.assertEqual(engine.sampling_horizons(baseline),
+                         (engine.HORIZONS,"initial_observation_baseline"))
+        low=dict(baseline,estimated_distinct_10m_observation_intervals=35)
+        self.assertEqual(engine.sampling_horizons(low),
+                         ((4,8,12,24),"low_cadence_4h_plus"))
+        mid=dict(low,estimated_10m_slot_coverage=0.575)
+        self.assertEqual(engine.sampling_horizons(mid),
+                         ((2,4,8,12,24),"degraded_cadence_2h_plus"))
+        good=dict(mid,estimated_10m_slot_coverage=0.9)
+        self.assertEqual(engine.sampling_horizons(good),
+                         (engine.HORIZONS,"all_horizons_adequate_cadence"))
+        for bad in (-0.1,1.1,float("nan"),True):
+            with self.subTest(bad=bad):
+                with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
+                    engine.sampling_horizons(dict(good,estimated_10m_slot_coverage=bad))
+
     def test_invalid_history_fails_closed(self):
         for bad in (None, "30", [float("nan")], [-2], [True]):
             with self.subTest(bad=bad):
