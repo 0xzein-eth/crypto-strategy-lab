@@ -119,6 +119,8 @@ $("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_eve
 '<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>'+
 '<p><strong>New-entry scheduler gate:</strong> '+esc(report.scheduling_diagnostics?.entry_sampling_quality_gate??"—")+
 ' · Budget '+esc(report.scheduling_diagnostics?.requested_new_this_run??"—")+'/run</p>'+
+'<p><strong>New paper-trade horizons:</strong> '+esc(report.scheduling_diagnostics?.allowed_new_entry_horizons_hours?.length?report.scheduling_diagnostics.allowed_new_entry_horizons_hours.join(' / ')+' hours':'Awaiting next report')+'</p>'+
+'<p><strong>Horizon quality rule:</strong> '+esc(report.scheduling_diagnostics?.horizon_sampling_quality_gate??"—")+'</p>'+
 '<p><strong>Valid observation-day breadth:</strong> '+esc(report.evidence_quality?.distinct_utc_days??"—")+
 ' / '+esc(report.evidence_quality?.minimum_training_days??"—")+
 ' minimum training days · '+esc(report.evidence_quality?.validation_status??"NOT_PROVEN")+'</p>';
