@@ -133,3 +133,17 @@ across **entry-time precommitted rising/falling regimes** and UTC
 dayparts, with distinct entry-day counts and late sample shares.
 These descriptive breakdowns cannot prove profitability, and no
 new strategy receives automatic promotion or real-money access.
+
+
+### New future-only horizon quality policy
+
+Under poor observed GitHub schedule reliability, the lab is still free
+to open **paper** hypotheses but automatically reduces exposure to
+evaluation times that would likely be missed. New entries use
+4/8/12/24-hour horizons below 40% observed 10-minute slot coverage;
+2/4/8/12/24-hour horizons from 40% to under 75%; and all six horizons
+when coverage reaches 75%. The policy and allowed horizons are saved in
+each new experiment, without touching any previously recorded OPEN or
+CLOSE. A prolonged recovery run exits early if another independent
+committer advances the canonical market report on two consecutive
+checks, saving Actions compute. Research conclusions remain unproven.
