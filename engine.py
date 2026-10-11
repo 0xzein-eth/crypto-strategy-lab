@@ -133,6 +133,31 @@ def prospective_entry_budget(requested, coverage, recovery=False):
     return requested, "adequate_scheduler_coverage"
 
 
+def sampling_horizons(coverage):
+    """Predeclared timing-quality policy for NEW experiments only.
+
+    Poor GitHub scheduler coverage makes short fixed horizons more likely
+    to close late. Preserve the same signal/control allocator, but select
+    longer horizons until actual interval coverage improves. The entire
+    policy is recorded in each new immutable OPEN event.
+    """
+    count=coverage.get("estimated_distinct_10m_observation_intervals",
+                       coverage.get("recent_observed_intervals",0))
+    ratio=coverage.get("estimated_10m_slot_coverage")
+    if (isinstance(count,bool) or not isinstance(count,int) or count<0):
+        raise ValueError("INTEGRITY_FAILURE: invalid independent interval count")
+    if count<12 or ratio is None:
+        return HORIZONS, "initial_observation_baseline"
+    if (isinstance(ratio,bool) or not isinstance(ratio,(int,float)) or
+            not math.isfinite(ratio) or not 0<=ratio<=1):
+        raise ValueError("INTEGRITY_FAILURE: invalid schedule coverage")
+    if ratio<0.4:
+        return (4,8,12,24), "low_cadence_4h_plus"
+    if ratio<0.75:
+        return (2,4,8,12,24), "degraded_cadence_2h_plus"
+    return HORIZONS, "all_horizons_adequate_cadence"
+
+
 def positive(value):
     v = float(value)
     if v <= 0 or not math.isfinite(v):
@@ -430,8 +455,13 @@ def diversified_quotes(quotes, slot):
     return ordered
 
 
-def new_candidates(records, read_quote, moment, next_id, requested, advanced=None, reobserve=None, clock=None):
+def new_candidates(records, read_quote, moment, next_id, requested, advanced=None, reobserve=None, clock=None,
+                   horizons=None):
     """Validated candle hypotheses when observable; deterministic proxy controls otherwise."""
+    horizons=HORIZONS if horizons is None else tuple(horizons)
+    if (not horizons or len(set(horizons))!=len(horizons) or
+            any(h not in HORIZONS for h in horizons)):
+        raise ValueError("invalid allowed prospective research horizons")
     # UTC-day budgets bound public CI/storage use and avoid accidental flood
     # from repeated manual dispatches. Existing full event history remains intact.
     utc_day = moment.date()
@@ -497,8 +527,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         chosen=allocation=None
         horizon_retry=0
         h=None
-        for offset in range(len(HORIZONS)):
-            candidate_h=HORIZONS[(slot+rank+offset)%len(HORIZONS)]
+        for offset in range(len(horizons)):
+            candidate_h=horizons[(slot+rank+offset)%len(horizons)]
             picked,mode=learner.choose(options, records, symbol, candidate_h, slot, rank+offset,
                                        profile=frozen_profile)
             if picked is None:
@@ -526,7 +556,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "signal_catalog_version":"2026-10-08",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
-                  "sampling_rule":"sector-direction-volatility-roundrobin-15m"}
+                  "sampling_rule":"sector-direction-volatility-roundrobin-15m",
+                  "eligible_horizons_at_selection":list(horizons),
+                  "horizon_sampling_reason":"quality_first_cadence_bands_v1"}
         quality="exploratory; no tradable-edge claim"
         if chosen.get("evidence"):
             evidence.update(chosen["evidence"])
@@ -697,6 +729,7 @@ def run(requested=14, clock=utcnow):
     coverage = recent_schedule_coverage(previous, prior_gap_minutes)
     requested_this_run, quality_reason = prospective_entry_budget(
         requested, coverage, recovery=recovery)
+    allowed_horizons, horizon_reason = sampling_horizons(coverage)
     cache, errors, blocked_providers = {}, {}, {}
     def read_quote(symbol, provider=None):
         providers = (provider,) if provider else PROVIDERS
@@ -733,7 +766,8 @@ def run(requested=14, clock=utcnow):
     def reobserve(symbol, provider):
         return quote(symbol, provider, clock=clock)
     opens = new_candidates(records, read_quote, current, next_id, requested_this_run,
-                           advanced=advanced, reobserve=reobserve, clock=clock)
+                           advanced=advanced, reobserve=reobserve, clock=clock,
+                           horizons=allowed_horizons)
     for r in opens:
         records[r["id"]] = r
     events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
@@ -762,6 +796,8 @@ def run(requested=14, clock=utcnow):
                       "requested_new_this_run": requested_this_run,
                       "normal_requested_new": requested,
                       "entry_sampling_quality_gate": quality_reason,
+                      "allowed_new_entry_horizons_hours": list(allowed_horizons),
+                      "horizon_sampling_quality_gate": horizon_reason,
                       "throttle_applies_to": "new OPEN only; existing due exits still attempted",
                       "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
                   },
