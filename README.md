@@ -147,3 +147,22 @@ each new experiment, without touching any previously recorded OPEN or
 CLOSE. A prolonged recovery run exits early if another independent
 committer advances the canonical market report on two consecutive
 checks, saving Actions compute. Research conclusions remain unproven.
+
+
+### New v4 post-friction horizon diagnostics
+
+The read-only fixed-horizon cohort report now displays the hypothetical
+**after-friction average R and UTC-day-cluster lower bound** across
+timely, same-venue perpetual CLOSE observations. The same conservative
+predeclared stress-funding-agnostic fallback as the learner applies:
+frozen recorded extra friction when present or a 0.12%-of-notional
+haircut to legacy experiments. All unobserved actual order fills, funding
+and margin remain excluded and unproven.
+
+Clustering outcomes by distinct OPEN UTC days, clipping per-trade R in
+the *diagnostic lower bound* and requiring at least seven independent
+entry days and 30 valid closes are minimum screening checks. They
+are **not** a statistical confirmation or automatic strategy selection.
+Version `fixed_horizon_v4` permits a one-time additive derived-report
+upgrade while the original event source, old outcomes and hash chain
+remain unchanged.
