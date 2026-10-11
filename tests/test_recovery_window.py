@@ -165,6 +165,29 @@ class RecoveryWindowTests(unittest.TestCase):
         self.assertEqual(result["completed_pulses"], 0)
         self.assertEqual(result["observations"][0]["status"], "SKIPPED_NEWER_MAIN")
 
+    def test_two_consecutive_real_remote_observations_stop_long_recovery(self):
+        now=[NOW]
+        self.save(report(NOW))
+        merges=[]
+        def runner(args,root):
+            if args[:2]==["git","status"]:
+                return ""
+            if args[:3]==["git","merge","--ff-only"]:
+                merges.append(now[0])
+                self.save(report(now[0]))
+            if args[:2]==["python","engine.py"]:
+                self.fail("Remote observer is active; no duplicate market quote allowed")
+            return ""
+        def sleeper(sec):
+            now[0]+=dt.timedelta(seconds=sec)
+        result=window.run_window(root=self.root,pulses=18,
+                  now=lambda:now[0],sleeper=sleeper,runner=runner)
+        self.assertEqual(result["status"],"RECOVERY_SUPERSEDED_BY_FRESH_MAIN")
+        self.assertEqual(result["completed_pulses"],0)
+        self.assertEqual(result["pulses_skipped_newer_main"],2)
+        self.assertEqual(len(merges),2)
+        self.assertLess((now[0]-NOW).total_seconds(),1800)
+
     def test_dirty_workspace_fails_closed_without_sleep(self):
         self.save(report(NOW))
         with self.assertRaisesRegex(RuntimeError, "dirty checkout"):

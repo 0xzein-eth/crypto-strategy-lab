@@ -141,6 +141,8 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
     total = 0
     last_stamp = initial["timestamp"]
     observations = []
+    consecutive_remote_advances = 0
+    superseded = False
     for index in range(selected_pulses):
         delay = remaining_seconds(last_stamp, current(), interval_minutes)
         if delay:
@@ -156,7 +158,15 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
             # Do not submit redundant market requests or synthetic events.
             last_stamp = recent["timestamp"]
             observations.append({"pulse": index + 1, "status": "SKIPPED_NEWER_MAIN"})
+            consecutive_remote_advances += 1
+            if consecutive_remote_advances >= 2:
+                # Another independently committed real-time observer is
+                # progressing. Yield runner time instead of needlessly
+                # occupying the serialized recovery slot.
+                superseded = True
+                break
             continue
+        consecutive_remote_advances = 0
         if recent["timestamp"] != last_stamp:
             raise RuntimeError("CLOCK_INTEGRITY: canonical report went backwards")
         # A fresh observed quote, not historical interpolation/backfill.
@@ -171,11 +181,14 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
                              "observation_utc": last_stamp,
                              "new_paper_experiments": updated.get("added", 0),
                              "closed_this_run": updated.get("closed_this_run", 0)})
-    outcome = {"status": "RECOVERY_WINDOW_COMPLETE",
+    outcome = {"status": "RECOVERY_SUPERSEDED_BY_FRESH_MAIN" if superseded else
+                         "RECOVERY_WINDOW_COMPLETE",
                "requested_pulses": selected_pulses,
                "hard_cap_pulses": pulses,
                "adaptive": adaptive,
                "completed_pulses": total,
+               "pulses_skipped_newer_main":sum(x["status"]=="SKIPPED_NEWER_MAIN"
+                                             for x in observations),
                "observations": observations,
                "note": "Each recovery observation is actual-time paper data; no backfill"}
     summary = os.environ.get("GITHUB_STEP_SUMMARY")

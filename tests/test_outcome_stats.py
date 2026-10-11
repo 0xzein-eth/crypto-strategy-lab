@@ -64,7 +64,7 @@ class OutcomeStatsTests(unittest.TestCase):
         proxy["market_type"]="spot_proxy"
         r=outcome_stats.summarize([good,late,proxy],self.m)
         x=r["side"]["LONG"]
-        self.assertEqual(r["method"],"fixed_horizon_v3")
+        self.assertEqual(r["method"],"fixed_horizon_v4")
         self.assertEqual(x["closed"],3)
         self.assertEqual(x["eligible_timely_perpetual_closed"],1)
         self.assertEqual(x["eligible_timely_perpetual_win_rate"],1.0)
@@ -92,6 +92,38 @@ class OutcomeStatsTests(unittest.TestCase):
         self.assertEqual(result["entry_utc_daypart"]["12-17 UTC"]["eligible_distinct_entry_utc_days"],3)
         self.assertFalse(result["entry_utc_daypart"]["12-17 UTC"]["eligible_day_breadth_ready"])
         self.assertEqual(result["entry_regime"]["24h_up"]["late_share_of_closed"],round(1/3,4))
+
+    def test_after_friction_stress_and_day_clustering_only_valid_trades(self):
+        records=[]
+        for day in range(1,9):
+            r=row(f"G{day}","LONG",8,status="CLOSED",pnl=150)
+            r["created_at"]=f"2026-10-{day:02d}T01:00:00Z"
+            r["stress_normalized_R"]=0.4
+            records.append(r)
+        late=row("late","LONG",8,status="CLOSED",pnl=999,late=True)
+        late["created_at"]="2026-10-09T01:00:00Z"
+        records.append(late)
+        spot=row("spot","LONG",8,status="CLOSED",pnl=999)
+        spot["created_at"]="2026-10-09T01:00:00Z"
+        spot["market_type"]="spot_proxy"
+        records.append(spot)
+        stats=outcome_stats.summarize(records,self.m)["horizon_hours"]["8"]
+        self.assertEqual(stats["eligible_timely_perpetual_closed"],8)
+        self.assertEqual(stats["eligible_after_friction_net_R"],3.2)
+        self.assertEqual(stats["eligible_after_friction_expectancy_R"],0.4)
+        self.assertEqual(stats["eligible_after_friction_day_cluster_lcb_R"],0.4)
+        self.assertEqual(stats["eligible_after_friction_research_status"],
+                         "insufficient_valid_closes")
+        self.assertEqual(stats["eligible_distinct_entry_utc_days"],8)
+
+    def test_small_sample_and_legacy_haircut_never_claim_positive(self):
+        older=row("legacy","SHORT",1,status="CLOSED",pnl=150)
+        older["created_at"]="2026-10-08T01:00:00Z"
+        result=outcome_stats.summarize([older],self.m)["horizon_hours"]["1"]
+        self.assertAlmostEqual(result["eligible_after_friction_expectancy_R"],0.92)
+        self.assertIsNone(result["eligible_after_friction_day_cluster_lcb_R"])
+        self.assertEqual(result["eligible_after_friction_research_status"],
+                         "insufficient_distinct_days")
 
     def test_zero_trades_stays_defined(self):
         result=outcome_stats.summarize([],self.m)

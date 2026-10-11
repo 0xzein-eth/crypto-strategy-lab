@@ -40,6 +40,22 @@ class ScaleAndCostTests(unittest.TestCase):
         self.assertTrue(all(r["friction_stress"]["version"]==friction.VERSION for r in out))
         self.assertTrue(all(r["evidence"]["sampling_rule"].endswith("roundrobin-15m") for r in out))
 
+    def test_horizon_quality_band_changes_only_future_experiments(self):
+        all_h=engine.new_candidates({},self.read,self.t,116,24,clock=lambda:self.t)
+        degraded_h=engine.new_candidates({},self.read,self.t,116,24,
+                                          clock=lambda:self.t,horizons=(4,8,12,24))
+        self.assertEqual(len(degraded_h),24)
+        self.assertTrue({r["horizon_hours"] for r in degraded_h}.issubset({4,8,12,24}))
+        self.assertTrue(all(r["evidence"]["eligible_horizons_at_selection"]==[4,8,12,24]
+                            for r in degraded_h))
+        self.assertTrue(any(r["horizon_hours"] in (1,2) for r in all_h))
+        self.assertEqual({r["symbol"] for r in all_h},
+                         {r["symbol"] for r in degraded_h})
+        for rec in degraded_h:
+            engine.validate_open(rec)
+        with self.assertRaisesRegex(ValueError,"invalid allowed"):
+            engine.new_candidates({},self.read,self.t,116,2,horizons=(8,8))
+
     def test_daily_budget_blocks_after_prior_trades_even_if_closed(self):
         records={}
         for i in range(engine.MAX_NEW_PER_UTC_DAY):

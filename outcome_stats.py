@@ -6,6 +6,9 @@ All figures are descriptive; correlated experiment notionals are NOT capital.
 """
 from collections import defaultdict
 import datetime as dt
+import math
+from statistics import mean, stdev
+import learner
 
 
 def _utc(iso):
@@ -25,6 +28,18 @@ def _cohort(records):
               and r["market_type"]=="perpetual"]
     eligible_dates={_utc(r["created_at"]).date().isoformat()
                     for r in eligible if r.get("created_at")}
+    # Match learner's pre-registered post-friction stress/fallback, without
+    # interpreting correlated trades as independent observations.
+    adjusted=[learner.research_R(r) for r in eligible]
+    day_groups=defaultdict(list)
+    for r in eligible:
+        if r.get("created_at"):
+            day_groups[_utc(r["created_at"]).date().isoformat()].append(
+                max(-learner.CLIP_R,min(learner.CLIP_R,learner.research_R(r))))
+    cluster_means=[mean(v) for _,v in sorted(day_groups.items())]
+    cluster_lcb=(round(mean(cluster_means)-1.96*stdev(cluster_means)/
+                       math.sqrt(len(cluster_means)),6)
+                 if len(cluster_means)>=4 else None)
     return {
         "opened":len(records),
         "active":sum(r["status"]=="OPEN" for r in records),
@@ -46,6 +61,14 @@ def _cohort(records):
         "eligible_timely_perpetual_net_R":round(sum(r["normalized_R"] for r in eligible),5),
         "eligible_timely_perpetual_expectancy_R":round(
             sum(r["normalized_R"] for r in eligible)/len(eligible),5) if eligible else None,
+        "eligible_after_friction_net_R":round(sum(adjusted),5),
+        "eligible_after_friction_expectancy_R":round(mean(adjusted),5) if adjusted else None,
+        "eligible_after_friction_day_cluster_lcb_R":cluster_lcb,
+        "eligible_after_friction_research_status":(
+            "insufficient_distinct_days" if len(cluster_means)<7 else
+            "insufficient_valid_closes" if len(eligible)<30 else
+            "not_positive_after_cost" if cluster_lcb is None or cluster_lcb<=0 else
+            "descriptive_positive_requires_control_and_independent_validation"),
     }
 
 
@@ -77,7 +100,7 @@ def summarize(records, moment):
              moment<_utc(r["evaluate_at"])<=moment+dt.timedelta(hours=24)]
     completed=[r for r in rows if r["status"]=="CLOSED"]
     return {
-        "method":"fixed_horizon_v3",
+        "method":"fixed_horizon_v4",
         "exit_policy":"first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
         "side":{k:_cohort(v) for k,v in sorted(groups["side"].items())},
         "horizon_hours":{k:_cohort(v) for k,v in sorted(groups["horizon_hours"].items(),key=lambda x:int(x[0]))},
@@ -87,7 +110,9 @@ def summarize(records, moment):
         "entry_regime":{k:_cohort(v) for k,v in sorted(groups["entry_regime"].items())},
         "entry_utc_daypart":{k:_cohort(v) for k,v in sorted(groups["entry_utc_daypart"].items())},
         "selection_note":"Regime/daypart labels frozen at entry, descriptive and correlated. " +
-                         "Group-level seven-day breadth is only a MINIMUM collection check, not proof of edge.",
+                         "Post-friction scores include frozen stress when present, otherwise a " +
+                         "predeclared 0.12% extra-cost legacy haircut. Day-cluster LCB uses " +
+                         "clipped day-mean R; positive screening cannot promote an edge.",
         "due_unresolved":len(due),
         "evaluation_next_hour":len(next_60),
         "evaluation_next_24_hours":len(next_24),

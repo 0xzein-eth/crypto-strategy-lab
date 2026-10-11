@@ -258,3 +258,24 @@ timestamp-gap proxy rather than a formally certified ten-minute slot
 accounting or scheduler SLA. Any lower displayed coverage immediately
 after the change is a **measurement correction**, not proof that
 GitHub uptime itself deteriorated.
+
+
+## Quality-first horizon sampling and superseded recovery
+
+After at least 12 DISTINCT report-to-report observation intervals, new
+paper experiments pre-register shorter or longer fixed evaluation
+horizons based on the *observed* 10-minute schedule coverage. Below
+40%, newly opened trades use 4/8/12/24h horizons; from 40% to below
+75%, new trades use 2/4/8/12/24h; at 75% or above all 1/2/4/8/12/24h
+horizons are available. Insufficient history retains all six horizons.
+This change does **not** alter, cancel, rewrite or prematurely exit
+existing trades. The allowed horizon set is frozen into the new OPEN
+evidence; no P&L-driven horizon selection or real orders are added.
+
+When recovery sees two CONSECUTIVE real, independently committed newer
+canonical market reports, it yields its long-running runner slot early
+(`RECOVERY_SUPERSEDED_BY_FRESH_MAIN`). This optimization avoids occupying
+GitHub compute after another canonical observer clearly takes over.
+It never counts another observer's commit as its own fresh quote or
+uses a synthetic historical observation. GH Actions remains a best-effort
+scheduler, and source outage recovery is still not a real-time SLA.

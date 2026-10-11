@@ -133,3 +133,36 @@ across **entry-time precommitted rising/falling regimes** and UTC
 dayparts, with distinct entry-day counts and late sample shares.
 These descriptive breakdowns cannot prove profitability, and no
 new strategy receives automatic promotion or real-money access.
+
+
+### New future-only horizon quality policy
+
+Under poor observed GitHub schedule reliability, the lab is still free
+to open **paper** hypotheses but automatically reduces exposure to
+evaluation times that would likely be missed. New entries use
+4/8/12/24-hour horizons below 40% observed 10-minute slot coverage;
+2/4/8/12/24-hour horizons from 40% to under 75%; and all six horizons
+when coverage reaches 75%. The policy and allowed horizons are saved in
+each new experiment, without touching any previously recorded OPEN or
+CLOSE. A prolonged recovery run exits early if another independent
+committer advances the canonical market report on two consecutive
+checks, saving Actions compute. Research conclusions remain unproven.
+
+
+### New v4 post-friction horizon diagnostics
+
+The read-only fixed-horizon cohort report now displays the hypothetical
+**after-friction average R and UTC-day-cluster lower bound** across
+timely, same-venue perpetual CLOSE observations. The same conservative
+predeclared stress-funding-agnostic fallback as the learner applies:
+frozen recorded extra friction when present or a 0.12%-of-notional
+haircut to legacy experiments. All unobserved actual order fills, funding
+and margin remain excluded and unproven.
+
+Clustering outcomes by distinct OPEN UTC days, clipping per-trade R in
+the *diagnostic lower bound* and requiring at least seven independent
+entry days and 30 valid closes are minimum screening checks. They
+are **not** a statistical confirmation or automatic strategy selection.
+Version `fixed_horizon_v4` permits a one-time additive derived-report
+upgrade while the original event source, old outcomes and hash chain
+remain unchanged.

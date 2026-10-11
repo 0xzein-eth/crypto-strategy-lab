@@ -119,6 +119,8 @@ $("integrity").innerHTML='<p><strong>Storage:</strong> '+esc(report.verified_eve
 '<p><strong>24h proxy closures:</strong> '+esc(report.spot_proxy_closures??0)+'</p>'+
 '<p><strong>New-entry scheduler gate:</strong> '+esc(report.scheduling_diagnostics?.entry_sampling_quality_gate??"—")+
 ' · Budget '+esc(report.scheduling_diagnostics?.requested_new_this_run??"—")+'/run</p>'+
+'<p><strong>New paper-trade horizons:</strong> '+esc(report.scheduling_diagnostics?.allowed_new_entry_horizons_hours?.length?report.scheduling_diagnostics.allowed_new_entry_horizons_hours.join(' / ')+' hours':'Awaiting next report')+'</p>'+
+'<p><strong>Horizon quality rule:</strong> '+esc(report.scheduling_diagnostics?.horizon_sampling_quality_gate??"—")+'</p>'+
 '<p><strong>Valid observation-day breadth:</strong> '+esc(report.evidence_quality?.distinct_utc_days??"—")+
 ' / '+esc(report.evidence_quality?.minimum_training_days??"—")+
 ' minimum training days · '+esc(report.evidence_quality?.validation_status??"NOT_PROVEN")+'</p>';
@@ -145,13 +147,15 @@ $("fixed-horizon-note").textContent=fixed.method
   :"Awaiting updated fixed-horizon report from a verified run. Existing experiment ledger remains unchanged.";
 function fixedTable(groups, labelName){
   const entries=Object.entries(groups||{});
-  return entries.length?'<table><thead><tr><th>'+esc(labelName)+'</th><th>OPEN</th><th>All closed</th><th>All wins</th><th>All losses</th><th>All win rate</th><th>All closed net</th><th>Timely perpetual n</th><th>Timely net R</th></tr></thead><tbody>'+
+  return entries.length?'<table><thead><tr><th>'+esc(labelName)+'</th><th>OPEN</th><th>All closed</th><th>All wins</th><th>All losses</th><th>All win rate</th><th>All closed net</th><th>Timely perpetual n</th><th>Timely net R</th><th>Post-friction mean R</th><th>Day-cluster lower bound R</th></tr></thead><tbody>'+
   entries.map(([name,v])=>'<tr>'+[
     name,v.active,v.closed,v.wins,v.losses,
     v.win_rate==null?"—":num(v.win_rate*100,1)+"%",
     v.closed>0?usd(v.closed_net_usd):"—",
     v.eligible_timely_perpetual_closed??"—",
-    v.eligible_timely_perpetual_closed==null?"—":num(v.eligible_timely_perpetual_net_R,3)
+    v.eligible_timely_perpetual_closed==null?"—":num(v.eligible_timely_perpetual_net_R,3),
+    v.eligible_after_friction_expectancy_R==null?"—":num(v.eligible_after_friction_expectancy_R,3),
+    v.eligible_after_friction_day_cluster_lcb_R==null?"—":num(v.eligible_after_friction_day_cluster_lcb_R,3)
   ].map(td).join("")+'</tr>').join("")+'</tbody></table>':
   '<div class="empty">No experiments in this group yet.</div>';
 }
