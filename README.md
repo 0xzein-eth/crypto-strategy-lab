@@ -166,3 +166,33 @@ are **not** a statistical confirmation or automatic strategy selection.
 Version `fixed_horizon_v4` permits a one-time additive derived-report
 upgrade while the original event source, old outcomes and hash chain
 remain unchanged.
+
+
+### October 2026 cadence and evidence-volume upgrade
+
+Every successful paper workflow now extends into an adaptive,
+serialized observation window, publishing a verified fresh observation
+every ten minutes for up to 6 / 12 / 18 later real-time intervals
+according to measured coverage. This is no longer restricted to the
+first recovery after a long scheduling gap. The target of **near 100%
+ten-minute interval coverage** is aspirational: GitHub cron has no
+timeliness SLA, and the lab measures, rather than fabricates, uptime.
+Runner time and repo size must be monitored as the ledger expands.
+
+New paper experiment capacity is now up to 20 per healthy interval,
+reduced automatically to 10 / 5 under degraded schedules and to 3
+immediately after a long gap, always resolving existing due trades
+first. The quality-aware future-only horizon rule continues to protect
+short fixed-horizon studies from known poor scheduler conditions.
+The independent historical factory runs twice per day with up to
+400 deterministic parameter variants; none is promoted automatically.
+
+
+**Research grid details:** v9 now explicitly covers 1/2/4/8/12/24-hour
+hypothetical exit horizons and a wider pre-registered trend, momentum,
+mean-reversion, breakout and RSI parameter grid. The deterministic
+factory has 420 possible configured combinations and tests the
+requested first 400, including controls. Increasing the number of
+backtested rules materially increases the risk of selection overfitting:
+the review gate still requires independent chronological validation,
+settled funding and controls, and no variant is auto-enabled.

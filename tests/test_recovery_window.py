@@ -62,6 +62,34 @@ class RecoveryWindowTests(unittest.TestCase):
         self.assertEqual(result["status"], "SKIPPED_NO_RECOVERY")
         self.assertEqual(result["completed_pulses"], 0)
 
+    def test_continuous_mode_bootstraps_from_fresh_healthy_tick(self):
+        now=[NOW]
+        self.save(report(NOW,gap=10,recover=False))
+        def sleeper(seconds):
+            now[0] += dt.timedelta(seconds=seconds)
+        def runner(args,root):
+            if args[:2]==["git","status"]:
+                return ""
+            if args[:4]==["git","diff","--cached","--name-only"]:
+                return "data/report.json"
+            if args[:3]==["python","engine.py","--count"]:
+                self.assertEqual(args[3],"20")
+                self.save(report(now[0],gap=10,recover=False))
+            return ""
+        result=window.run_window(root=self.root,pulses=3,
+                   continuous=True,now=lambda:now[0],sleeper=sleeper,runner=runner)
+        self.assertEqual(result["completed_pulses"],3)
+        self.assertTrue(result["continuous"])
+        self.assertEqual((now[0]-NOW).total_seconds(),1800)
+
+    def test_continuous_mode_skips_stale_initial_tick(self):
+        self.save(report(NOW-dt.timedelta(minutes=20),gap=10,recover=False))
+        result=window.run_window(root=self.root,continuous=True,
+                                 now=lambda:NOW,
+                                 runner=lambda *_:self.fail("must not run"),
+                                 sleeper=lambda *_:self.fail("must not sleep"))
+        self.assertEqual(result["status"],"SKIPPED_NO_RECOVERY")
+
     def test_stale_initial_trigger_cannot_start_idle_window(self):
         self.save(report(NOW - dt.timedelta(minutes=30)))
         result = window.run_window(root=self.root, now=lambda: NOW,

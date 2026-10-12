@@ -55,10 +55,10 @@ class ScheduleCoverageTests(unittest.TestCase):
         severe={"recent_observed_intervals":42,"estimated_10m_slot_coverage":0.2877}
         poor={"recent_observed_intervals":22,"estimated_10m_slot_coverage":0.65}
         enough={"recent_observed_intervals":14,"estimated_10m_slot_coverage":0.9}
-        self.assertEqual(engine.prospective_entry_budget(14,severe),(3,"severe_scheduler_coverage"))
-        self.assertEqual(engine.prospective_entry_budget(14,poor),(7,"degraded_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(14,severe),(5,"severe_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(14,poor),(10,"degraded_scheduler_coverage"))
         self.assertEqual(engine.prospective_entry_budget(14,enough),(14,"adequate_scheduler_coverage"))
-        self.assertEqual(engine.prospective_entry_budget(14,severe,True),(2,"recovery_gap"))
+        self.assertEqual(engine.prospective_entry_budget(14,severe,True),(3,"recovery_gap"))
         self.assertEqual(engine.prospective_entry_budget(14,
             {"recent_observed_intervals":11,"estimated_10m_slot_coverage":0.01}),
             (14,"collect_scheduler_baseline"))

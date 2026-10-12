@@ -47,7 +47,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_recovery_window.py' -v
           python -m unittest discover -s tests -p 'test_schedule_coverage.py' -v
       - name: Capture public market observations and run paper experiments
-        run: python engine.py --count 14
+        run: python engine.py --count 20
       - name: Verify new event history and source files
         run: |
           python engine.py --verify-only
@@ -82,5 +82,5 @@ jobs:
             echo "PERSISTENCE_FAILURE: unable to push after three safe retries."
             exit 1
           fi
-      - name: Adaptive bounded recovery (6/12/18 real-time observations after missed cron)
-        run: python recovery_window.py --pulses 18 --interval-minutes 10 --adaptive
+      - name: Serialized continuous observation window (6/12/18 fresh ten-minute ticks)
+        run: python recovery_window.py --pulses 18 --interval-minutes 10 --adaptive --continuous
