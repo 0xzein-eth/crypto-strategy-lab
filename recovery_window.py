@@ -6,8 +6,10 @@ retain the SAME serialized lab job for a bounded, adaptive 6/12/18 later
 observations spaced 10 minutes apart. Every follow-up uses a *new current public market quote*,
 is audited, and is independently committed; NO historical fill is fabricated.
 
-Only starts on a *degraded* recent main report. No unconditional/recursive
-workflow_dispatch, no external scheduler, and no real exchange orders.
+Normally starts only after a degraded, recently committed report. In
+--continuous mode it may also use a FRESH healthy main report to make a
+bounded 10-minute live sampling window without waiting for another cron.
+No recursive workflow_dispatch, external scheduler, or real exchange orders.
 """
 import argparse
 import datetime as dt
@@ -45,6 +47,17 @@ def recovery_eligible(report, now=None):
     return (diagnostics.get("recovery_throttled") is True and
             diagnostics.get("prior_observation_gap_minutes", 0) > 45 and
             0 <= age <= MAX_INITIAL_AGE_MINUTES)
+
+
+def continuous_eligible(report, now=None):
+    """Only bootstrap a long observation window from a recent real tick."""
+    now = now or dt.datetime.now(UTC)
+    if now.tzinfo is None:
+        raise ValueError("CLOCK_INTEGRITY: naive UTC time")
+    age = (now - engine.parse(report["timestamp"])).total_seconds() / 60
+    if age < -5:
+        raise ValueError("CLOCK_INTEGRITY: report is in future")
+    return 0 <= age <= MAX_INITIAL_AGE_MINUTES
 
 
 def adaptive_pulse_budget(report, requested_pulses):
@@ -120,7 +133,8 @@ def publish(root, runner):
 
 
 def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERVAL_MINUTES,
-               now=None, sleeper=time.sleep, runner=run_checked, adaptive=False):
+               now=None, sleeper=time.sleep, runner=run_checked, adaptive=False,
+               continuous=False):
     """Keep at most one GitHub-hosted recovery job alive for a bounded time.
 
     This holds the *existing* canonical paper lab concurrency lock. New
@@ -132,7 +146,9 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
         raise ValueError("recovery cadence must be 5..15 minutes")
     current = now or (lambda: dt.datetime.now(UTC))
     initial = report_at(root)
-    if not pulses or not recovery_eligible(initial, current()):
+    eligible = (continuous_eligible(initial, current()) if continuous
+                else recovery_eligible(initial, current()))
+    if not pulses or not eligible:
         return {"status": "SKIPPED_NO_RECOVERY", "requested_pulses": pulses,
                 "completed_pulses": 0}
     selected_pulses = adaptive_pulse_budget(initial, pulses) if adaptive else pulses
@@ -170,7 +186,7 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
         if recent["timestamp"] != last_stamp:
             raise RuntimeError("CLOCK_INTEGRITY: canonical report went backwards")
         # A fresh observed quote, not historical interpolation/backfill.
-        runner(["python", "engine.py", "--count", "14"], root)
+        runner(["python", "engine.py", "--count", "20"], root)
         updated = report_at(root)
         if engine.parse(updated["timestamp"]) <= engine.parse(last_stamp):
             raise RuntimeError("CLOCK_INTEGRITY: recovery report did not advance")
@@ -185,7 +201,7 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
                          "RECOVERY_WINDOW_COMPLETE",
                "requested_pulses": selected_pulses,
                "hard_cap_pulses": pulses,
-               "adaptive": adaptive,
+               "adaptive": adaptive, "continuous": continuous,
                "completed_pulses": total,
                "pulses_skipped_newer_main":sum(x["status"]=="SKIPPED_NEWER_MAIN"
                                              for x in observations),
@@ -207,11 +223,13 @@ def main():
     parser.add_argument("--pulses", type=int, default=DEFAULT_PULSES)
     parser.add_argument("--adaptive", action="store_true",
                         help="Use measured coverage to choose up to 6/12/18 real-time pulses")
+    parser.add_argument("--continuous", action="store_true",
+                        help="Also run bounded 10-minute observations after a fresh healthy initial tick")
     parser.add_argument("--interval-minutes", type=int,
                         default=DEFAULT_INTERVAL_MINUTES)
     args = parser.parse_args()
     run_window(pulses=args.pulses, interval_minutes=args.interval_minutes,
-               adaptive=args.adaptive)
+               adaptive=args.adaptive, continuous=args.continuous)
 
 
 if __name__ == "__main__":
