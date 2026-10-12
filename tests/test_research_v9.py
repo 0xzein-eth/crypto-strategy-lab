@@ -96,6 +96,18 @@ class FactoryTests(unittest.TestCase):
             "trend", "momentum", "mean_revert", "breakout", "rsi_revert",
             "control", "long_control"})
 
+    def test_expanded_preregistered_catalog_reaches_four_hundred(self):
+        entries = factory.variant_catalog(400)
+        self.assertEqual(len(entries), 400)
+        self.assertEqual(len({v.id for v in entries}), 400)
+        self.assertIn(48, {v.horizon for v in entries})
+        self.assertTrue(any(v.family == "trend" and v.lookback == 6
+                            for v in entries))
+        self.assertTrue(any(v.family == "momentum" and v.lookback == 24
+                            for v in entries))
+        self.assertTrue(any(v.family == "rsi_revert" and v.threshold == 40
+                            for v in entries))
+
     def test_no_future_leakage_in_signal(self):
         original = market(400)
         modified = [r.copy() for r in original]
