@@ -186,3 +186,13 @@ first. The quality-aware future-only horizon rule continues to protect
 short fixed-horizon studies from known poor scheduler conditions.
 The independent historical factory runs twice per day with up to
 400 deterministic parameter variants; none is promoted automatically.
+
+
+**Research grid details:** v9 now explicitly covers 1/2/4/8/12/24-hour
+hypothetical exit horizons and a wider pre-registered trend, momentum,
+mean-reversion, breakout and RSI parameter grid. The deterministic
+factory has 420 possible configured combinations and tests the
+requested first 400, including controls. Increasing the number of
+backtested rules materially increases the risk of selection overfitting:
+the review gate still requires independent chronological validation,
+settled funding and controls, and no variant is auto-enabled.
