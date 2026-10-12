@@ -15,7 +15,7 @@ from itertools import product
 from research_v9.history import BAR_MS, validate_series
 from research_v9.funding import payment_pct, validate_rates
 
-HORIZONS = (4, 8, 16, 32, 96)  # 1h, 2h, 4h, 8h, 24h on 15m candles
+HORIZONS = (4, 8, 16, 32, 48, 96)  # 1h, 2h, 4h, 8h, 12h, 24h on 15m candles
 FEE_PCT = 0.10                # 0.05% each side (hypothetical)
 STRESS_PCT = 0.12             # Additional assumed round-trip spread/impact
 R_DENOMINATOR_PCT = 1.5       # Research normalization, NOT an executed stop
@@ -44,18 +44,18 @@ class Variant:
 def variant_catalog(max_variants=300):
     """Fixed, versioned parameter grid, then deterministic family round robin."""
     by_family = defaultdict(list)
-    for fast, slow, gate, h in product((8, 12, 20), (36, 60),
+    for fast, slow, gate, h in product((6, 8, 12, 20), (36, 60),
                                        (0.001, 0.003), HORIZONS):
         if fast < slow:
             by_family["trend"].append(Variant("trend", fast, gate, slow, h))
-    for lookback, gate, h in product((4, 8, 16, 32),
-                                     (0.002, 0.004, 0.008), HORIZONS):
+    for lookback, gate, h in product((4, 8, 16, 24, 32),
+                                     (0.001, 0.002, 0.004, 0.008), HORIZONS):
         by_family["momentum"].append(Variant("momentum", lookback, gate, 0, h))
-    for lookback, z, h in product((12, 20, 32), (1.3, 1.8, 2.3), HORIZONS):
+    for lookback, z, h in product((12, 20, 32, 48), (1.3, 1.8, 2.3), HORIZONS):
         by_family["mean_revert"].append(Variant("mean_revert", lookback, z, 0, h))
-    for lookback, vol, h in product((12, 20, 40), (0.8, 1.2), HORIZONS):
+    for lookback, vol, h in product((12, 20, 40, 60), (0.8, 1.2), HORIZONS):
         by_family["breakout"].append(Variant("breakout", lookback, vol, 0, h))
-    for period, threshold, h in product((7, 14, 21), (25, 30, 35), HORIZONS):
+    for period, threshold, h in product((7, 14, 21), (25, 30, 35, 40), HORIZONS):
         by_family["rsi_revert"].append(Variant("rsi_revert", period, threshold, 0, h))
     for h in HORIZONS:
         by_family["control"].extend([
