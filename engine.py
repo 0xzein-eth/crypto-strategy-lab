@@ -42,7 +42,7 @@ MAX_QUOTE_AGE_SECONDS = 180
 TIMELY_DELAY_SECONDS = 1800
 # A skipped scheduler window must not launch another full batch of correlated trades.
 SCHEDULE_DEGRADED_AFTER_MINUTES = 45
-RECOVERY_MAX_NEW = 2
+RECOVERY_MAX_NEW = 3
 MIN_QUOTE_VOLUME = 2_000_000.0
 HTTP_TIMEOUT = 7
 PREV_ZERO = "0" * 64
@@ -127,9 +127,9 @@ def prospective_entry_budget(requested, coverage, recovery=False):
     if not 0 <= ratio <= 1:
         raise ValueError("INTEGRITY_FAILURE: invalid estimated schedule coverage")
     if ratio < 0.40:
-        return min(requested, 3), "severe_scheduler_coverage"
+        return min(requested, 5), "severe_scheduler_coverage"
     if ratio < 0.75:
-        return min(requested, 7), "degraded_scheduler_coverage"
+        return min(requested, 10), "degraded_scheduler_coverage"
     return requested, "adequate_scheduler_coverage"
 
 
