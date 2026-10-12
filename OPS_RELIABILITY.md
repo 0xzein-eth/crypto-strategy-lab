@@ -279,3 +279,39 @@ GitHub compute after another canonical observer clearly takes over.
 It never counts another observer's commit as its own fresh quote or
 uses a synthetic historical observation. GH Actions remains a best-effort
 scheduler, and source outage recovery is still not a real-time SLA.
+
+
+## Continuous-on-fresh-tick sampling window (2026-10-12)
+
+The canonical lab now starts a bounded serialized 10-minute observation
+window after **any genuine newly committed recent paper tick**, not only
+after a 45-minute outage. It retains the existing 6 / 12 / 18 pulse
+adaptive budgets based on observed scheduler quality, and checks/fetches
+authoritative `main` before each new observation. Each real quote is
+validated, appended to the same immutable SHA-256 paper event ledger, and
+committed independently, so an interrupted runner cannot erase already
+published experimental observations. Two consecutive independent
+remote advances terminate the idle run.
+
+This can maintain one-to-three hours of observations without waiting
+for further GitHub cron events, but it is **not an SLA and cannot exceed
+100% slot coverage**. Missed GitHub runner starts, runner termination,
+blocked exchange APIs, API quotas and GitHub's pending-job coalescing
+can still create gaps. Frequent long-running Actions jobs consume
+hosted compute; this repository is public, but fair-use and platform
+limits still apply. The rolling measured 10-minute coverage remains
+the source of truth. No exchange credentials/orders/fills are used.
+
+Paper entries on healthy schedules now target up to 20 per observation.
+However the entry-quality gate limits to 5 when coverage is below 40%,
+10 when coverage is 40%–75%, and 3 when recovering from a >45-minute
+gap. Due positions are always evaluated before new entries; short
+horizons remain disabled for lower-quality schedule bands.
+
+Historical v9 research now requests 400 deterministic fixed-parameter
+variants per research run (previously 260 requested / ~250 available)
+and two separate daily collection/evaluation runs. This increases the
+breadth of **exploratory** historical screening, not statistical power
+from independent regimes. It adds no auto-promotion and preserves the
+full settled-funding and out-of-sample criteria; larger multiple-testing
+searches are intrinsically more likely to show chance-only winners.
