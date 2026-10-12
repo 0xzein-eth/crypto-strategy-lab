@@ -315,3 +315,13 @@ breadth of **exploratory** historical screening, not statistical power
 from independent regimes. It adds no auto-promotion and preserves the
 full settled-funding and out-of-sample criteria; larger multiple-testing
 searches are intrinsically more likely to show chance-only winners.
+
+
+**Research variant validity check:** The old v9 five-horizon parameter
+grid had only 250 total possible variants, so raising the workflow's
+`--max-variants` parameter alone would have had no effect. The expanded
+six-horizon and deterministic pre-registered parameter grid has 420
+distinct catalogued variants, of which each scheduled v9 run tests the
+first 400. These are exploratory **hypothesis comparisons**, not 400
+independent tests or confirmed signals. The multiple-comparison
+problem becomes harder, not easier, as more candidates are screened.
