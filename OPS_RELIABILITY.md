@@ -325,3 +325,32 @@ distinct catalogued variants, of which each scheduled v9 run tests the
 first 400. These are exploratory **hypothesis comparisons**, not 400
 independent tests or confirmed signals. The multiple-comparison
 problem becomes harder, not easier, as more candidates are screened.
+
+
+## Signal-slot correlation and runner-start reduction (2026-10-13)
+
+A ten-minute observation cadence can produce two hypothetical OPEN
+experiments per symbol during a single 15-minute indicator/candle
+decision slot. These are not fresh independent signal hypotheses.
+The paper sampler now uses a deterministic symbol/15m UTC signal-slot
+index over the immutable original OPEN entries and refuses another
+OPEN for the same symbol/slot. It freezes the slot at selection
+(`evidence.signal_slot_utc`), with historical records retaining their
+original created_at-based legacy interpretation. It never prevents
+quotes being recorded at 10-minute frequency or due CLOSE attempts.
+
+The independent signal-slot guard reduces correlated repeats even
+if a very short paper experiment has already closed. A corresponding
+pre-index of active symbol counts and strategy/horizon/venue signatures
+reduces repeated scans of the expanding ledger. Offline regression
+tests cover overlapping 10-minute observations, already-closed
+positions and slot rollover.
+
+When rolling 10m slot coverage remains below 75%, the bounded
+continuous runner now requests the full maximum 18 real-time pulses
+instead of 12 in the 40–75% band. The intent is to avoid one
+otherwise unreliable GitHub cron restart each two-hour window.
+This intentionally consumes longer GitHub-hosted compute and remains
+capped at 210 minutes per job. It should only be deemed successful
+if actual rolling coverage improves; Github schedule delivery
+cannot be promised.
