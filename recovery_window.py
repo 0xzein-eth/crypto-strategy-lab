@@ -61,7 +61,7 @@ def continuous_eligible(report, now=None):
 
 
 def adaptive_pulse_budget(report, requested_pulses):
-    """Allocate one- or three-hour recovery to observed schedule quality.
+    """Allocate two- or three-hour windows to observed schedule quality.
 
     A short or missing history never activates the longer runner. Keeps
     existing tracked 10-minute cadence and the same serialized ledger lock;
@@ -75,17 +75,17 @@ def adaptive_pulse_budget(report, requested_pulses):
     if not isinstance(n, int) or isinstance(n, bool) or n < 0:
         raise ValueError("INTEGRITY_FAILURE: invalid schedule history size")
     if n < 12 or ratio is None:
-        return min(requested_pulses, DEFAULT_PULSES)
+        # Unknown cadence should not rely on another best-effort cron in 1h.
+        return min(requested_pulses, 12)
     if (isinstance(ratio, bool) or not isinstance(ratio, (int, float))
             or not 0 <= ratio <= 1):
         raise ValueError("INTEGRITY_FAILURE: invalid schedule coverage")
-    if ratio < 0.4:
+    if ratio < 0.95:
+        # At 88% coverage the lab still suffered gaps. Keep a bounded runner
+        # for three hours until genuinely observed coverage is stronger.
         return min(requested_pulses, 18)
-    if ratio < 0.75:
-        # Fewer job restarts during chronic missed cron windows. Still bounded
-        # by the 210-minute Actions timeout and the same serialized ledger lock.
-        return min(requested_pulses, 18)
-    return min(requested_pulses, DEFAULT_PULSES)
+    # At >95%, keep two hours of sampling to bridge normal cron delays.
+    return min(requested_pulses, 12)
 
 
 def remaining_seconds(last_timestamp, now, interval_minutes):
@@ -188,7 +188,7 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
         if recent["timestamp"] != last_stamp:
             raise RuntimeError("CLOCK_INTEGRITY: canonical report went backwards")
         # A fresh observed quote, not historical interpolation/backfill.
-        runner(["python", "engine.py", "--count", "20"], root)
+        runner(["python", "engine.py", "--count", "24"], root)
         updated = report_at(root)
         if engine.parse(updated["timestamp"]) <= engine.parse(last_stamp):
             raise RuntimeError("CLOCK_INTEGRITY: recovery report did not advance")
@@ -224,7 +224,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pulses", type=int, default=DEFAULT_PULSES)
     parser.add_argument("--adaptive", action="store_true",
-                        help="Use measured coverage to choose up to 6/18 real-time pulses")
+                        help="Use measured coverage to choose up to 12/18 real-time pulses")
     parser.add_argument("--continuous", action="store_true",
                         help="Also run bounded 10-minute observations after a fresh healthy initial tick")
     parser.add_argument("--interval-minutes", type=int,
