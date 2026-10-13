@@ -196,3 +196,26 @@ requested first 400, including controls. Increasing the number of
 backtested rules materially increases the risk of selection overfitting:
 the review gate still requires independent chronological validation,
 settled funding and controls, and no variant is auto-enabled.
+
+
+### Signal-slot independence and sustained observation (13 October 2026)
+
+The 10-minute real-time market-observation cadence and due-position
+closure logic remain unchanged. New paper OPEN experiments are now
+bounded to **one per asset per frozen 15-minute signal decision slot**,
+even when earlier experiments on that asset were already closed. New
+OPEN evidence stores its precommitted `signal_slot_utc` and
+`independent_symbol_slot_policy`. This prevents 10-minute observer
+overlap from creating nearly identical correlated research samples.
+Historic entries and exits are never touched. Current active-trade
+signature checks are also pre-indexed instead of repeatedly scanning
+the growing ledger for each market/horizon combination.
+
+For rolling scheduling coverage below 75% (once at least 12 intervals
+exist), each healthy or recovery-triggered 10-minute observation window
+now requests **up to 18 real future snapshots over approximately 3
+hours** instead of two hours in the intermediate degraded band. At
+75%+ it remains six pulses/one hour. This avoids reliance on an
+additional Github cron start midway through an unstable interval;
+it can increase Actions compute use and still cannot guarantee
+100% scheduling or repair historical missing observations.
