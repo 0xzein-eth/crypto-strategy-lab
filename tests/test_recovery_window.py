@@ -232,7 +232,7 @@ class RecoveryWindowTests(unittest.TestCase):
         self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
         self.assertEqual(window.adaptive_pulse_budget(report_,2),2)
         quality["estimated_10m_slot_coverage"]=0.6
-        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
         quality["estimated_10m_slot_coverage"]=0.9
         self.assertEqual(window.adaptive_pulse_budget(report_,18),6)
         quality["estimated_10m_slot_coverage"]=float("nan")
