@@ -2,7 +2,7 @@
 
 A long scheduler gap makes a SINGLE successful GitHub cron tick insufficient
 for timely-horizon research. After a real recovered paper tick is persisted,
-retain the SAME serialized lab job for a bounded, adaptive 6/12/18 later
+retain the SAME serialized lab job for a bounded, adaptive 6/18 later
 observations spaced 10 minutes apart. Every follow-up uses a *new current public market quote*,
 is audited, and is independently committed; NO historical fill is fabricated.
 
@@ -61,7 +61,7 @@ def continuous_eligible(report, now=None):
 
 
 def adaptive_pulse_budget(report, requested_pulses):
-    """Allocate up to 1/3-hour recovery to genuinely observed schedule quality.
+    """Allocate one- or three-hour recovery to observed schedule quality.
 
     A short or missing history never activates the longer runner. Keeps
     existing tracked 10-minute cadence and the same serialized ledger lock;
