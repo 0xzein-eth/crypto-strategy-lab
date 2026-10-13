@@ -48,14 +48,14 @@ def variant_catalog(max_variants=300):
                                        (0.001, 0.003), HORIZONS):
         if fast < slow:
             by_family["trend"].append(Variant("trend", fast, gate, slow, h))
-    for lookback, gate, h in product((4, 8, 16, 24, 32),
+    for lookback, gate, h in product((4, 8, 16, 24, 32, 48),
                                      (0.001, 0.002, 0.004, 0.008), HORIZONS):
         by_family["momentum"].append(Variant("momentum", lookback, gate, 0, h))
-    for lookback, z, h in product((12, 20, 32, 48), (1.3, 1.8, 2.3), HORIZONS):
+    for lookback, z, h in product((12, 20, 32, 48), (1.3, 1.8, 2.3, 2.8), HORIZONS):
         by_family["mean_revert"].append(Variant("mean_revert", lookback, z, 0, h))
-    for lookback, vol, h in product((12, 20, 40, 60), (0.8, 1.2), HORIZONS):
+    for lookback, vol, h in product((12, 20, 40, 60), (0.8, 1.2, 1.6), HORIZONS):
         by_family["breakout"].append(Variant("breakout", lookback, vol, 0, h))
-    for period, threshold, h in product((7, 14, 21), (25, 30, 35, 40), HORIZONS):
+    for period, threshold, h in product((7, 14, 21, 28), (25, 30, 35, 40), HORIZONS):
         by_family["rsi_revert"].append(Variant("rsi_revert", period, threshold, 0, h))
     for h in HORIZONS:
         by_family["control"].extend([
@@ -227,9 +227,23 @@ def statistics_for(rows):
             statistics.stdev(day_means) / math.sqrt(len(day_means)))
     measured = [r["funding_adjusted_R"] for r in rows
                 if r.get("funding_adjusted_R") is not None]
+    # Fixed additional 25bp round-trip impact on top of the 0.22% base.
+    # Cluster across entry UTC days, not dependent per-trade samples.
+    extra_cost_R = 0.25 / R_DENOMINATOR_PCT
+    stress_days = [m-extra_cost_R for m in day_means]
+    stress_lcb = (statistics.mean(stress_days) - 1.96 *
+                  statistics.stdev(stress_days) / math.sqrt(len(stress_days))
+                  if len(stress_days) >= 4 else None)
+    fully_funded = count > 0 and len(measured) == count
     return {
         "n": count, "days": len(days),
         "measured_funding_n": len(measured),
+        "extra_25bps_after_cost_avg_R": round(
+            statistics.mean(values)-extra_cost_R, 6) if count else None,
+        "extra_25bps_day_cluster_lcb_R": round(stress_lcb, 6)
+                                          if stress_lcb is not None else None,
+        "funding_plus_extra_25bps_avg_R": round(
+            statistics.mean(measured)-extra_cost_R, 6) if fully_funded else None,
         "funding_adjusted_avg_R": round(statistics.mean(measured), 6)
                                   if count and len(measured) == count else None,
         "barrier_touches": sum(bool(r.get("barrier_touch_proxy")) for r in rows),
@@ -332,7 +346,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         -(x["walk_forward"]["day_lcb_R"] or -999),
         -(x["walk_forward"]["avg_R"] or -999), x["variant_id"]))
     return {
-        "schema_version": 1, "factory_version": "v9-param-grid-1",
+        "schema_version": 1, "factory_version": "v9-param-grid-2-stress25bp",
         "validation_method": "expanding_train_three_chronological_folds_purged_96bars",
         "historical_only": True, "proven_edge": False, "champion": None,
         "measured_funding_symbols": sorted(funding_by_symbol),
@@ -350,6 +364,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "Settled historical funding is a constant-notional sensitivity only where coverage is complete.",
             "Intrabar high/low margin proxy does not confirm real liquidation, margin tier or path.",
             "0.10% roundtrip fees plus 0.12% additional hypothetical friction.",
+            "An extra predeclared 0.25% roundtrip impact is stress-tested on UTC day clusters; no actual fill data.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
             "A frozen untouched future dataset and prospective paper trials are REQUIRED."
