@@ -108,6 +108,30 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue(any(v.family == "rsi_revert" and v.threshold == 40
                             for v in entries))
 
+    def test_extended_catalog_supports_five_hundred_variants(self):
+        items = factory.variant_catalog(500)
+        self.assertEqual(len(items), 500)
+        self.assertEqual(len({x.id for x in items}), 500)
+        self.assertTrue(any(x.family == "momentum" and x.lookback == 48 for x in items))
+        self.assertTrue(any(x.family == "mean_revert" and x.threshold == 2.8 for x in items))
+
+    def test_day_cluster_stress_and_funding_sensitivity(self):
+        sample = factory.backtest(market(1100),
+                 factory.Variant("long_control", 0, 0.0, 0, 4))
+        stats = factory.statistics_for(sample)
+        diff = 0.25 / factory.R_DENOMINATOR_PCT
+        self.assertGreaterEqual(stats["days"], 4)
+        self.assertAlmostEqual(stats["extra_25bps_after_cost_avg_R"],
+                               stats["avg_R"]-diff, delta=0.000003)
+        self.assertAlmostEqual(stats["extra_25bps_day_cluster_lcb_R"],
+                               stats["day_lcb_R"]-diff, delta=0.000003)
+        self.assertIsNone(stats["funding_plus_extra_25bps_avg_R"])
+        with_funding = [dict(x, funding_adjusted_R=x["net_R"]+0.02)
+                        for x in sample]
+        funded = factory.statistics_for(with_funding)
+        self.assertAlmostEqual(funded["funding_plus_extra_25bps_avg_R"],
+                               funded["funding_adjusted_avg_R"]-diff, delta=0.000003)
+
     def test_no_future_leakage_in_signal(self):
         original = market(400)
         modified = [r.copy() for r in original]
