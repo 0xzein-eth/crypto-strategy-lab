@@ -63,9 +63,11 @@ class ScaleAndCostTests(unittest.TestCase):
         first=engine.new_candidates({},self.read,self.t,116,24,
                                     clock=lambda:self.t)
         existing={r["id"]:r for r in first}
-        again=engine.new_candidates(existing,self.read,
-                                    self.t+dt.timedelta(minutes=10),140,24,
-                                    clock=lambda:self.t+dt.timedelta(minutes=10))
+        now10=self.t+dt.timedelta(minutes=10)
+        def fresh10(symbol,provider=None):
+            return dict(self.quotes[symbol],observed_at=engine.stamp(now10))
+        again=engine.new_candidates(existing,fresh10,now10,140,24,
+                                    clock=lambda:now10)
         first_symbols={r["symbol"] for r in first}
         self.assertTrue(all(r["symbol"] not in first_symbols for r in again))
         self.assertTrue(all(r["evidence"]["signal_slot_utc"] ==
@@ -76,7 +78,9 @@ class ScaleAndCostTests(unittest.TestCase):
         # Once the predeclared 15-minute slot rolls over, new prospective
         # observations can sample the same assets again.
         future=self.t+dt.timedelta(minutes=20)
-        reopened=engine.new_candidates(existing,self.read,future,140,24,
+        def fresh20(symbol,provider=None):
+            return dict(self.quotes[symbol],observed_at=engine.stamp(future))
+        reopened=engine.new_candidates(existing,fresh20,future,140,24,
                                        clock=lambda:future)
         self.assertGreater(len(reopened),0)
         self.assertTrue(any(r["symbol"] in first_symbols for r in reopened))
@@ -88,7 +92,9 @@ class ScaleAndCostTests(unittest.TestCase):
                                     clock=lambda:self.t)
         historical={r["id"]:dict(r,status="CLOSED") for r in first}
         later=self.t+dt.timedelta(minutes=10)
-        second=engine.new_candidates(historical,self.read,later,140,24,
+        def fresh(symbol,provider=None):
+            return dict(self.quotes[symbol],observed_at=engine.stamp(later))
+        second=engine.new_candidates(historical,fresh,later,140,24,
                                      clock=lambda:later)
         self.assertFalse({r["symbol"] for r in first} &
                          {r["symbol"] for r in second})
