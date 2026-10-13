@@ -219,3 +219,26 @@ hours** instead of two hours in the intermediate degraded band. At
 additional Github cron start midway through an unstable interval;
 it can increase Actions compute use and still cannot guarantee
 100% scheduling or repair historical missing observations.
+
+
+### Research and sampling upgrade (2026-10-13)
+
+The continuous GitHub-hosted observer now takes up to 18 authentic
+ten-minute samples while estimated rolling observation coverage is
+below 95%; after reaching 95% it takes 12. Longer bounded runner
+windows reduce dependence on best-effort cron restarts. This is
+**not a 90% uptime guarantee**: actual coverage is measured in the
+canonical report and missing slots are never fabricated.
+
+Healthy, prospective paper observations request up to 24 NEW
+experiments per tick, subject to one-asset-per-frozen-15m-signal-slot,
+market-source, daily and open-position quality gates. Existing
+due exits run first, never blocked by new-entry throttling.
+
+Historical Research Factory v9 now examines 500 deterministic
+fixed-parameter variants per scheduled run, up from 400, and
+includes a stress sensitivity for another 25bp of round-trip
+execution impact above existing 22bp estimated base trading costs.
+The promotion gate demands positive stressed daily-clustered
+confidence bound and fully-funded stressed mean. None of these
+results represents live execution or verified profitability.

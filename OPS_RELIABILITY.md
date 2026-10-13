@@ -354,3 +354,28 @@ This intentionally consumes longer GitHub-hosted compute and remains
 capped at 210 minutes per job. It should only be deemed successful
 if actual rolling coverage improves; Github schedule delivery
 cannot be promised.
+
+## Coverage-95 and 500-variant research expansion (2026-10-13)
+
+Design baseline was 88.31% estimated rolling observation coverage (9
+missed slots). The runner now takes 18 future real 10-minute samples
+while measured coverage remains below 95%, or 12 above 95%. This
+reduces reliance on frequent best-effort GitHub cron restarts, but
+neither 90% nor 100% uptime is guaranteed. No missed quote is
+fabricated and every new observation is SHA-256 ledger-audited.
+
+Healthy paper entry requests increase from 20 to 24 per tick, subject
+to the same cadence-based quality throttle, asset/15-minute-signal-slot
+deduplication, provider identity, per-asset and UTC-day quotas, and
+open-position limits. Due CLOSEs are always attempted first.
+
+Historical v9 expands to 500 deterministic versioned parameter tests
+on verified perpetual OHLCV with settled funding where available.
+Repeatedly screened outcomes are NOT an untouched final holdout.
+Beyond the initial 0.10% fees and 0.12% estimated friction, we
+report an additional +0.25% round-trip friction sensitivity on UTC-day
+means, with a separate funding-inclusive stress mean. Manual code
+review eligibility now requires both stressed metrics to clear
+strict positive thresholds, along with the existing purge, controls,
+funding coverage and barrier constraints. No real orders or
+automatic strategy activation.

@@ -73,7 +73,7 @@ class RecoveryWindowTests(unittest.TestCase):
             if args[:4]==["git","diff","--cached","--name-only"]:
                 return "data/report.json"
             if args[:3]==["python","engine.py","--count"]:
-                self.assertEqual(args[3],"20")
+                self.assertEqual(args[3],"24")
                 self.save(report(now[0],gap=10,recover=False))
             return ""
         result=window.run_window(root=self.root,pulses=3,
@@ -226,7 +226,7 @@ class RecoveryWindowTests(unittest.TestCase):
     def test_adaptive_budget_respects_coverage_and_hard_limit(self):
         report_=report(NOW)
         quality=report_["scheduling_diagnostics"]
-        self.assertEqual(window.adaptive_pulse_budget(report_,18),6)
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
         quality.update(recent_observed_intervals=42,
                        estimated_10m_slot_coverage=0.2952)
         self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
@@ -234,7 +234,11 @@ class RecoveryWindowTests(unittest.TestCase):
         quality["estimated_10m_slot_coverage"]=0.6
         self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
         quality["estimated_10m_slot_coverage"]=0.9
-        self.assertEqual(window.adaptive_pulse_budget(report_,18),6)
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
+        quality["estimated_10m_slot_coverage"]=0.95
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
+        quality["estimated_10m_slot_coverage"]=1.0
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
         quality["estimated_10m_slot_coverage"]=float("nan")
         with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
             window.adaptive_pulse_budget(report_,18)
