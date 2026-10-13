@@ -38,6 +38,9 @@ MAX_PER_SYMBOL = 50
 MAX_NEW_PER_RUN = 24
 MAX_NEW_PER_UTC_DAY = 1400
 MAX_NEW_PER_SYMBOL_PER_DAY = 65
+# One new OPEN per instrument symbol per frozen completed-candle signal slot.
+# Ten-minute quotes are still sampled and all existing due exits still close.
+SIGNAL_SLOT_SECONDS = 900
 MAX_QUOTE_AGE_SECONDS = 180
 TIMELY_DELAY_SECONDS = 1800
 # A skipped scheduler window must not launch another full batch of correlated trades.
@@ -472,11 +475,25 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                        sum(r["status"] == "OPEN" for r in records.values())))
     if not slots:
         return []
-    slot = int(moment.timestamp() // 900)
+    slot = int(moment.timestamp() // SIGNAL_SLOT_SECONDS)
     clock = clock or (lambda:moment)
     daily_by_symbol = defaultdict(int)
+    sampled_symbol_slots = set()
     for r in opened_today:
         daily_by_symbol[r["symbol"]] += 1
+        # Newer records freeze the exact decision slot; legacy records
+        # have only actual entry creation time. Never rewrite old events.
+        frozen = (r.get("evidence") or {}).get("signal_slot_utc")
+        sample_time = parse(frozen) if frozen is not None else parse(r["created_at"])
+        sampled_symbol_slots.add((r["symbol"],
+                                  int(sample_time.timestamp() // SIGNAL_SLOT_SECONDS)))
+    active_by_symbol = defaultdict(int)
+    existing_signatures = set()
+    for r in records.values():
+        if r["status"] == "OPEN":
+            active_by_symbol[r["symbol"]] += 1
+            existing_signatures.add((r["symbol"], r["provider"],
+                                     r["strategy"], r["horizon_hours"]))
     quotes = []
     for symbol in SYMBOLS:
         try:
@@ -497,9 +514,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             break
         symbol = q["symbol"]
         if (symbol in one_per_run or
+            (symbol, slot) in sampled_symbol_slots or
             daily_by_symbol[symbol] >= MAX_NEW_PER_SYMBOL_PER_DAY or
-            sum(r["symbol"] == symbol and r["status"] == "OPEN"
-                for r in records.values()) >= MAX_PER_SYMBOL):
+            active_by_symbol[symbol] >= MAX_PER_SYMBOL):
             continue
         # The online allocator only selects among pre-registered, observable
         # hypotheses. Controls remain available regardless of apparent results.
@@ -533,10 +550,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                                        profile=frozen_profile)
             if picked is None:
                 continue
-            if any(r["status"] == "OPEN" and r["symbol"] == symbol and
-                   r["provider"] == q["provider"] and
-                   r["strategy"] == picked["strategy"] and
-                   r["horizon_hours"] == candidate_h for r in records.values()):
+            if ((symbol, q["provider"], picked["strategy"], candidate_h)
+                    in existing_signatures):
                 continue
             h=candidate_h
             chosen,allocation=picked,mode
@@ -557,6 +572,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
+                  "signal_slot_utc":stamp(dt.datetime.fromtimestamp(
+                      slot*SIGNAL_SLOT_SECONDS, UTC)),
+                  "independent_symbol_slot_policy":"one_open_per_symbol_per_15m_signal_slot_v1",
                   "eligible_horizons_at_selection":list(horizons),
                   "horizon_sampling_reason":"quality_first_cadence_bands_v1"}
         quality="exploratory; no tradable-edge claim"
@@ -643,7 +661,8 @@ def summarize(records, moment):
                 "max_new_per_run":MAX_NEW_PER_RUN,
                 "max_new_per_utc_day":MAX_NEW_PER_UTC_DAY,
                 "max_open":MAX_OPEN,
-                "max_open_per_symbol":MAX_PER_SYMBOL},
+                "max_open_per_symbol":MAX_PER_SYMBOL,
+                "max_opens_per_symbol_per_15m_signal_slot":1},
             "late_closures": sum(r.get("late_excluded", False) for r in closed),
             "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
             "eligible_perpetual_timely": sample(eligible),

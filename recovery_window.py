@@ -2,7 +2,7 @@
 
 A long scheduler gap makes a SINGLE successful GitHub cron tick insufficient
 for timely-horizon research. After a real recovered paper tick is persisted,
-retain the SAME serialized lab job for a bounded, adaptive 6/12/18 later
+retain the SAME serialized lab job for a bounded, adaptive 6/18 later
 observations spaced 10 minutes apart. Every follow-up uses a *new current public market quote*,
 is audited, and is independently committed; NO historical fill is fabricated.
 
@@ -61,7 +61,7 @@ def continuous_eligible(report, now=None):
 
 
 def adaptive_pulse_budget(report, requested_pulses):
-    """Allocate 1/2/3-hour recovery to genuinely observed schedule quality.
+    """Allocate one- or three-hour recovery to observed schedule quality.
 
     A short or missing history never activates the longer runner. Keeps
     existing tracked 10-minute cadence and the same serialized ledger lock;
@@ -82,7 +82,9 @@ def adaptive_pulse_budget(report, requested_pulses):
     if ratio < 0.4:
         return min(requested_pulses, 18)
     if ratio < 0.75:
-        return min(requested_pulses, 12)
+        # Fewer job restarts during chronic missed cron windows. Still bounded
+        # by the 210-minute Actions timeout and the same serialized ledger lock.
+        return min(requested_pulses, 18)
     return min(requested_pulses, DEFAULT_PULSES)
 
 
@@ -222,7 +224,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pulses", type=int, default=DEFAULT_PULSES)
     parser.add_argument("--adaptive", action="store_true",
-                        help="Use measured coverage to choose up to 6/12/18 real-time pulses")
+                        help="Use measured coverage to choose up to 6/18 real-time pulses")
     parser.add_argument("--continuous", action="store_true",
                         help="Also run bounded 10-minute observations after a fresh healthy initial tick")
     parser.add_argument("--interval-minutes", type=int,
