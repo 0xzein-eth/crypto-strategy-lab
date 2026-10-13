@@ -7,7 +7,7 @@ screening tool, NEVER a claim of statistical proof or expected live profits.
 import datetime as dt
 import re
 
-PROMOTION_POLICY = "research-v9.1-review-gate-1"
+PROMOTION_POLICY = "research-v9.2-review-gate-stress25bp"
 
 
 def build_queue(report):
@@ -55,6 +55,10 @@ def build_queue(report):
                  and metric["day_lcb_R"] > 0.05
                  and metric["funding_adjusted_avg_R"] is not None
                  and metric["funding_adjusted_avg_R"] > 0.05
+                 and metric.get("extra_25bps_day_cluster_lcb_R") is not None
+                 and metric["extra_25bps_day_cluster_lcb_R"] > 0.05
+                 and metric.get("funding_plus_extra_25bps_avg_R") is not None
+                 and metric["funding_plus_extra_25bps_avg_R"] > 0.05
                  and metric["barrier_touches"] == 0)
         diagnostics.append({
             "variant_id": ident, "passes_gate": bool(ready),
@@ -62,6 +66,8 @@ def build_queue(report):
             "validation_n": metric["n"], "distinct_utc_days": metric["days"],
             "day_lcb_R": metric["day_lcb_R"],
             "funding_adjusted_avg_R": metric["funding_adjusted_avg_R"],
+            "extra_25bps_day_cluster_lcb_R": metric.get("extra_25bps_day_cluster_lcb_R"),
+            "funding_plus_extra_25bps_avg_R": metric.get("funding_plus_extra_25bps_avg_R"),
             "margin_proxy_barrier_touches": metric["barrier_touches"],
             "full_settled_funding_coverage": full_funding
         })
