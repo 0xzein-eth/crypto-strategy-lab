@@ -41,7 +41,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_v9.py' -v
       - name: Capture only confirmed same-venue perpetual historical candles
         if: github.event_name != 'pull_request'
-        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 60 --funding-pages 8 --funding-window-days 90 --max-variants 400
+        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE --cold-pages 16 --update-pages 10 --backfill-pages 60 --funding-pages 8 --funding-window-days 90 --max-variants 500
       - name: Verify cached history and derived research report offline
         if: github.event_name != 'pull_request'
         run: |
@@ -59,6 +59,8 @@ jobs:
           assert queue["paper_v8_auto_activation"] is False
           assert queue["live_trading_enabled"] is False
           assert report["measured_funding_symbols"] == sorted(report["measured_funding_symbols"])
+          assert report["candidates_evaluated"] == 500
+          assert report["factory_version"] == "v9-param-grid-2-stress25bp"
           for symbol, details in report["data_provenance"].items():
               assert dataset_digest(load_cache(symbol)) == details["sha256"], symbol
           for symbol, details in report["funding_coverage"].items():
