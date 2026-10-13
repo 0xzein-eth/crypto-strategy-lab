@@ -56,6 +56,43 @@ class ScaleAndCostTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"invalid allowed"):
             engine.new_candidates({},self.read,self.t,116,2,horizons=(8,8))
 
+    def test_frozen_15m_symbol_slots_prevent_correlated_repeat_entries(self):
+        # Scheduler observations occur every ten minutes, but the research
+        # candle/signal is 15 minutes. Do not multiply nearly identical
+        # independent trade hypotheses in the same decision slot.
+        first=engine.new_candidates({},self.read,self.t,116,24,
+                                    clock=lambda:self.t)
+        existing={r["id"]:r for r in first}
+        again=engine.new_candidates(existing,self.read,
+                                    self.t+dt.timedelta(minutes=10),140,24,
+                                    clock=lambda:self.t+dt.timedelta(minutes=10))
+        first_symbols={r["symbol"] for r in first}
+        self.assertTrue(all(r["symbol"] not in first_symbols for r in again))
+        self.assertTrue(all(r["evidence"]["signal_slot_utc"] ==
+                            engine.stamp(self.t) for r in first+again))
+        self.assertTrue(all("one_open_per_symbol_per_15m" in
+                            r["evidence"]["independent_symbol_slot_policy"]
+                            for r in first+again))
+        # Once the predeclared 15-minute slot rolls over, new prospective
+        # observations can sample the same assets again.
+        future=self.t+dt.timedelta(minutes=20)
+        reopened=engine.new_candidates(existing,self.read,future,140,24,
+                                       clock=lambda:future)
+        self.assertGreater(len(reopened),0)
+        self.assertTrue(any(r["symbol"] in first_symbols for r in reopened))
+        for r in first+again+reopened:
+            engine.validate_open(r)
+
+    def test_closed_positions_cannot_bypass_same_slot_guard(self):
+        first=engine.new_candidates({},self.read,self.t,116,24,
+                                    clock=lambda:self.t)
+        historical={r["id"]:dict(r,status="CLOSED") for r in first}
+        later=self.t+dt.timedelta(minutes=10)
+        second=engine.new_candidates(historical,self.read,later,140,24,
+                                     clock=lambda:later)
+        self.assertFalse({r["symbol"] for r in first} &
+                         {r["symbol"] for r in second})
+
     def test_daily_budget_blocks_after_prior_trades_even_if_closed(self):
         records={}
         for i in range(engine.MAX_NEW_PER_UTC_DAY):
