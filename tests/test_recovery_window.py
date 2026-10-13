@@ -226,7 +226,7 @@ class RecoveryWindowTests(unittest.TestCase):
     def test_adaptive_budget_respects_coverage_and_hard_limit(self):
         report_=report(NOW)
         quality=report_["scheduling_diagnostics"]
-        self.assertEqual(window.adaptive_pulse_budget(report_,18),6)
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
         quality.update(recent_observed_intervals=42,
                        estimated_10m_slot_coverage=0.2952)
         self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
@@ -234,7 +234,11 @@ class RecoveryWindowTests(unittest.TestCase):
         quality["estimated_10m_slot_coverage"]=0.6
         self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
         quality["estimated_10m_slot_coverage"]=0.9
-        self.assertEqual(window.adaptive_pulse_budget(report_,18),6)
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),18)
+        quality["estimated_10m_slot_coverage"]=0.95
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
+        quality["estimated_10m_slot_coverage"]=1.0
+        self.assertEqual(window.adaptive_pulse_budget(report_,18),12)
         quality["estimated_10m_slot_coverage"]=float("nan")
         with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
             window.adaptive_pulse_budget(report_,18)
