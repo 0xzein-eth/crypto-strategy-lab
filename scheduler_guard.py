@@ -119,6 +119,57 @@ def evaluate(report, workflow_runs, now, threshold_minutes=MAX_REPORT_AGE_MINUTE
     return result
 
 
+def handoff_decision(report, workflow_runs, now, completed_run_id):
+    """One guarded next-run request after an observed successful lab completion.
+
+    Only workflow_run completions for main may supply an ID. The GitHub
+    workflow-specific API independently confirms it was the most recent
+    successfully completed lab job. This is not a cron SLA or a retry storm:
+    any queued/running job, missing provenance or recovered >=90% cadence
+    prevents dispatch. A second authoritative check is required by execute().
+    """
+    if (not isinstance(completed_run_id,int) or
+            isinstance(completed_run_id,bool) or completed_run_id<=0):
+        return None
+    if minutes_since(report["timestamp"],now)>14:
+        return None
+    metrics=report.get("scheduling_diagnostics") or {}
+    ratio=metrics.get("estimated_10m_slot_coverage")
+    n=metrics.get("recent_observed_intervals",0)
+    if (not isinstance(n,int) or isinstance(n,bool) or n<12 or
+            isinstance(ratio,bool) or not isinstance(ratio,(int,float)) or
+            not 0<=ratio<0.90):
+        return None
+    mains=[r for r in workflow_runs if r.get("head_branch")=="main"]
+    if not mains or any(r.get("status") in
+                        ("queued","in_progress","waiting","pending","requested")
+                        for r in mains):
+        return None
+    latest=max(mains,key=lambda r:utc(r["created_at"]))
+    if (latest.get("id") != completed_run_id or
+            latest.get("status")!="completed" or
+            latest.get("conclusion")!="success" or
+            not latest.get("updated_at") or
+            not 0<=minutes_since(latest["updated_at"],now)<=15):
+        return None
+    return {"status":"NEEDS_HANDOFF","reason":(
+        "A successful completed main lab run has no queued/running successor; "
+        "measured 10-minute coverage is under 90%. Request one new bounded "
+        "paper observation run, no historical backfills.") ,
+        "handoff_source_run_id":completed_run_id,
+        "handoff_coverage":ratio}
+
+
+def evaluate_for_trigger(report, workflow_runs, now, threshold_minutes,
+                         handoff_run_id=None):
+    state=evaluate(report,workflow_runs,now,threshold_minutes=threshold_minutes)
+    if state["status"]=="HEALTHY" and handoff_run_id is not None:
+        candidate=handoff_decision(report,workflow_runs,now,handoff_run_id)
+        if candidate:
+            state.update(candidate)
+    return state
+
+
 class GithubAPI:
     def __init__(self, token):
         if not token:
@@ -155,7 +206,8 @@ class GithubAPI:
 
 
 def execute(repo, api, now=None, allow_dispatch=False,
-            threshold_minutes=MAX_REPORT_AGE_MINUTES):
+            threshold_minutes=MAX_REPORT_AGE_MINUTES,
+            handoff_run_id=None):
     if not REPOSITORY_RE.fullmatch(repo):
         raise ValueError("invalid GITHUB_REPOSITORY")
     now = now or dt.datetime.now(UTC)
@@ -166,13 +218,14 @@ def execute(repo, api, now=None, allow_dispatch=False,
                              "/runs?per_page=40")
     if not isinstance(runs_response, dict) or not isinstance(runs_response.get("workflow_runs"), list):
         raise RuntimeError("DATA_UNAVAILABLE: unable to inspect lab workflow status")
-    state = evaluate(report, runs_response["workflow_runs"], now,
-                     threshold_minutes=threshold_minutes)
+    state = evaluate_for_trigger(report, runs_response["workflow_runs"], now,
+                                 threshold_minutes, handoff_run_id)
     if state["status"] == "STUCK":
         raise RuntimeError("STUCK_RUN: a workflow is still pending/running after " +
                            str(PENDING_RUN_ALERT_MINUTES) +
                            " minutes; manual investigation needed")
-    if state["status"] == "NEEDS_DISPATCH" and allow_dispatch:
+    if state["status"] in ("NEEDS_DISPATCH","NEEDS_HANDOFF") and allow_dispatch:
+        pending_type=state["status"]
         # A primary paper run can finish between the first GET and this POST.
         # Re-read both sources immediately before writing; two staggered GitHub
         # guardians share a repository-wide concurrency group, but a scheduled
@@ -184,17 +237,22 @@ def execute(repo, api, now=None, allow_dispatch=False,
         if (not isinstance(current_runs, dict) or
                 not isinstance(current_runs.get("workflow_runs"), list)):
             raise RuntimeError("DATA_UNAVAILABLE: cannot confirm workflow queue")
-        fresh_state = evaluate(confirmation, current_runs["workflow_runs"], now,
-                               threshold_minutes=threshold_minutes)
+        fresh_state = evaluate_for_trigger(
+            confirmation,current_runs["workflow_runs"],now,
+            threshold_minutes,handoff_run_id)
         if fresh_state["status"] == "STUCK":
             raise RuntimeError("STUCK_RUN: primary workflow has stalled")
-        if fresh_state["status"] != "NEEDS_DISPATCH":
+        if fresh_state["status"] != pending_type:
             state = fresh_state
             state["recheck_prevented_duplicate"] = True
         else:
             api.call(prefix + "/actions/workflows/" + WORKFLOW +
                      "/dispatches", {"ref": "main"})
-            state.update(status="RECOVERY_DISPATCHED", recovery_requested=True,
+            handoff=pending_type=="NEEDS_HANDOFF"
+            state.update(status=("HANDOFF_DISPATCHED" if handoff
+                                 else "RECOVERY_DISPATCHED"),
+                         recovery_requested=True,
+                         handoff_requested=handoff,
                          recheck_prevented_duplicate=False,
                          reason="Authenticated workflow_dispatch accepted by GitHub API; "
                                 "new paper observation NOT YET CONFIRMED")
@@ -210,13 +268,16 @@ def main():
                         help="Dispatch a missed lab workflow if safely necessary")
     parser.add_argument("--threshold-minutes", type=int,
                         default=MAX_REPORT_AGE_MINUTES)
+    parser.add_argument("--handoff-run-id", type=int, default=None,
+                        help="Only for successful main workflow_run completion; verified via API")
     parser.add_argument("--status-file", type=Path, default=None,
                         help="Write an atomic decision receipt for the following health check")
     args = parser.parse_args()
     repo = os.environ.get("GITHUB_REPOSITORY", "")
     api = GithubAPI(os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"))
     state = execute(repo, api, allow_dispatch=args.recover,
-                    threshold_minutes=args.threshold_minutes)
+                    threshold_minutes=args.threshold_minutes,
+                    handoff_run_id=args.handoff_run_id)
     print(json.dumps(state, indent=2, sort_keys=True))
     if args.status_file is not None:
         import tempfile
@@ -238,8 +299,8 @@ def main():
                       str(state["report_age_minutes"]) + " minutes.\n\n")
             out.write("The guardian dispatches a workflow, not a trade; successful "
                       "dispatch does not prove a fresh observed price.\n\n")
-    if state["status"] == "NEEDS_DISPATCH":
-        raise SystemExit("SCHEDULE_STALE: recovery needed but not enabled")
+    if state["status"] in ("NEEDS_DISPATCH","NEEDS_HANDOFF"):
+        raise SystemExit("SCHEDULE_STALE: recovery/handoff needed but not enabled")
 
 
 if __name__ == "__main__":
