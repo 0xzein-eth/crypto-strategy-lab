@@ -164,9 +164,22 @@ def evaluate_for_trigger(report, workflow_runs, now, threshold_minutes,
                          handoff_run_id=None):
     state=evaluate(report,workflow_runs,now,threshold_minutes=threshold_minutes)
     if state["status"]=="HEALTHY" and handoff_run_id is not None:
-        candidate=handoff_decision(report,workflow_runs,now,handoff_run_id)
-        if candidate:
-            state.update(candidate)
+        active=[run for run in workflow_runs
+                if run.get("head_branch")=="main" and
+                run.get("status") in ("queued","in_progress","waiting",
+                                      "pending","requested")]
+        if active:
+            # The report can be fresh while a successor has already queued.
+            # Report this as IN_FLIGHT so the recheck is both safe and auditable.
+            newest=max(active,key=lambda r:utc(r["created_at"]))
+            state.update(status="IN_FLIGHT",
+                         last_workflow_run=newest.get("html_url"),
+                         pending_age_minutes=minutes_since(newest["created_at"],now),
+                         reason="A successor lab run already exists; no handoff needed")
+        else:
+            candidate=handoff_decision(report,workflow_runs,now,handoff_run_id)
+            if candidate:
+                state.update(candidate)
     return state
 
 
