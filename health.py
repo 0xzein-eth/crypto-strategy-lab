@@ -46,7 +46,7 @@ def check(root=ROOT, moment=None, max_hours=MAX_STALENESS_HOURS):
                 schedule_quality=("INSUFFICIENT_SAMPLE"
                                   if (scheduling.get("recent_observed_intervals") or 0) < 12
                                   else ("BELOW_TARGET"
-                                        if (scheduling.get("estimated_10m_slot_coverage") or 0) < 0.8
+                                        if (scheduling.get("estimated_10m_slot_coverage") or 0) < 0.9
                                         else "ON_TARGET")))
 
 
