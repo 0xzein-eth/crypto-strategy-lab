@@ -100,6 +100,25 @@ class EngineTests(unittest.TestCase):
                                   "ts":str(int((self.t-dt.timedelta(minutes=15)).timestamp()*1000))}]}
         return engine.quote("BTC","okx-swap",clock=lambda:self.t,requester=lambda u:tick)
 
+    def test_eligible_market_breadth_never_invents_days(self):
+        import copy
+        q=self.q
+        r=engine.new_candidates({},lambda s,p:q,self.t,116,1)[0]
+        r1=copy.deepcopy(r)
+        r2=copy.deepcopy(r)
+        for record,day,regime in ((r1,"2026-10-08","24h_up"),
+                                  (r2,"2026-10-09","24h_down")):
+            record["status"]="CLOSED"
+            record["created_at"]=day+"T03:00:00Z"
+            record["market_type"]="perpetual"
+            record["late_excluded"]=False
+            record["regime"]=regime
+        breadth=engine.eligible_market_breadth([r1,r2])
+        self.assertEqual(breadth["eligible_entry_days"],2)
+        self.assertEqual(breadth["days_with_both_up_and_down_regimes"],0)
+        self.assertEqual(len(breadth["recent_14_entry_days"]),2)
+        self.assertEqual(breadth["recent_14_entry_days"][0]["eligible_closes"],1)
+
     def test_no_data_does_not_create_events(self):
         with tempfile.TemporaryDirectory() as folder:
             base=Path(folder)
