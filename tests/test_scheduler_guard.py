@@ -115,6 +115,65 @@ class GuardianTests(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", paper)
         self.assertIn("workflow_dispatch:", paper)
 
+    def test_handoff_fills_an_actual_missing_successor_below_ninety(self):
+        original=report(8)
+        original["scheduling_diagnostics"]={
+            "recent_observed_intervals":72,
+            "estimated_10m_slot_coverage":0.80}
+        last=run(195)
+        last.update(id=123,conclusion="success",updated_at=timestamp(3))
+        api=FakeApi(original,[last])
+        state=guard.execute("0xzein-eth/crypto-strategy-lab",api,NOW,
+                            allow_dispatch=True,handoff_run_id=123)
+        self.assertEqual(state["status"],"HANDOFF_DISPATCHED")
+        self.assertTrue(state["handoff_requested"])
+        self.assertEqual(len(api.calls),5)
+        self.assertEqual(api.calls[-1][1],{"ref":"main"})
+
+    def test_handoff_never_dispatches_without_independent_conditions(self):
+        base=report(8)
+        base["scheduling_diagnostics"]={
+            "recent_observed_intervals":72,
+            "estimated_10m_slot_coverage":0.80}
+        recent=run(195)
+        recent.update(id=123,conclusion="success",updated_at=timestamp(3))
+        situations=[
+            (base,[recent],999),
+            (dict(base,scheduling_diagnostics={
+                "recent_observed_intervals":72,
+                "estimated_10m_slot_coverage":0.94}),[recent],123),
+            (report(8),[recent],123),
+            (base,[dict(recent,conclusion="failure")],123),
+            (base,[dict(recent,updated_at=timestamp(30))],123),
+            (base,[recent,dict(run(1,"queued"),id=124)],123),
+            (base,[recent,dict(run(1,"in_progress"),id=124)],123),
+            (base,[dict(recent,head_branch="feature/bad")],123),
+            (base,[recent,dict(run(5),id=124,conclusion="success",
+                               updated_at=timestamp(2))],123),
+        ]
+        for snapshot,runs,ident in situations:
+            with self.subTest(ident=ident,runs=runs):
+                api=FakeApi(snapshot,runs)
+                state=guard.execute("0xzein-eth/crypto-strategy-lab",api,NOW,
+                                    allow_dispatch=True,handoff_run_id=ident)
+                self.assertFalse(state["recovery_requested"])
+                self.assertEqual(len(api.calls),2)
+
+    def test_handoff_second_read_blocks_new_queued_runner(self):
+        original=report(7)
+        original["scheduling_diagnostics"]={
+            "recent_observed_intervals":72,
+            "estimated_10m_slot_coverage":0.80}
+        last=run(194)
+        last.update(id=123,conclusion="success",updated_at=timestamp(2))
+        next_run=dict(run(1,"queued"),id=124)
+        api=FakeApi(original,[last],next_runs=[next_run,last])
+        state=guard.execute("0xzein-eth/crypto-strategy-lab",api,NOW,
+                            allow_dispatch=True,handoff_run_id=123)
+        self.assertEqual(state["status"],"IN_FLIGHT")
+        self.assertTrue(state["recheck_prevented_duplicate"])
+        self.assertEqual(len(api.calls),4)
+
     def test_healthy_report_never_dispatches(self):
         api = FakeApi(report(8), [])
         state = guard.execute("0xzein-eth/crypto-strategy-lab",
