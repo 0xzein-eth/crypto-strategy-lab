@@ -44,7 +44,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python scheduler_guard.py --recover --threshold-minutes 14 --status-file /tmp/lab-guardian.json
+          COMPLETED_LAB_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$COMPLETED_LAB_RUN_ID" ]]; then
+            python scheduler_guard.py --recover --threshold-minutes 14 --handoff-run-id "$COMPLETED_LAB_RUN_ID" --status-file /tmp/lab-guardian.json
+          else
+            python scheduler_guard.py --recover --threshold-minutes 14 --status-file /tmp/lab-guardian.json
+          fi
       - name: Verify ledger and alert if market observation remains stale
         run: |
           set -euo pipefail
