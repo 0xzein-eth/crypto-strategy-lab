@@ -93,6 +93,56 @@ class LearningTests(unittest.TestCase):
         self.assertGreater(sum(p[0]["strategy"]!="CTRL-v1" for p in picks),60)
         self.assertTrue(all(p[1]!="provisional_leader_allocation" for p in picks))
 
+    def test_train_only_persistent_losses_reduce_weight_without_erasure(self):
+        days=[(dt.date(2026,1,1)+dt.timedelta(days=i)).isoformat()
+              for i in range(100)]
+        rows=[]
+        for d in days:
+            for _ in range(3):
+                rows.extend((trade("CTRL-v1",d,0.0),
+                             trade("BR-proxy-v1",d,-1.0),
+                             trade("MR-proxy-v1",d,0.2)))
+        profile=learner.analysis(rows)
+        self.assertIn("BR-proxy-v1",profile["training_only_underperformers"])
+        self.assertNotIn("CTRL-v1",profile["training_only_underperformers"])
+        self.assertNotIn("MR-proxy-v1",profile["training_only_underperformers"])
+        controls=[{"strategy":"CTRL-v1","side":"LONG"},
+                  {"strategy":"BR-proxy-v1","side":"LONG"},
+                  {"strategy":"MR-proxy-v1","side":"SHORT"}]
+        selected=[learner.choose(controls,rows,"BTC",4,k,0,profile)
+                  for k in range(1500)]
+        br=sum(p["strategy"]=="BR-proxy-v1" for p,_ in selected)
+        mr=sum(p["strategy"]=="MR-proxy-v1" for p,_ in selected)
+        ctrl=sum(p["strategy"]=="CTRL-v1" for p,_ in selected)
+        self.assertGreater(br,0)
+        self.assertGreater(mr,br*2)
+        self.assertGreaterEqual(ctrl,240)
+        self.assertTrue(any(mode=="training_underperformer_downweighted"
+                            for _,mode in selected))
+        # A different MONITORING outcome cannot influence next-round choices.
+        changed=[dict(x) for x in rows]
+        for x in changed:
+            if x["strategy"]=="BR-proxy-v1" and learner.stable_bucket(
+                    "holdout:"+learner.day_of(x),5)==0:
+                x["normalized_R"]=3.0
+        p2=learner.analysis(changed)
+        self.assertEqual(profile["training_only_underperformers"],
+                         p2["training_only_underperformers"])
+        self.assertEqual(
+            selected,
+            [learner.choose(controls,changed,"BTC",4,k,0,p2)
+             for k in range(1500)])
+
+    def test_few_days_cannot_downweight_even_large_negative_sample(self):
+        rows=[]
+        for i in range(3):
+            day=(dt.date(2026,2,1)+dt.timedelta(days=i)).isoformat()
+            rows.extend([trade("BR-proxy-v1",day,-3)]*500)
+            rows.extend([trade("CTRL-v1",day,0)]*500)
+        p=learner.analysis(rows)
+        self.assertEqual(p["training_only_underperformers"],[])
+        self.assertFalse(p["arms"]["BR-proxy-v1"]["underperformer_train_only"])
+
     def test_unconfirmed_advanced_never_selected(self):
         options=[{"strategy":"BR-proxy-v1","side":"SHORT"},
                  {"strategy":"MR-proxy-v1","side":"LONG"},

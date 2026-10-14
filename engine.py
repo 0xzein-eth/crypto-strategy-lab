@@ -433,11 +433,11 @@ def close_due(records, read_quote, moment, clock=None):
 
 
 
-def diversified_quotes(quotes, slot):
-    """Interleave predeclared sector/direction/volatility strata deterministically.
+def diversified_quotes(quotes, slot, prior_daily_strata=None):
+    """Prioritize sparsely sampled OPEN-era strata, with no outcome hindsight.
 
-    Sector groupings improve representation but do not create statistical independence.
-    No retrospective outcomes influence ranking or features.
+    Balancing uses only frozen *entry* metadata from the same UTC day,
+    never trade results. Even a diversified cross-section remains correlated.
     """
     buckets = defaultdict(list)
     for q in quotes:
@@ -446,10 +446,11 @@ def diversified_quotes(quotes, slot):
         rows.sort(key=lambda q: (
             hashlib.sha256(f"{slot}:{q['symbol']}:{key}".encode()).hexdigest(),
             q["symbol"]))
-    keys = sorted(buckets)
-    if keys:
-        start = slot % len(keys)
-        keys = keys[start:] + keys[:start]
+    counts=prior_daily_strata or {}
+    keys = sorted(buckets,key=lambda key: (
+        counts.get(key,0),
+        hashlib.sha256(("%s:%s"%(slot,key)).encode()).hexdigest(),
+        key))
     ordered = []
     while any(buckets.values()):
         for key in keys:
@@ -504,7 +505,13 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                 quotes.append(q)
         except Exception:
             continue
-    quotes = diversified_quotes(quotes, slot)
+    # Only entry-time labels, not past wins/losses, influence stratification.
+    prior_daily_strata=defaultdict(int)
+    for r in opened_today:
+        frozen=(r.get("evidence") or {}).get("sampling_stratum")
+        if isinstance(frozen,list) and len(frozen)==3:
+            prior_daily_strata[tuple(frozen)]+=1
+    quotes = diversified_quotes(quotes, slot, prior_daily_strata)
     # Freeze the learning profile before creating any new OPEN; avoid replaying
     # thousands of closed trades for each attempted symbol/horizon.
     frozen_profile = learner.analysis(records)
@@ -572,6 +579,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
+                  "stratum_balance_policy":"same_utc_day_prior_entry_counts_v1_no_outcomes",
                   "signal_slot_utc":stamp(dt.datetime.fromtimestamp(
                       slot*SIGNAL_SLOT_SECONDS, UTC)),
                   "independent_symbol_slot_policy":"one_open_per_symbol_per_15m_signal_slot_v1",
@@ -612,6 +620,53 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         output.append(rec)
         one_per_run.add(symbol)
     return output
+
+
+def eligible_market_breadth(eligible):
+    """Read-only, entry-frozen market regime/day breadth for eligible closes.
+
+    Diversity diagnostics are not a statistical edge, and do not create
+    missing days or assume trades from correlated crypto symbols are iid.
+    """
+    groups=defaultdict(lambda: {"n":0,"regimes":set(),"sectors":set(),
+                                "dayparts":set(),"strata":set()})
+    for r in eligible:
+        entered=parse(r["created_at"])
+        day=entered.date().isoformat()
+        evidence=r.get("evidence") or {}
+        sector=universe.ASSET_SECTORS.get(r.get("symbol"),"unknown")
+        frozen=evidence.get("sampling_stratum")
+        if isinstance(frozen,list) and len(frozen)==3:
+            sector=str(frozen[0])
+            label="/".join(str(part) for part in frozen)
+        else:
+            label="unknown_legacy"
+        g=groups[day]
+        g["n"]+=1
+        g["regimes"].add(str(r.get("regime","unknown")))
+        g["sectors"].add(sector)
+        g["strata"].add(label)
+        g["dayparts"].add(entered.hour//6)
+    history=[{"utc_day":day,
+              "eligible_closes":v["n"],
+              "entry_regimes":sorted(v["regimes"]),
+              "distinct_sectors":len(v["sectors"]),
+              "distinct_frozen_strata":len(v["strata"]),
+              "observed_utc_six_hour_bins":sorted(v["dayparts"])}
+             for day,v in sorted(groups.items())]
+    return {
+        "policy":"entry_frozen_regime_sector_six_hour_bins_v1",
+        "eligible_entry_days":len(groups),
+        "distinct_sector_labels":len(set().union(
+            *(g["sectors"] for g in groups.values())) if groups else set()),
+        "days_with_both_up_and_down_regimes":sum(
+            {"24h_up","24h_down"}.issubset(g["regimes"])
+            for g in groups.values()),
+        "days_with_all_four_utc_dayparts":sum(
+            len(g["dayparts"])==4 for g in groups.values()),
+        "recent_14_entry_days":history[-14:],
+        "note":"Observed eligible entries only; no simulated missing dates or proof of independence.",
+    }
 
 
 def summarize(records, moment):
@@ -671,6 +726,7 @@ def summarize(records, moment):
                 "eligible_timely_perpetual_closes":len(eligible),
                 "eligible_share_of_all_closes":round(len(eligible)/len(closed),4) if closed else None,
                 "distinct_utc_days":adaptive["eligible_days"],
+                "market_breadth":eligible_market_breadth(eligible),
                 "minimum_training_days":learner.MIN_TRAIN_DAYS,
                 "training_day_coverage_ready":adaptive["eligible_days"]>=learner.MIN_TRAIN_DAYS,
                 "validation_status":"NOT_PROVEN",

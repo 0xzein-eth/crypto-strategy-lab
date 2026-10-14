@@ -40,6 +40,24 @@ class ScaleAndCostTests(unittest.TestCase):
         self.assertTrue(all(r["friction_stress"]["version"]==friction.VERSION for r in out))
         self.assertTrue(all(r["evidence"]["sampling_rule"].endswith("roundrobin-15m") for r in out))
 
+    def test_sparse_strata_preferred_only_by_frozen_entry_counts(self):
+        data=[dict(self.quotes[s]) for s in ("BTC","ETH","DOGE","LINK")]
+        slot=int(self.t.timestamp()//900)
+        major=universe.bucket("BTC",data[0]["pct24h"],
+                              data[0]["quote_volume_24h"])
+        meme=universe.bucket("DOGE",data[2]["pct24h"],
+                             data[2]["quote_volume_24h"])
+        self.assertNotEqual(major,meme)
+        prior={major:20,meme:0}
+        first=engine.diversified_quotes(data,slot,prior)
+        second=engine.diversified_quotes(data,slot,prior)
+        self.assertEqual(first,second)
+        self.assertNotEqual(
+            universe.bucket(first[0]["symbol"],first[0]["pct24h"],
+                            first[0]["quote_volume_24h"]),major)
+        self.assertEqual({q["symbol"] for q in first},
+                         {q["symbol"] for q in data})
+
     def test_horizon_quality_band_changes_only_future_experiments(self):
         all_h=engine.new_candidates({},self.read,self.t,116,24,clock=lambda:self.t)
         degraded_h=engine.new_candidates({},self.read,self.t,116,24,

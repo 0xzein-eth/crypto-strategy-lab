@@ -37,9 +37,19 @@ def verify(root=ROOT):
         report["adaptive_research"] != summary["adaptive_research"]):
         raise ValueError("INTEGRITY_FAILURE: adaptive research statistics mismatch")
     # Derived evidence-quality fields are additive and must match when present.
-    if ("evidence_quality" in report and
-        report["evidence_quality"] != summary["evidence_quality"]):
-        raise ValueError("INTEGRITY_FAILURE: evidence quality statistics mismatch")
+    if "evidence_quality" in report:
+        # An older signed v3 report lacks the new entry-breadth diagnostics.
+        # Preserve verification of every previously published field, while
+        # allowing only additional derived diagnostics at the next real tick.
+        expected=summary["evidence_quality"]
+        for key,value in report["evidence_quality"].items():
+            if key not in expected or expected[key]!=value:
+                raise ValueError(
+                    "INTEGRITY_FAILURE: evidence quality statistics mismatch: "+key)
+        # A v4 report must publish and independently reconcile the new field.
+        if (str(report.get("adaptive_research",{}).get("method","")).startswith("v4-") and
+                "market_breadth" not in report["evidence_quality"]):
+            raise ValueError("INTEGRITY_FAILURE: missing new market breadth diagnostics")
     # Optional for reports written before the additive fixed-horizon reporting
     # upgrade; required to reconcile as soon as the next run publishes it.
     if ("fixed_horizon_outcomes" in report and

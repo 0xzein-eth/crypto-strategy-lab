@@ -242,3 +242,33 @@ execution impact above existing 22bp estimated base trading costs.
 The promotion gate demands positive stressed daily-clustered
 confidence bound and fully-funded stressed mean. None of these
 results represents live execution or verified profitability.
+
+
+### Training-only risk-aware research triage and coverage relay (2026-10-14)
+
+The guardian can send **one authenticated handoff dispatch** when the
+completed successful canonical lab run has no queued or running successor
+and measured rolling 10-minute observation coverage is below **90%**.
+The completed-run identity, fresh canonical report, status and cadence
+are verified twice against GitHub's workflow-specific API. Competing
+runners, failed jobs, older completion receipts, adequate coverage and
+absent schedule history are rejected. GitHub cron/dispatch remains
+best-effort; this does not guarantee a 90% SLA or permit fabricated
+quotes, and longer runner continuity consumes hosted compute.
+
+All new experimental candidate sorting now favors **less frequently
+sampled sector/direction/volatility groups within the same UTC day**.
+These counts use only precommitted entry labels, never outcomes.
+The reported evidence quality includes authentic eligible entry-day
+coverage, positive/negative 24h regimes, sector breadth and sampled
+six-hour UTC windows. Historical dates remain unchanged and a seventh
+distinct day cannot be manufactured in one run.
+
+Arms with **>=50 training-only valid closes across >=7 training days**
+may be downweighted only when their clipped daily **upper** confidence
+bound is below -0.05R and the training mean trails the control by
+more than 0.05R. The 20% control branch remains intact; unfavored
+strategies retain a positive exploration weight and may be re-evaluated
+on future regimes. The holdout/monitoring partition is NEVER used in
+the allocation decision. This is allocation triage, not evidence of
+trading profitability, and no rule can enable real trading.

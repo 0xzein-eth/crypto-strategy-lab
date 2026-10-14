@@ -379,3 +379,35 @@ review eligibility now requires both stressed metrics to clear
 strict positive thresholds, along with the existing purge, controls,
 funding coverage and barrier constraints. No real orders or
 automatic strategy activation.
+
+
+## GitHub scheduling handoff and data-quality gates (2026-10-14)
+
+The main schedule guardian now accepts a `workflow_run`-triggered
+`--handoff-run-id` only for a recent successful completed main lab
+run, verified against the authoritative GitHub workflow-runs API.
+When the current report is less than 14m old, measured rolling coverage
+is below 90% over >=12 intervals, the completion is <15m old, and no
+primary run is queued or running, it requests one next
+`workflow_dispatch`. A second API read immediately before dispatch
+prevents most concurrent-queue races. This aims to reduce multi-hour
+cron gaps, but Github scheduling is not an SLA. Avoid treating an
+accepted dispatch as a collected market observation. There is no
+external scheduler/credential, backfill or real exchange trade.
+Guardian health now calls rolling 90% coverage the operational target;
+below 90% is correctly marked BELOW_TARGET.
+
+Real research diversification counts frozen OPEN metadata in the same
+UTC day (sector + 24h price-direction + volatility band), never close
+P&L or future regimes. Underrepresented strata are visited first in
+a deterministic round-robin, subject to venue/source and the existing
+one-symbol-per-15m-slot guard. Reports state the true number of eligible
+UTC entry days, two-direction day coverage, sector and daypart breadth,
+while warning that linked crypto assets are not independent trials.
+
+`learner.py` can downweight a repeatedly poor arm only when 7
+training days, 50 training closes, a negative clipped day-level upper
+bound and underperformance vs the original CTRL pass simultaneously.
+Monitoring/holdout scores cannot influence decisions, no arm is
+removed, and the precommitted minimum control sampling stays >=20%
+when offered. Do not infer live tradability from any exploratory gain.
