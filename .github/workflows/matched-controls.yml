@@ -1,0 +1,32 @@
+name: Matched controls research
+on:
+  push:
+    paths:
+      - 'matched_controls.py'
+      - 'tests/test_matched_controls.py'
+      - '.github/workflows/matched-controls.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-and-compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test matching logic
+        run: python -m unittest discover -s tests -p 'test_matched_controls.py' -v
+      - name: Validate immutable ledger
+        run: python audit.py
+      - name: Compare eligible paper closes with matched controls
+        run: python matched_controls.py --output matched-controls-report.json
+      - name: Upload read-only research report
+        uses: actions/upload-artifact@v4
+        with:
+          name: matched-controls-paper-report
+          path: matched-controls-report.json
+          retention-days: 30
