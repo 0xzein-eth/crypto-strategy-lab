@@ -56,6 +56,55 @@ class MatchedControlTests(unittest.TestCase):
         self.assertEqual(stats["mean_paired_delta_fee_adjusted_R"], 0.5)
         self.assertEqual(stats["mean_paired_delta_after_friction_scenario_R"], 0.1)
 
+    def test_paired_frozen_monitoring_does_not_substitute_unmatched_trades(self):
+        from learner import stable_bucket
+        days=[(dt.date(2026,9,1)+dt.timedelta(days=i)).isoformat()
+              for i in range(80)]
+        selected=[day for day in days if stable_bucket("holdout:"+day,5)==0]
+        self.assertGreaterEqual(len(selected),4)
+        rows=[]
+        for i,day in enumerate(days):
+            rows.append(row("A"+str(i),"BR-v3",day=day,value=0.7))
+            if day not in selected:
+                rows.append(row("C"+str(i),"CTRL-v1",day=day,value=0.1))
+        result=mc.compare(rows)["arms"]["BR-v3"]
+        self.assertEqual(result["paired_holdout_pairs"],0)
+        self.assertIsNone(result["paired_holdout_descriptive_lcb_R"])
+        self.assertGreater(result["paired_train_pairs"],0)
+        self.assertEqual(result["matched_pairs"]+result["unmatched_arm_closes"],len(days))
+
+    def test_dashboard_is_ranking_only_and_ledger_source_linked(self):
+        report={
+          "timestamp":"2026-10-15T03:00:00Z",
+          "ledger_tip_sha256":"a"*64,
+          "scheduling_diagnostics":{"estimated_10m_slot_coverage":0.96},
+          "fixed_horizon_outcomes":{"strategy":{
+              "RSI-v1":{"eligible_timely_perpetual_closed":40,
+                        "eligible_distinct_entry_utc_days":3,
+                        "eligible_after_friction_expectancy_R":0.9,
+                        "eligible_after_friction_day_cluster_lcb_R":-0.2,
+                        "eligible_timely_perpetual_win_rate":0.65},
+              "MR-v3":{"eligible_timely_perpetual_closed":210,
+                       "eligible_distinct_entry_utc_days":11,
+                       "eligible_after_friction_expectancy_R":0.2,
+                       "eligible_after_friction_day_cluster_lcb_R":-0.1,
+                       "eligible_timely_perpetual_win_rate":0.51},
+              "CTRL-v1":{"eligible_timely_perpetual_closed":400,
+                         "eligible_distinct_entry_utc_days":12,
+                         "eligible_after_friction_expectancy_R":-0.04}
+          }}}
+        comparison={"arms":{"RSI-v1":{"matched_pairs":4,"matched_fraction":0.1,
+                    "paired_holdout_pairs":0,"paired_holdout_utc_days":0},
+                     "MR-v3":{"matched_pairs":110,"matched_fraction":0.52,
+                    "paired_holdout_pairs":30,"paired_holdout_utc_days":6}}}
+        result=mc.dashboard(report,comparison)
+        self.assertEqual(result["all_evaluated_hypotheses"],["RSI-v1","MR-v3"])
+        self.assertEqual(result["sufficient_sample_hypotheses"],["MR-v3"])
+        self.assertEqual(result["source_ledger_tip_sha256"],"a"*64)
+        self.assertFalse(result["arms"]["RSI-v1"]["edge_proven"])
+        self.assertTrue(result["not_promotion_input"])
+        self.assertTrue(result["no_order_execution"])
+
     def test_positive_cluster_still_not_proven(self):
         rows = []
         for i in range(8):
@@ -66,6 +115,9 @@ class MatchedControlTests(unittest.TestCase):
         self.assertEqual(stats["matched_entry_utc_days"], 8)
         self.assertGreater(stats["day_cluster_95pct_descriptive_lcb_after_friction_R"], 0)
         self.assertFalse(stats["edge_proven"])
+        self.assertEqual(stats["matched_pairs"],
+                         stats["paired_train_pairs"]+stats["paired_holdout_pairs"])
+        self.assertLessEqual(stats["paired_holdout_utc_days"],8)
 
 
 if __name__ == "__main__":
