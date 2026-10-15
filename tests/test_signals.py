@@ -79,6 +79,23 @@ class SignalTests(unittest.TestCase):
         self.assertTrue(any(x["strategy"]=="RSI-v1" and x["side"]=="LONG"
                             for x in signals_found))
 
+    def test_three_new_predeclared_candle_only_hypotheses(self):
+        z=bars(70)
+        z[-1].update(open=100,high=105,low=99.0,close=104,volume=180)
+        names={x["strategy"] for x in signals.classify(z)}
+        self.assertIn("DC-v1",names)
+        self.assertIn("RSITREND-v1",names)
+        self.assertIn("ATRCHAN-v1",names)
+        for signal in signals.classify(z):
+            if signal["strategy"] in ("DC-v1","RSITREND-v1","ATRCHAN-v1"):
+                self.assertEqual(signal["side"],"LONG")
+                self.assertEqual(signal["evidence"]["bar_time"],z[-1]["time"])
+        z2=bars(70)
+        z2[-1].update(open=100,high=101,low=95,close=96,volume=180)
+        down={x["strategy"]:x["side"] for x in signals.classify(z2)}
+        for name in ("DC-v1","RSITREND-v1","ATRCHAN-v1"):
+            self.assertEqual(down.get(name),"SHORT")
+
     def test_nonmatching_provider_not_fetched(self):
         called=[]
         output=signals.from_okx("BTC",{"provider":"kraken-spot-proxy"},
