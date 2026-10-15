@@ -397,3 +397,14 @@ same-horizon two-control comparison when sample sizes permit.
 `walk_forward_selected`, `eligible_for_forward_code_review`,
 a prospective paper trade, or an order. Validation is repeatedly
 inspected and is NOT a clean confirmatory holdout.
+
+
+### Transparent recovery ETA expressed in NEW actual 10-minute intervals
+
+The unchanged canonical 72-gap coverage metric now exposes an
+**explicitly counterfactual** count of future real on-time 10-minute
+observations required to reach 90% or 95%, *assuming every upcoming
+interval succeeds and no slots are missed*. It slides historical gaps
+out of the fixed-size window; it never adds synthetic gap entries to
+the actual ledger, updates the headline metric, requests trades based
+on projected coverage, or guarantees a time-to-recovery SLA.
