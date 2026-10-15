@@ -35,7 +35,7 @@ FEE_SIDE_PCT = 0.05
 RESEARCH_RISK_PCT = 1.5
 MAX_OPEN = 850
 MAX_PER_SYMBOL = 50
-MAX_NEW_PER_RUN = 30  # Healthy prospective quota; never bypass per-symbol/slot caps
+MAX_NEW_PER_RUN = 36  # Healthy prospective quota; preserve one OPEN per symbol per frozen 15m slot
 MAX_NEW_PER_UTC_DAY = 1400
 MAX_NEW_PER_SYMBOL_PER_DAY = 65
 # One new OPEN per instrument symbol per frozen completed-candle signal slot.
@@ -546,9 +546,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         if isinstance(frozen,list) and len(frozen)==3:
             prior_daily_strata[tuple(frozen)]+=1
     quotes = diversified_quotes(quotes, slot, prior_daily_strata)
-    # Freeze the learning profile before creating any new OPEN; avoid replaying
-    # thousands of closed trades for each attempted symbol/horizon.
-    frozen_profile = learner.analysis(records)
+    # Allocation is deliberately performance-neutral until independent research
+    # requirements permit an explicit future policy version. No training-result
+    # profile may reweight an experiment's probability during collection.
     output, one_per_run = [], set()
     for rank, q in enumerate(quotes):
         if len(output) >= slots:
@@ -588,7 +588,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         for offset in range(len(horizons)):
             candidate_h=horizons[(slot+rank+offset)%len(horizons)]
             picked,mode=learner.choose(options, records, symbol, candidate_h, slot, rank+offset,
-                                       profile=frozen_profile)
+                                       profile=None)
             if picked is None:
                 continue
             if ((symbol, q["provider"], picked["strategy"], candidate_h)
@@ -606,10 +606,11 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "price_change_reference":q.get("price_change_reference","provider-24h-window"),
                   "signal_rule":"pre-registered confirmed-candle or 24h baseline",
                   "research_only":True,
-                  "allocation_policy":"learner-v3-train-only-monitoring-separated",
+                  "allocation_policy":"learner-v5-neutral-exploration-no-promotion",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
-                  "signal_catalog_version":"2026-10-15-confirmed-v2",
+                  "performance_neutral_allocation":True,
+                  "signal_catalog_version":"2026-10-15-confirmed-v3",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
