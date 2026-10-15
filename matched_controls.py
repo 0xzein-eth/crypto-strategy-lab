@@ -110,7 +110,24 @@ def compare(records):
         n = len(pairs)
         days = len({p["entry_day"] for p in pairs})
         lcb, ucb = _daily_interval(pairs)
+        # Freeze cohort at original UTC ENTRY day. Both strategy and
+        # comparator must be in the SAME frozen matched pair; counting
+        # unmatched holdout trades would silently overstate validation.
+        holdout = [p for p in pairs if
+                   learner.stable_bucket("holdout:"+p["entry_day"],5)==0]
+        train = [p for p in pairs if
+                 learner.stable_bucket("holdout:"+p["entry_day"],5)!=0]
+        train_lcb, train_ucb = _daily_interval(train)
+        holdout_lcb, holdout_ucb = _daily_interval(holdout)
         results[arm] = {
+            "paired_train_pairs": len(train),
+            "paired_train_utc_days": len({p["entry_day"] for p in train}),
+            "paired_train_descriptive_lcb_R": train_lcb,
+            "paired_train_descriptive_ucb_R": train_ucb,
+            "paired_holdout_pairs": len(holdout),
+            "paired_holdout_utc_days": len({p["entry_day"] for p in holdout}),
+            "paired_holdout_descriptive_lcb_R": holdout_lcb,
+            "paired_holdout_descriptive_ucb_R": holdout_ucb,
             "eligible_arm_closes": len(by_arm[arm]),
             "matched_pairs": n,
             "unmatched_arm_closes": len(by_arm[arm]) - n,
@@ -140,6 +157,7 @@ def compare(records):
         "matching": "retrospective nearest entry, without replacement within each arm",
         "friction": "fee-adjusted recorded R; additional frozen stress/fallback compared separately",
         "clustering": "UTC entry-day means of clipped paired differences (+/-3R); descriptive 1.96 SE",
+        "cohort_split": "SHA256 frozen UTC entry-day 20% monitoring, 80% training; matching never consults CLOSE outcomes",
         "limitations": [
             "No synthetic or historical entry/exit prices; only eligible real observed paper CLOSE records.",
             "Unmatched signals are excluded, so paired estimates can have selection bias.",
@@ -153,11 +171,70 @@ def compare(records):
     }
 
 
+def dashboard(report, comparison):
+    """Read-only descriptive leaderboard, independent of learner allocation.
+
+    Full ranking exposes limited samples; sufficient-data ranking requires
+    predeclared >=100 timely perp closes and >=7 distinct UTC entry days.
+    Positive means/large win rates NEVER assert a repeatable tradable edge.
+    """
+    outcomes=(report.get("fixed_horizon_outcomes") or {}).get("strategy") or {}
+    lines=[]
+    for name,stat in sorted(outcomes.items()):
+        n=stat.get("eligible_timely_perpetual_closed",0)
+        days=stat.get("eligible_distinct_entry_utc_days",0)
+        avg=stat.get("eligible_after_friction_expectancy_R")
+        matched=(comparison.get("arms") or {}).get(name,{})
+        lines.append({
+            "strategy":name,
+            "control_arm":name==CONTROL,
+            "eligible_timely_perpetual_closes":n,
+            "distinct_entry_utc_days":days,
+            "after_friction_expectancy_R":avg,
+            "day_cluster_95pct_descriptive_lcb_R":
+                stat.get("eligible_after_friction_day_cluster_lcb_R"),
+            "win_rate":stat.get("eligible_timely_perpetual_win_rate"),
+            "matched_control_pairs":matched.get("matched_pairs",0),
+            "matched_control_fraction":matched.get("matched_fraction"),
+            "paired_holdout_pairs":matched.get("paired_holdout_pairs",0),
+            "paired_holdout_days":matched.get("paired_holdout_utc_days",0),
+            "paired_holdout_lcb_R":matched.get("paired_holdout_descriptive_lcb_R"),
+            "sufficient_for_descriptive_comparison":bool(n>=100 and days>=7),
+            "edge_proven":False,
+        })
+    key=lambda x:(
+        x["after_friction_expectancy_R"] is None,
+        -(x["after_friction_expectancy_R"] or 0),
+        -x["eligible_timely_perpetual_closes"],
+        x["strategy"])
+    eligible=[x for x in lines if not x["control_arm"] and
+              x["after_friction_expectancy_R"] is not None]
+    eligible.sort(key=key)
+    credible=[x for x in eligible if x["sufficient_for_descriptive_comparison"]]
+    return {
+        "version":"descriptive-leaderboard-v1",
+        "paper_only":True,
+        "no_order_execution":True,
+        "not_promotion_input":True,
+        "source_report_timestamp_utc":report.get("timestamp"),
+        "source_ledger_tip_sha256":report.get("ledger_tip_sha256"),
+        "coverage_72_observation_intervals":
+            (report.get("scheduling_diagnostics") or {}).get("estimated_10m_slot_coverage"),
+        "ranking_method":"Descending descriptive eligible after-friction expectancy R; NOT a significance or risk-adjusted ranking",
+        "all_evaluated_hypotheses":[x["strategy"] for x in eligible],
+        "sufficient_sample_hypotheses":[x["strategy"] for x in credible],
+        "arms":{x["strategy"]:x for x in lines},
+        "warning":"Correlated trades and multiple comparisons; historical monitoring was inspected. No edge proven and no auto-allocation.",
+    }
+
+
 def main():
     import audit
     import engine
     parser = argparse.ArgumentParser(description="Read-only paper control matching")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--leaderboard", type=Path,
+                        help="Save a read-only, ledger-tip-linked descriptive strategy ranking")
     args = parser.parse_args()
     integrity = audit.verify()
     records, seq, tip, _ = engine.replay()
@@ -170,6 +247,12 @@ def main():
     }
     report = json.loads(engine.REPORT.read_text(encoding="utf-8"))
     result["source_report_timestamp_utc"] = report["timestamp"]
+    if args.leaderboard:
+        ranked=dashboard(report,result)
+        args.leaderboard.parent.mkdir(parents=True, exist_ok=True)
+        args.leaderboard.write_text(
+            json.dumps(ranked,indent=2,sort_keys=True,allow_nan=False)+"\n",
+            encoding="utf-8")
     encoded = json.dumps(result, indent=2, sort_keys=True, allow_nan=False)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -188,6 +271,17 @@ def main():
                     info["mean_paired_delta_fee_adjusted_R"],
                     info["mean_paired_delta_after_friction_scenario_R"],
                     info["coverage"]))
+            if args.leaderboard:
+                out.write("\n#### Descriptive after-friction ranking\n\n")
+                out.write("| Strategy | Timely closes | UTC days | Mean R | Matched pairs | Paired monitoring days |\n")
+                out.write("|---|---:|---:|---:|---:|---:|\n")
+                for name in ranked["all_evaluated_hypotheses"]:
+                    row=ranked["arms"][name]
+                    out.write("| {} | {} | {} | {} | {} | {} |\n".format(
+                        name,row["eligible_timely_perpetual_closes"],
+                        row["distinct_entry_utc_days"],
+                        row["after_friction_expectancy_R"],
+                        row["matched_control_pairs"],row["paired_holdout_days"]))
             out.write("\nObservational, correlated, multi-tested; no strategy promotion or proven edge.\n")
 
 
