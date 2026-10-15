@@ -224,22 +224,3 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
     pick=weighted_exploration(available,set(),
                               "neutral:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
     return available[pick],"balanced_neutral_exploration"
-                                 else "confirmed_signal_exploration")
-    if bucket<75 and baselines:
-        pick=weighted_exploration(baselines,reduced,
-                                  "baseline:%s:%s"%(symbol,slot))
-        return available[pick],("training_underperformer_downweighted" if pick in reduced
-                                 else "baseline_exploration")
-    # Learning/preservation: only reproducible and control-aware
-    # training candidates receive extra allocation. Monitoring is withheld.
-    # Only training-only rankings may alter future sampling.
-    # Never route monitoring/holdout outcomes back into action selection.
-    leaders=[s for s in profile.get("allocation_leaders",[]) if s in available]
-    if leaders and bucket>=75:
-        best=leaders[0]
-        return available[best],"train_only_exploratory_allocation"
-    # Deterministic balanced exploration, including baselines and signals.
-    pick=weighted_exploration(available,reduced,
-                              "explore:%s:%s:%s"%(symbol,horizon,slot))
-    return available[pick],("training_underperformer_downweighted" if pick in reduced
-                             else "balanced_exploration")
