@@ -36,7 +36,7 @@ class ScaleAndCostTests(unittest.TestCase):
         self.assertEqual(engine.prospective_entry_budget(30,coverage(.31)),(5,"severe_scheduler_coverage"))
         self.assertEqual(engine.prospective_entry_budget(30,coverage(.66)),(12,"degraded_scheduler_coverage"))
         self.assertEqual(engine.prospective_entry_budget(30,coverage(.83)),(20,"recovering_scheduler_coverage"))
-        self.assertEqual(engine.prospective_entry_budget(30,coverage(.96)),(30,"healthy_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(36,coverage(.96)),(36,"healthy_scheduler_coverage"))
         self.assertEqual(engine.prospective_entry_budget(30,coverage(.96),recovery=True)[0],3)
         self.assertEqual(engine.prospective_entry_budget(30,
                          {"recent_observed_intervals":3}), (30,"collect_scheduler_baseline"))
@@ -47,10 +47,11 @@ class ScaleAndCostTests(unittest.TestCase):
         out=engine.new_candidates({},self.read,self.t,116,24,clock=lambda:self.t)
         self.assertEqual(len(out),24)
         self.assertEqual(len({r["symbol"] for r in out}),24)
-        increased=engine.new_candidates({},self.read,self.t,116,30,
+        increased=engine.new_candidates({},self.read,self.t,116,36,
                                         clock=lambda:self.t)
-        self.assertEqual(len(increased),30)
-        self.assertEqual(len({r["symbol"] for r in increased}),30)
+        self.assertEqual(len(increased),36)
+        self.assertEqual(len({r["symbol"] for r in increased}),36)
+        self.assertTrue(all(r["evidence"]["performance_neutral_allocation"] for r in increased))
         self.assertGreaterEqual(len({r["evidence"]["sampling_stratum"][0] for r in out}),4)
         self.assertGreaterEqual(len({r["horizon_hours"] for r in out}),5)
         self.assertTrue(all(r["friction_stress"]["version"]==friction.VERSION for r in out))

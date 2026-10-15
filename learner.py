@@ -14,7 +14,8 @@ from statistics import mean, stdev
 BASELINES=("BR-proxy-v1","MR-proxy-v1","CTRL-v1")
 ADVANCED=("TP-v3","BR-v3","MR-v3","LS-v3","FB-v3",
           "TREND-v1","VOL-v1","RANGE-v1","RSI-v1","CROSS-v1","VWAP-v1",
-          "DC-v1","RSITREND-v1","ATRCHAN-v1")
+          "DC-v1","RSITREND-v1","ATRCHAN-v1",
+          "COMPBR-v1","IMPULSE-v1","TRECLAIM-v1")
 MIN_TRAIN=10
 PREFER_TRAIN=30
 MIN_TRAIN_DAYS=7
@@ -182,7 +183,7 @@ def analysis(records):
             "clipped daily upper bound < -0.05R, training mean >0.05R "
             "worse than CTRL; only 4:1 exploration reweight, never disable; "
             "monitoring outcomes excluded"),
-        "champion":candidates[0] if candidates else None,
+        "champion":None,  # Descriptive candidates do not meet independent promotion criteria.
         "warning":("No strategy has demonstrated a reliable tradable edge. "
                    "Training-only allocations never access monitoring results. "
                    "Historical monitoring was previously used for allocations, "
@@ -208,32 +209,18 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
         return available["CTRL-v1"],"control_exploration"
     advanced=[s for s in ADVANCED if s in available]
     baselines=[s for s in BASELINES[:2] if s in available]
-    # Freeze training-only quality before the decision. Never use monitoring.
-    profile=analysis(records) if profile is None else profile
-    reduced=set(profile.get("training_only_underperformers",()))
-    # Keep precommitted 20% CTRL and advanced-signal exploration branches.
-    # Only relative weights *within* each branch change after enough
-    # independent training dates; a reduced arm is never turned off.
-    if bucket<60 and advanced:
-        pick=weighted_exploration(advanced,reduced,
-                                  "advanced:%s:%s"%(symbol,slot))
-        return available[pick],("training_underperformer_downweighted" if pick in reduced
-                                 else "confirmed_signal_exploration")
-    if bucket<75 and baselines:
-        pick=weighted_exploration(baselines,reduced,
-                                  "baseline:%s:%s"%(symbol,slot))
-        return available[pick],("training_underperformer_downweighted" if pick in reduced
-                                 else "baseline_exploration")
-    # Learning/preservation: only reproducible and control-aware
-    # training candidates receive extra allocation. Monitoring is withheld.
-    # Only training-only rankings may alter future sampling.
-    # Never route monitoring/holdout outcomes back into action selection.
-    leaders=[s for s in profile.get("allocation_leaders",[]) if s in available]
-    if leaders and bucket>=75:
-        best=leaders[0]
-        return available[best],"train_only_exploratory_allocation"
-    # Deterministic balanced exploration, including baselines and signals.
-    pick=weighted_exploration(available,reduced,
-                              "explore:%s:%s:%s"%(symbol,horizon,slot))
-    return available[pick],("training_underperformer_downweighted" if pick in reduced
-                             else "balanced_exploration")
+    # Performance-neutral prospective experimentation: neither preliminary
+    # training rankings nor repeated-look monitoring, provisional leaders, or
+    # underperformer tags change arm weights before strict qualification.
+    # The separately published analysis remains descriptive/read-only.
+    if bucket<75 and advanced:
+        pick=weighted_exploration(advanced,set(),
+                                  "advanced:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
+        return available[pick],"confirmed_signal_neutral_exploration"
+    if bucket<90 and baselines:
+        pick=weighted_exploration(baselines,set(),
+                                  "baseline:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
+        return available[pick],"baseline_neutral_exploration"
+    pick=weighted_exploration(available,set(),
+                              "neutral:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
+    return available[pick],"balanced_neutral_exploration"

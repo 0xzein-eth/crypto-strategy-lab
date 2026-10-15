@@ -342,26 +342,48 @@ These arms may have substantial correlation with existing hypotheses,
 so paper volume is never presented as independent statistical evidence.
 
 
-### Historical research v9.3 — 750 deterministic backtest hypotheses
-The Research Factory increases its predeclared **historical-only** grid
-from 500 to **750** independent *parameter variants* (not 750 proven
-or executed strategies). The first 500 variant IDs and their ordering
-remain byte-for-byte stable; beyond them the factory adds:
-Donchian price-channel breakout plus historical-volume confirmation,
-z-score continuation filtered by trailing SMA50/SMA20 trend, and
-RSI-trend continuation gated on SMA50. All use confirmed 15-minute
-OHLCV and enter at the **next** bar open in historical approximation;
-same 8 OKX perpetual funding-aware symbols, 90-day common analysis
-window, purged 96-candle walk-forward, fees/slippage stress and
-unchanged manual-only promotion. 750 related hypotheses substantially
-increase multiple-testing risk and do not establish profitability.
+### Historical research v9.4 — 1,200 deterministic backtest variants
 
-The canonical scheduled paper workflow and each bounded 10-minute observer
-pass `--count 30`, but **the engine never actually opens 30** unless
-the independent rolling sample coverage meets its predeclared
-quality threshold and symbol/15m/day/source gates permit. Recovery
-after a long scheduling gap still caps new entries at three.
+The independent historical Research Factory now tests up to **1,200
+parameterized hypotheses**, up from 750, with the exact original 750
+experiment IDs and their order unchanged. Three additional families
+are **compression-breakout**, **volatility-impulse**, and **trend-reclaim**.
+They use closed 15-minute candles and hypothetical next-bar entry only;
+historical fills are estimates, not observed executed trades.
 
+The requested price-history universe expands from 8 to **10** predeclared
+OKX USDT-perpetual instruments: BTC, ETH, SOL, LINK, XRP, ADA, AVAX,
+DOGE, DOT, NEAR. Actual dataset and *complete settled funding*
+availability are independently audited in every run: missing instruments
+are omitted, missing funding is never treated as zero, and data cannot
+be backfilled with imagined prices. The analysis window remains
+90 days. Tests retain purged chronological walk-forward, explicit
+fee/impact sensitivity and non-promotion of rejected shadow candidates.
+Testing 1,200 overlapping variants magnifies multiple-comparison risk;
+the report always remains exploratory, with no proven edge.
+
+### Prospective paper experiment capacity and neutral allocation
+
+The canonical GitHub Actions observer now requests at most **36 new
+paper OPENs per observation**, formerly 30. This is only a
+**requested maximum**: actual new positions require qualifying current
+quotes, instrument checks, independent 15m symbol slots, distinct open
+signatures, daily/total capacity and real rolling scheduling coverage.
+The guard still limits recovery runs to three; missed ticks are never
+retroactively filled. Every position remains paper-only and has a
+separately observed current entry and due exit quotation.
+
+Prospective confirmed-candle testing also includes
+`COMPBR-v1`, `IMPULSE-v1`, and `TRECLAIM-v1`. The control allocation
+is reserved at >=20% where CTRL is offered. All available hypothesis
+arms are chosen with deterministic *equal weights within each sampling
+branch*, based on availability and precommitted keys, **not**
+provisional win rates, training ranks, losses or viewed holdout returns.
+Training leaderboards remain research diagnostics; `champion` stays
+null and **no strategy is automatically promoted** until a separately
+verified independent eligibility policy is explicitly deployed.
+Confirmed OKX candles older than 25 minutes are rejected, including
+after scheduler delays.
 
 ### Evidence-first automatic ranking and failure diagnosis (2026-10-15)
 The separate **Matched controls research** workflow now runs automatically
@@ -375,7 +397,7 @@ also requires genuinely matched *positive day-cluster bounds in both
 partitions*, not merely unmatched profitable trades. This partition has
 been inspected repeatedly; it is **not** untouched independent validation
 and it never changes the online learner's allocations.
-The historical 750-variant walk-forward additionally publishes for each
+The historical 1,200-variant walk-forward additionally publishes for each
 training fold the count of candidates failing sample/day/positive-day-bound
 requirements plus up to ten highest-scoring **disqualified training-only**
 variants. These are explicitly NOT selected for validation, promotion,
@@ -386,7 +408,7 @@ unchanged.
 ### Shadow validation of rejected historical hypotheses
 
 V9 historical research can validly report **zero** positively selected
-strategy variants after 750 tests. Instead of claiming the least-bad
+strategy variants after 1,200 tests. Instead of claiming the least-bad
 training result is an edge, each expanding chronological fold now
 preselects **up to four training-rejected** parameter variants (preferring
 different families) and evaluates them descriptively on the next purged

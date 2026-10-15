@@ -42,13 +42,13 @@ class Variant:
 
 
 def variant_catalog(max_variants=300):
-    """Versioned deterministic catalogue; first 500 IDs remain stable.
+    """Versioned deterministic catalogue; first 750 IDs remain stable.
 
-    The original 500-variant order is never silently shuffled: adding new
+    The original 750-variant order is never silently shuffled: adding new
     families must not rewrite prior experimental hypotheses or introduce
     retrospective selection changes. Expansion is historical/backtest-only.
     """
-    if not 1 <= max_variants <= 775:
+    if not 1 <= max_variants <= 1200:
         raise ValueError("max_variants must be within 1..775")
 
     def drain(by_family, limit):
@@ -98,7 +98,24 @@ def variant_catalog(max_variants=300):
                                             (55, 60, 65, 70), HORIZONS):
             extended["rsi_trend"].append(
                 Variant("rsi_trend", period, threshold, 0, h))
-        selected.extend(drain(extended, max_variants - len(selected)))
+        selected.extend(drain(extended, min(750, max_variants) - len(selected)))
+    if max_variants > 750:
+        # A NEW versioned expansion: the first 750 experiment IDs/order are frozen.
+        # Additional arms do not alter the original selection and results.
+        new_families = defaultdict(list)
+        for lookback, ratio, h in product(
+                (12, 16, 20, 32, 48), (0.5, 0.65, 0.8, 0.95, 1.1, 1.25), HORIZONS):
+            new_families["compression_breakout"].append(
+                Variant("compression_breakout", lookback, ratio, 0, h))
+        for lookback, magnitude, h in product(
+                (8, 12, 16, 24, 32), (0.5, 0.75, 1.0, 1.25, 1.5, 1.75), HORIZONS):
+            new_families["volatility_impulse"].append(
+                Variant("volatility_impulse", lookback, magnitude, 0, h))
+        for lookback, threshold, h in product(
+                (8, 12, 16, 24, 32), (0.0, 0.1, 0.2, 0.3, 0.4, 0.5), HORIZONS):
+            new_families["trend_reclaim"].append(
+                Variant("trend_reclaim", lookback, threshold, 50, h))
+        selected.extend(drain(new_families, max_variants - len(selected)))
     if len(selected) != max_variants or len({v.id for v in selected}) != len(selected):
         raise AssertionError("insufficient unique predeclared research hypotheses")
     return selected
@@ -192,6 +209,35 @@ def signal(f, v, closed):
         trend_base=f.mean(j,50)
         return (1 if rsi>v.threshold and close>trend_base
                 else -1 if rsi<100-v.threshold and close<trend_base else 0)
+    if v.family == "compression_breakout":
+        n = v.lookback
+        if j < 2*n:
+            return 0
+        preceding_high = max(f.high[j-n:j])
+        preceding_low = min(f.low[j-n:j])
+        previous_width = max(f.high[j-2*n:j-n])-min(f.low[j-2*n:j-n])
+        if previous_width <= 0 or preceding_high-preceding_low > v.threshold*previous_width:
+            return 0
+        return 1 if close > preceding_high else -1 if close < preceding_low else 0
+    if v.family == "volatility_impulse":
+        n = v.lookback
+        prior_range = sum(f.high[k]-f.low[k] for k in range(j-n,j))/n
+        if prior_range <= 0:
+            return 0
+        delta = close-f.close[j-1]
+        return 1 if delta > v.threshold*prior_range else -1 if delta < -v.threshold*prior_range else 0
+    if v.family == "trend_reclaim":
+        n = v.lookback
+        current_fast = f.mean(j,n)
+        previous_fast = f.mean(j-1,n)
+        slow = f.mean(j,v.second)
+        reference_range = sum(f.high[k]-f.low[k] for k in range(j-n,j))/n
+        if reference_range <= 0:
+            return 0
+        return (1 if current_fast > slow and f.close[j-1] <= previous_fast and
+                close > current_fast + v.threshold*reference_range
+                else -1 if current_fast < slow and f.close[j-1] >= previous_fast and
+                close < current_fast - v.threshold*reference_range else 0)
     if v.family == "long_control":
         return 1
     if v.family == "control":
@@ -478,7 +524,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
     family_counts = {name:sum(v.family==name for v in variants)
                      for name in sorted({v.family for v in variants})}
     return {
-        "schema_version": 1, "factory_version": "v9-param-grid-3-750-stress25bp",
+        "schema_version": 1, "factory_version": "v9-param-grid-4-1200-stress25bp",
         "validation_method": "expanding_train_three_chronological_folds_purged_96bars",
         "historical_only": True, "proven_edge": False, "champion": None,
         "measured_funding_symbols": sorted(funding_by_symbol),
@@ -488,7 +534,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         "candidates_evaluated": len(variants),
         "predeclared_variants_by_family": family_counts,
         "hypothesis_selection_policy": (
-            "First 500 IDs unchanged; new deterministic families historical-only;"
+            "First 750 IDs unchanged; new deterministic families historical-only;"
             " shadow evaluations of failed training variants NEVER promoted;"
             " not an independent alpha test"),
         "datasets_evaluated": len(datasets),
@@ -505,7 +551,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "Shadow evaluations for training-rejected hypotheses are exploratory, not formal candidate selection.",
             "Both ordinary and shadow walk-forward validation are REPEATEDLY inspected, not an untouched final holdout.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
-            "750 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
+            "1200 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
             "A frozen untouched future dataset and prospective paper trials are REQUIRED."
         ],
