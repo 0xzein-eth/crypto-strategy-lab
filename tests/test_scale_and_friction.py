@@ -29,12 +29,28 @@ class ScaleAndCostTests(unittest.TestCase):
     def read(self,symbol,provider=None):
         return self.quotes[symbol]
 
+    def test_quality_first_budget_scales_only_with_real_schedule_coverage(self):
+        def coverage(p):
+            return {"recent_observed_intervals":72,
+                    "estimated_10m_slot_coverage":p}
+        self.assertEqual(engine.prospective_entry_budget(30,coverage(.31)),(5,"severe_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(30,coverage(.66)),(12,"degraded_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(30,coverage(.83)),(20,"recovering_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(30,coverage(.96)),(30,"healthy_scheduler_coverage"))
+        self.assertEqual(engine.prospective_entry_budget(30,coverage(.96),recovery=True)[0],3)
+        self.assertEqual(engine.prospective_entry_budget(30,
+                         {"recent_observed_intervals":3}), (30,"collect_scheduler_baseline"))
+
     def test_many_markets_and_stratified_capacity(self):
         self.assertGreaterEqual(len(engine.SYMBOLS),35)
         self.assertEqual(set(engine.SYMBOLS),set(universe.ASSET_SECTORS))
         out=engine.new_candidates({},self.read,self.t,116,24,clock=lambda:self.t)
         self.assertEqual(len(out),24)
         self.assertEqual(len({r["symbol"] for r in out}),24)
+        increased=engine.new_candidates({},self.read,self.t,116,30,
+                                        clock=lambda:self.t)
+        self.assertEqual(len(increased),30)
+        self.assertEqual(len({r["symbol"] for r in increased}),30)
         self.assertGreaterEqual(len({r["evidence"]["sampling_stratum"][0] for r in out}),4)
         self.assertGreaterEqual(len({r["horizon_hours"] for r in out}),5)
         self.assertTrue(all(r["friction_stress"]["version"]==friction.VERSION for r in out))
