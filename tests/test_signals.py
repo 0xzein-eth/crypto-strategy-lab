@@ -96,6 +96,30 @@ class SignalTests(unittest.TestCase):
         for name in ("DC-v1","RSITREND-v1","ATRCHAN-v1"):
             self.assertEqual(down.get(name),"SHORT")
 
+    def test_added_paper_only_candle_arms_observed_without_future_data(self):
+        z=bars(70)
+        # Last completed bar must be the signal, not any forming future bar.
+        z[-1].update(open=100,high=107,low=99,close=106,volume=250)
+        decisions=signals.classify(z)
+        self.assertTrue(any(x["strategy"]=="IMPULSE-v1" and x["side"]=="LONG"
+                            for x in decisions))
+        self.assertTrue(all(x["evidence"]["bar_time"]==z[-1]["time"]
+                            for x in decisions))
+        self.assertTrue(all(x["strategy"] in __import__("learner").ADVANCED
+                            for x in decisions))
+
+    def test_candle_age_rejects_old_signals_in_fresh_wall_clock_slot(self):
+        z=bars(60)
+        rows=[]
+        for x in reversed(z):
+            epoch=int(dt.datetime.fromisoformat(x["time"].replace("Z","+00:00")).timestamp()*1000)
+            rows.append([str(epoch),str(x["open"]),str(x["high"]),str(x["low"]),
+                         str(x["close"]),str(x["volume"]),"1","1","1"])
+        latest=dt.datetime.fromisoformat(z[-1]["time"].replace("Z","+00:00"))
+        with self.assertRaisesRegex(ValueError,"stale"):
+            signals.parse_okx_candles({"code":"0","data":rows},
+                                     latest+dt.timedelta(minutes=41))
+
     def test_nonmatching_provider_not_fetched(self):
         called=[]
         output=signals.from_okx("BTC",{"provider":"kraken-spot-proxy"},
