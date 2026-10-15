@@ -7,6 +7,9 @@ on:
       - '.github/workflows/matched-controls.yml'
   pull_request:
   workflow_dispatch:
+  # Keep downloadable rankings reasonably fresh without writing to ledger.
+  schedule:
+    - cron: '27 0,6,12,18 * * *'
 permissions:
   contents: read
 jobs:
@@ -23,10 +26,12 @@ jobs:
       - name: Validate immutable ledger
         run: python audit.py
       - name: Compare eligible paper closes with matched controls
-        run: python matched_controls.py --output matched-controls-report.json
+        run: python matched_controls.py --output matched-controls-report.json --leaderboard strategy-leaderboard.json
       - name: Upload read-only research report
         uses: actions/upload-artifact@v4
         with:
           name: matched-controls-paper-report
-          path: matched-controls-report.json
+          path: |
+            matched-controls-report.json
+            strategy-leaderboard.json
           retention-days: 30
