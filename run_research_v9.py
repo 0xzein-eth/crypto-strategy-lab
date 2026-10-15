@@ -150,6 +150,9 @@ def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
         },
         "v8_event_ledger_modified": False,
         "forward_paper_trades_created": 0,
+        "shadow_diagnostic_policy": (
+            "At most four disqualified training-only hypotheses per fold evaluated "
+            "chronologically as descriptive shadow research; NOT promoted"),
         "research_recommendation": "Continue prospective v8 paper trades separately; "
                                    "historical candidates require versioned, independent "
                                    "forward validation before any promotion."
