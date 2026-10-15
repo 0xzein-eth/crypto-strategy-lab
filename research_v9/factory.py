@@ -397,6 +397,55 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                         if val_start <= r["entry_ts"] and r["exit_ts"] < val_end]
             controls[v.id] = statistics_for(selected)
         control_by_fold.append(controls)
+        # Predeclared shadow-audit budget, selected SOLELY from the
+        # disqualified TRAINING screen. This intentionally evaluates a
+        # small number of rejected ideas in future chronological folds to
+        # learn whether apparent weak ideas generalize. Crucially these
+        # are NEVER included in selected_for_validation, all_chosen,
+        # combined, the review queue, or the online paper allocator.
+        # One candidate per family first: correlated parameter variants
+        # must not consume all the descriptive diagnostic space.
+        shadow_picks = []
+        seen_families = set()
+        for candidate in train_screen:
+            if candidate["family"] not in seen_families:
+                shadow_picks.append(candidate)
+                seen_families.add(candidate["family"])
+            if len(shadow_picks) >= 4:
+                break
+        if len(shadow_picks) < 4:
+            chosen_ids = {c["variant_id"] for c in shadow_picks}
+            for candidate in train_screen:
+                if candidate["variant_id"] not in chosen_ids:
+                    shadow_picks.append(candidate)
+                if len(shadow_picks) >= 4:
+                    break
+        shadow_evaluations = []
+        for candidate in shadow_picks:
+            ident = candidate["variant_id"]
+            future = [r for r in per_variant[ident]
+                      if val_start <= r["entry_ts"] and r["exit_ts"] < val_end]
+            future_stat = statistics_for(future)
+            horizon = int(ident.rsplit("-H", 1)[1])
+            comparators = [
+                c["avg_R"] for name,c in controls.items()
+                if name.endswith("-H" + str(horizon))
+                and c["avg_R"] is not None and c["n"] >= 10
+            ]
+            baseline = max(comparators) if len(comparators) == 2 else None
+            shadow_evaluations.append({
+                "variant_id":ident,"family":candidate["family"],
+                "training_failed_reasons":candidate["blocking_reasons"],
+                "training_day_cluster_lcb_R":candidate["training_day_cluster_lcb_R"],
+                "shadow_validation":future_stat,
+                "compared_both_control_means":baseline is not None,
+                "descriptive_delta_vs_better_control_mean_R":(
+                    round(future_stat["avg_R"] - baseline,6)
+                    if baseline is not None and future_stat["avg_R"] is not None
+                    else None),
+                "eligible_for_promotion":False,
+                "status":"SHADOW_EXPLORATORY_ONLY",
+            })
         fold_reports.append({
             "fold": fold_number, "validation_start_utc":
                 dt.datetime.fromtimestamp(val_start/1000, dt.timezone.utc).isoformat(),
@@ -407,8 +456,13 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "training_screen_rejection_counts":dict(sorted(disqualified.items())),
             "highest_scoring_unqualified_training_only":train_screen[:10],
             "training_screen_note":(
-                "Training-only diagnostic; failures never enter validation or promotion; "
-                "top rejected variants are NOT winners"),
+                "Training-only candidate choice; highest rejected variants are NOT winners; "
+                "shadow validation is explicitly exploratory and repeatedly inspected"),
+            "shadow_evaluations":shadow_evaluations,
+            "shadow_policy":(
+                "At most four TRAINING-selected failed hypotheses with family "
+                "diversity, scored only on chronological purged validation; "
+                "never added to promotion queue or forward allocation"),
             "selected_for_validation": validated,
             "controls": controls,
         })
@@ -435,6 +489,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         "predeclared_variants_by_family": family_counts,
         "hypothesis_selection_policy": (
             "First 500 IDs unchanged; new deterministic families historical-only;"
+            " shadow evaluations of failed training variants NEVER promoted;"
             " not an independent alpha test"),
         "datasets_evaluated": len(datasets),
         "common_bars": n_bars,
@@ -447,6 +502,8 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "Intrabar high/low margin proxy does not confirm real liquidation, margin tier or path.",
             "0.10% roundtrip fees plus 0.12% additional hypothetical friction.",
             "An extra predeclared 0.25% roundtrip impact is stress-tested on UTC day clusters; no actual fill data.",
+            "Shadow evaluations for training-rejected hypotheses are exploratory, not formal candidate selection.",
+            "Both ordinary and shadow walk-forward validation are REPEATEDLY inspected, not an untouched final holdout.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
             "750 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
