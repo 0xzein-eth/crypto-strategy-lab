@@ -1,5 +1,6 @@
 """Fail-closed evidence quality checks."""
 import unittest
+from pathlib import Path
 import research_quality as rq
 
 def row(ident, strategy, day="2026-10-08"):
@@ -33,6 +34,18 @@ class QualityTests(unittest.TestCase):
         result = rq.evaluate(rows, comparison(days=50), 0.99)
         self.assertTrue(result["arms"]["BR-v3"]["quality_gate_pass"])
         self.assertFalse(result["arms"]["BR-v3"]["edge_proven"])
+
+    def test_quality_workflow_refreshes_with_independent_clocks(self):
+        path=Path(__file__).resolve().parents[1] / ".github" / "workflows" / "research-quality.yml"
+        yml=path.read_text(encoding="utf-8")
+        self.assertIn("cron: '13 05,17 * * *'",yml)
+        self.assertIn("workflows: ['Historical Research Factory v9']",yml)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'",yml)
+        self.assertIn("github.event.workflow_run.head_repository.full_name == github.repository",yml)
+        self.assertIn("cancel-in-progress: false",yml)
+        self.assertIn("source_ledger_tip_sha256",yml)
+        self.assertIn("actions/upload-artifact@v4",yml)
+        self.assertNotIn("contents: write",yml)
 
     def test_invalid_coverage_fails(self):
         for coverage in (None, float("nan"), True, 1.5, -1):

@@ -7,10 +7,23 @@ on:
       - '.github/workflows/research-quality.yml'
   pull_request:
   workflow_dispatch:
+  # Reassess research quality automatically even when no policy/code changed.
+  # GitHub cron delivery remains best-effort.
+  schedule:
+    - cron: '13 05,17 * * *'
+  # Also refresh read-only checks when historical research finishes.
+  workflow_run:
+    workflows: ['Historical Research Factory v9']
+    types: [completed]
+    branches: [main]
 permissions:
   contents: read
+concurrency:
+  group: research-quality-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   quality:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.event != 'pull_request')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
