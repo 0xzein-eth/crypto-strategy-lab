@@ -8,7 +8,7 @@ import math
 
 BAR_MINUTES = 15
 MIN_BARS = 60
-MAX_LATEST_AGE_MINUTES = 50
+MAX_LATEST_AGE_MINUTES = 25  # Reject reuse of a >25m old confirmed candle
 
 
 def parse_okx_candles(payload, observed):
@@ -85,6 +85,10 @@ def features(bars):
             "z20":(c[-1]-sma20)/sd if sd>0 else 0,
             "atr14":atr,"prev_high20":prev_high,"prev_low20":prev_low,
             "vol_ratio":cur["volume"]/vol20 if vol20>0 else 0,
+            "prior20_range_width":prev_high-prev_low,
+            "older20_range_width":max(h[-41:-21])-min(l[-41:-21]),
+            "prior20_mean_range":sum(h[i]-l[i] for i in range(len(bars)-21,len(bars)-1))/20,
+            "sma50prev_close":sma50prev,
             "prior_breakout_up":c[-2]>max(h[-22:-2]),
             "prior_breakout_down":c[-2]<min(l[-22:-2]),
             "regime_high_before_breakout":max(h[-22:-2]),
@@ -189,6 +193,28 @@ def classify(bars):
             add("VWAP-v1","LONG","confirmed 20-bar typical-price VWAP reclaim with volume")
         if f["c_prev"]>=f["vwap20prev"] and p<f["vwap20"] and p<f["last_open"]:
             add("VWAP-v1","SHORT","confirmed 20-bar typical-price VWAP rejection with volume")
+    # Three additional pre-registered, candle-only forward-paper hypotheses.
+    # Separate arm IDs preserve provenance; none is a preferential allocation.
+    if (f["older20_range_width"]>0 and
+            f["prior20_range_width"]<=0.8*f["older20_range_width"] and
+            f["vol_ratio"]>=0.9):
+        if p>f["prev_high20"]+0.05*atr:
+            add("COMPBR-v1","LONG","prior20 range <=0.8 older20 range; break high+0.05ATR")
+        if p<f["prev_low20"]-0.05*atr:
+            add("COMPBR-v1","SHORT","prior20 range <=0.8 older20 range; break low-0.05ATR")
+    if f["prior20_mean_range"]>0 and f["vol_ratio"]>=1.25:
+        delta=p-f["c_prev"]
+        if delta>1.0*f["prior20_mean_range"]:
+            add("IMPULSE-v1","LONG","close impulse >1.0 previous20 avg range; vol>=1.25x")
+        if delta< -1.0*f["prior20_mean_range"]:
+            add("IMPULSE-v1","SHORT","close impulse <-1.0 previous20 avg range; vol>=1.25x")
+    if f["vol_ratio"]>=0.85:
+        if (f["sma20"]>f["sma50"] and f["c_prev"]<=f["sma50prev_close"] and
+                p>f["sma50"]+0.15*atr):
+            add("TRECLAIM-v1","LONG","bull SMA20>50; prior close below prior SMA50; reclaim")
+        if (f["sma20"]<f["sma50"] and f["c_prev"]>=f["sma50prev_close"] and
+                p<f["sma50"]-0.15*atr):
+            add("TRECLAIM-v1","SHORT","bear SMA20<50; prior close above prior SMA50; rejection")
     return events
 
 
