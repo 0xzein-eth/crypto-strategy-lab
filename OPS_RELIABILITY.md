@@ -430,3 +430,19 @@ ten-minute slot and retry only at a later real wall-clock time, with
 three-consecutive-outage circuit breaker. Other exceptions and ledger
 integrity failures still terminate immediately. No stale quote can be
 relabelled as a successful observation; missed slots remain missed.
+
+
+## Automated independent quality re-audit and venue provenance (2026-10-15)
+
+The read-only quality-gate workflow is scheduled twice daily and runs
+after successful historical Research Factory completion in addition to
+PR/explicit triggers. It uses contents-read permissions, checks all
+canonical ledger events, pairs frozen-stratum controls, tests strict
+research quality gates, and retains a source-hash-linked downloadable
+report for 30 days. No forward trading or automatic strategy promotion.
+
+Each actual-time primary report includes `live_source_quality` with
+validated perp vs spot snapshots, real active venue names and failed
+attempted source pairs. A fully spot-only tick stays observable but
+cannot masquerade as perpetual trade evidence. Venue health diagnostics
+never create an OPEN/CLOSE or modify the hash-chained original events.
