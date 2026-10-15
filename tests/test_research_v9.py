@@ -125,7 +125,34 @@ class FactoryTests(unittest.TestCase):
         for family in ("donchian","ztrend","rsi_trend"):
             self.assertIn(family,{x.family for x in expanded})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(776)
+            factory.variant_catalog(1201)
+
+    def test_twelve_hundred_variants_preserve_all_previous_750_ids(self):
+        old = factory.variant_catalog(750)
+        extended = factory.variant_catalog(1200)
+        self.assertEqual(len(extended), 1200)
+        self.assertEqual([v.id for v in old], [v.id for v in extended[:750]])
+        self.assertEqual(len({v.id for v in extended}), 1200)
+        self.assertTrue({"compression_breakout", "volatility_impulse",
+                         "trend_reclaim"} <= {v.family for v in extended})
+        with self.assertRaises(ValueError):
+            factory.variant_catalog(1201)
+
+    def test_added_signal_families_have_no_future_leakage(self):
+        original = market(400)
+        later = [row.copy() for row in original]
+        later[350][4] *= 1.2
+        later[350][2] = max(later[350][2], later[350][4]+1)
+        for family,lookback,threshold,second in (
+            ("compression_breakout",20,0.8,0),
+            ("volatility_impulse",12,0.75,0),
+            ("trend_reclaim",16,0.2,50),
+        ):
+            v = factory.Variant(family,lookback,threshold,second,4)
+            self.assertEqual(factory.signal(factory.Features(original),v,300),
+                             factory.signal(factory.Features(later),v,300))
+            self.assertTrue(all(t["exit_ts"]>t["entry_ts"] for t in
+                                factory.backtest(original,v)))
 
     def test_new_families_use_only_confirmed_trailing_bars(self):
         original=market(400)
