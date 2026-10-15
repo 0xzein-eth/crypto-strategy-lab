@@ -73,7 +73,7 @@ class RecoveryWindowTests(unittest.TestCase):
             if args[:4]==["git","diff","--cached","--name-only"]:
                 return "data/report.json"
             if args[:3]==["python","engine.py","--count"]:
-                self.assertEqual(args[3],"24")
+                self.assertEqual(args[3],"30")
                 self.save(report(now[0],gap=10,recover=False))
             return ""
         result=window.run_window(root=self.root,pulses=3,
