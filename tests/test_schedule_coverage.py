@@ -51,6 +51,26 @@ class ScheduleCoverageTests(unittest.TestCase):
         self.assertEqual(r["max_observed_gap_minutes"], 10)
         self.assertEqual(r["estimated_10m_slot_coverage"], 1.0)
 
+    def test_prospective_coverage_recovery_never_backfills_or_fakes_slots(self):
+        # An old missed 120-minute window expires with one ACTUAL fresh
+        # observation; a recent missed window needs seventy-two.
+        oldest={"scheduling_diagnostics":{
+            "recent_observation_gaps_minutes":[120]+[10]*70}}
+        before=engine.recent_schedule_coverage(oldest,10)
+        self.assertLess(before["estimated_10m_slot_coverage"],0.90)
+        self.assertEqual(before["clean_future_10m_intervals_to_reach_90pct"],1)
+        self.assertEqual(before["clean_future_10m_intervals_to_reach_95pct"],1)
+        self.assertTrue(before["coverage_recovery_projection_is_counterfactual"])
+        self.assertEqual(len(before["recent_observation_gaps_minutes"]),72)
+        # Target projections are intentionally NOT used as fresh data.
+        newest={"scheduling_diagnostics":{
+            "recent_observation_gaps_minutes":[10]*70+[120]}}
+        recent=engine.recent_schedule_coverage(newest,10)
+        self.assertEqual(recent["clean_future_10m_intervals_to_reach_90pct"],71)
+        self.assertLess(recent["estimated_10m_slot_coverage"],0.90)
+        baseline=engine.recent_schedule_coverage(None,None)
+        self.assertIsNone(baseline["clean_future_10m_intervals_to_reach_90pct"])
+
     def test_quality_gate_caps_only_new_entries(self):
         severe={"recent_observed_intervals":42,"estimated_10m_slot_coverage":0.2877}
         poor={"recent_observed_intervals":22,"estimated_10m_slot_coverage":0.65}

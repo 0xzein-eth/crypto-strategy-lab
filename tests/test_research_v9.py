@@ -172,6 +172,27 @@ class FactoryTests(unittest.TestCase):
         self.assertEqual(factory.signal(factory.Features(original), v, 300),
                          factory.signal(factory.Features(modified), v, 300))
 
+    def test_rejected_shadow_diagnostics_never_promote_or_relabel_validation(self):
+        from research_v9.promotion import build_queue
+        import copy
+        datasets={"BTC":market(1200),"ETH":market(1200,base=220,slope=-.02)}
+        result=factory.walk_forward(datasets,max_variants=70)
+        self.assertEqual(result["candidates_evaluated"],70)
+        shadow_ids={x["variant_id"] for fold in result["folds"]
+                    for x in fold["shadow_evaluations"]}
+        self.assertTrue(shadow_ids)
+        selected_ids={x["variant_id"] for x in result["walk_forward_selected"]}
+        self.assertFalse(shadow_ids & selected_ids)
+        self.assertFalse(result["proven_edge"])
+        queue_input=dict(result,
+                         symbols_analyzed=["BTC","ETH"],
+                         measured_funding_symbols=[],
+                         generated_at_utc="2026-10-15T00:00:00Z")
+        queue=build_queue(queue_input)
+        self.assertFalse(queue["eligible_for_forward_code_review"])
+        self.assertFalse(queue["paper_v8_auto_activation"])
+        self.assertFalse(queue["live_trading_enabled"])
+
     def test_fee_and_friction_never_improve_outcome(self):
         v = factory.Variant("long_control", 0, 0.0, 0, 4)
         base = factory.backtest(market(400), v, extra_cost_pct=0.0)
@@ -199,6 +220,17 @@ class FactoryTests(unittest.TestCase):
         for fold in result["folds"]:
             self.assertIn("training_screen_rejection_counts",fold)
             self.assertIn("highest_scoring_unqualified_training_only",fold)
+            self.assertIn("shadow_evaluations",fold)
+            self.assertLessEqual(len(fold["shadow_evaluations"]),4)
+            self.assertEqual(len({p["family"] for p in fold["shadow_evaluations"]}),
+                             len(fold["shadow_evaluations"]))
+            self.assertTrue(all(
+                shadow["status"]=="SHADOW_EXPLORATORY_ONLY"
+                and shadow["eligible_for_promotion"] is False
+                and shadow["variant_id"] not in {
+                    x["variant_id"] for x in fold["selected_for_validation"]}
+                and shadow["shadow_validation"]["n"] >= 0
+                for shadow in fold["shadow_evaluations"]))
             self.assertTrue(all(
                 c["training_day_cluster_lcb_R"] is None or
                 c["training_day_cluster_lcb_R"]<=0

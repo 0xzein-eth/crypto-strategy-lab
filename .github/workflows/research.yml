@@ -62,6 +62,12 @@ jobs:
           assert report["candidates_evaluated"] == 750
           assert report["factory_version"] == "v9-param-grid-3-750-stress25bp"
           assert sum(report["predeclared_variants_by_family"].values()) == 750
+          assert all(len(f["shadow_evaluations"]) <= 4 and
+                     not any(s["eligible_for_promotion"] for s in f["shadow_evaluations"])
+                     for f in report["folds"])
+          assert all(s["variant_id"] not in {
+                     v["variant_id"] for v in f["selected_for_validation"]}
+                     for f in report["folds"] for s in f["shadow_evaluations"])
           assert report["proven_edge"] is False
           for symbol, details in report["data_provenance"].items():
               assert dataset_digest(load_cache(symbol)) == details["sha256"], symbol
