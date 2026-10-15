@@ -340,3 +340,18 @@ control branch, one asset/15-minute decision slot, same venue fills,
 stress-friction and no-lookahead checks still apply.
 These arms may have substantial correlation with existing hypotheses,
 so paper volume is never presented as independent statistical evidence.
+
+
+### Historical research v9.3 — 750 deterministic backtest hypotheses
+The Research Factory increases its predeclared **historical-only** grid
+from 500 to **750** independent *parameter variants* (not 750 proven
+or executed strategies). The first 500 variant IDs and their ordering
+remain byte-for-byte stable; beyond them the factory adds:
+Donchian price-channel breakout plus historical-volume confirmation,
+z-score continuation filtered by trailing SMA50/SMA20 trend, and
+RSI-trend continuation gated on SMA50. All use confirmed 15-minute
+OHLCV and enter at the **next** bar open in historical approximation;
+same 8 OKX perpetual funding-aware symbols, 90-day common analysis
+window, purged 96-candle walk-forward, fees/slippage stress and
+unchanged manual-only promotion. 750 related hypotheses substantially
+increase multiple-testing risk and do not establish profitability.
