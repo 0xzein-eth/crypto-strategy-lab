@@ -42,37 +42,65 @@ class Variant:
 
 
 def variant_catalog(max_variants=300):
-    """Fixed, versioned parameter grid, then deterministic family round robin."""
-    by_family = defaultdict(list)
+    """Versioned deterministic catalogue; first 500 IDs remain stable.
+
+    The original 500-variant order is never silently shuffled: adding new
+    families must not rewrite prior experimental hypotheses or introduce
+    retrospective selection changes. Expansion is historical/backtest-only.
+    """
+    if not 1 <= max_variants <= 775:
+        raise ValueError("max_variants must be within 1..775")
+
+    def drain(by_family, limit):
+        output = []
+        families = sorted(by_family)
+        while len(output) < limit and any(by_family.values()):
+            for name in families:
+                if by_family[name]:
+                    output.append(by_family[name].pop(0))
+                    if len(output) >= limit:
+                        break
+        return output
+
+    original = defaultdict(list)
     for fast, slow, gate, h in product((6, 8, 12, 20), (36, 60),
                                        (0.001, 0.003), HORIZONS):
         if fast < slow:
-            by_family["trend"].append(Variant("trend", fast, gate, slow, h))
+            original["trend"].append(Variant("trend", fast, gate, slow, h))
     for lookback, gate, h in product((4, 8, 16, 24, 32, 48),
                                      (0.001, 0.002, 0.004, 0.008), HORIZONS):
-        by_family["momentum"].append(Variant("momentum", lookback, gate, 0, h))
-    for lookback, z, h in product((12, 20, 32, 48), (1.3, 1.8, 2.3, 2.8), HORIZONS):
-        by_family["mean_revert"].append(Variant("mean_revert", lookback, z, 0, h))
-    for lookback, vol, h in product((12, 20, 40, 60), (0.8, 1.2, 1.6), HORIZONS):
-        by_family["breakout"].append(Variant("breakout", lookback, vol, 0, h))
-    for period, threshold, h in product((7, 14, 21, 28), (25, 30, 35, 40), HORIZONS):
-        by_family["rsi_revert"].append(Variant("rsi_revert", period, threshold, 0, h))
+        original["momentum"].append(Variant("momentum", lookback, gate, 0, h))
+    for lookback, z, h in product((12, 20, 32, 48),
+                                  (1.3, 1.8, 2.3, 2.8), HORIZONS):
+        original["mean_revert"].append(Variant("mean_revert", lookback, z, 0, h))
+    for lookback, vol, h in product((12, 20, 40, 60),
+                                    (0.8, 1.2, 1.6), HORIZONS):
+        original["breakout"].append(Variant("breakout", lookback, vol, 0, h))
+    for period, threshold, h in product((7, 14, 21, 28),
+                                        (25, 30, 35, 40), HORIZONS):
+        original["rsi_revert"].append(Variant("rsi_revert", period, threshold, 0, h))
     for h in HORIZONS:
-        by_family["control"].extend([
+        original["control"].extend([
             Variant("control", 0, 0.0, 0, h),
             Variant("long_control", 0, 0.0, 0, h)])
-    if not 1 <= max_variants <= 500:
-        raise ValueError("max_variants must be within 1..500")
-    families = sorted(by_family)
-    selected = []
-    while len(selected) < max_variants and any(by_family.values()):
-        for family in families:
-            if by_family[family]:
-                selected.append(by_family[family].pop(0))
-                if len(selected) >= max_variants:
-                    break
-    if len({v.id for v in selected}) != len(selected):
-        raise AssertionError("duplicate variant id")
+
+    selected = drain(original, min(500, max_variants))
+    if max_variants > 500:
+        extended = original  # include any remaining legacy hypotheses first
+        for lookback, vol_gate, h in product((12, 20, 32, 48),
+                                             (0.85, 1.1, 1.35), HORIZONS):
+            extended["donchian"].append(
+                Variant("donchian", lookback, vol_gate, 0, h))
+        for lookback, z, h in product((12, 20, 32, 48),
+                                      (0.6, 1.0, 1.4, 1.8), HORIZONS):
+            extended["ztrend"].append(Variant("ztrend", lookback, z, 0, h))
+        for period, threshold, h in product((7, 14, 21, 28),
+                                            (55, 60, 65, 70), HORIZONS):
+            extended["rsi_trend"].append(
+                Variant("rsi_trend", period, threshold, 0, h))
+        selected.extend(drain(extended, max_variants - len(selected)))
+    if len(selected) != max_variants or len({v.id for v in selected}) != len(selected):
+        raise AssertionError("insufficient unique predeclared research hypotheses")
     return selected
 
 
@@ -146,6 +174,24 @@ def signal(f, v, closed):
     if v.family == "rsi_revert":
         rsi = f.rsi(j, v.lookback)
         return 1 if rsi < v.threshold else -1 if rsi > 100-v.threshold else 0
+    if v.family == "donchian":
+        top=max(f.high[j-v.lookback:j])
+        bottom=min(f.low[j-v.lookback:j])
+        prior_volume=f.window(f.vsum,j-1,20)
+        if prior_volume<=0 or f.vol[j]<v.threshold*prior_volume:
+            return 0
+        return 1 if close>top else -1 if close<bottom else 0
+    if v.family == "ztrend":
+        sd=f.std(j,v.lookback)
+        z=(close-f.mean(j,v.lookback))/sd if sd>0 else 0.0
+        trend=f.mean(j,20)/f.mean(j,50)-1
+        return (1 if z>v.threshold and trend>0
+                else -1 if z< -v.threshold and trend<0 else 0)
+    if v.family == "rsi_trend":
+        rsi=f.rsi(j,v.lookback)
+        trend_base=f.mean(j,50)
+        return (1 if rsi>v.threshold and close>trend_base
+                else -1 if rsi<100-v.threshold and close<trend_base else 0)
     if v.family == "long_control":
         return 1
     if v.family == "control":
@@ -345,8 +391,10 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
     summaries.sort(key=lambda x: (
         -(x["walk_forward"]["day_lcb_R"] or -999),
         -(x["walk_forward"]["avg_R"] or -999), x["variant_id"]))
+    family_counts = {name:sum(v.family==name for v in variants)
+                     for name in sorted({v.family for v in variants})}
     return {
-        "schema_version": 1, "factory_version": "v9-param-grid-2-stress25bp",
+        "schema_version": 1, "factory_version": "v9-param-grid-3-750-stress25bp",
         "validation_method": "expanding_train_three_chronological_folds_purged_96bars",
         "historical_only": True, "proven_edge": False, "champion": None,
         "measured_funding_symbols": sorted(funding_by_symbol),
@@ -354,6 +402,10 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                             "maintenance_margin_pct_assumed": 0.5,
                             "not_actual_liquidation": True},
         "candidates_evaluated": len(variants),
+        "predeclared_variants_by_family": family_counts,
+        "hypothesis_selection_policy": (
+            "First 500 IDs unchanged; new deterministic families historical-only;"
+            " not an independent alpha test"),
         "datasets_evaluated": len(datasets),
         "common_bars": n_bars,
         "walk_forward_selected": summaries[:25], "folds": fold_reports,
@@ -366,6 +418,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "0.10% roundtrip fees plus 0.12% additional hypothetical friction.",
             "An extra predeclared 0.25% roundtrip impact is stress-tested on UTC day clusters; no actual fill data.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
+            "750 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
             "A frozen untouched future dataset and prospective paper trials are REQUIRED."
         ],
