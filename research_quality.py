@@ -14,6 +14,8 @@ MIN_MATCH_FRACTION = 0.50
 MIN_HOLDOUT_DAYS = 5
 MIN_HOLDOUT_PAIRS = 25
 MIN_COVERAGE = 0.90
+MIN_PAIRED_TRAIN = 50
+MIN_PAIRED_HOLDOUT = 25
 
 
 def _day(value):
@@ -58,6 +60,19 @@ def evaluate(records, comparison, schedule_coverage=None):
             reasons.append("INSUFFICIENT_FROZEN_HOLDOUT")
         if not train:
             reasons.append("NO_TRAIN_SAMPLE")
+        # A winning unmatched arm can still lose relative to matched CTRL.
+        # Require genuinely matched day-frozen TRAIN + MONITOR cohorts
+        # separately. Unmatched holdout counts never substitute paired
+        # validation; descriptive 1.96-SE remains NOT an alpha correction.
+        if stats.get("paired_train_pairs",0)<MIN_PAIRED_TRAIN or (
+            stats.get("paired_train_descriptive_lcb_R") is None or
+            stats["paired_train_descriptive_lcb_R"]<=0):
+            reasons.append("PAIRED_TRAIN_NOT_POSITIVE_OR_INSUFFICIENT")
+        if (stats.get("paired_holdout_pairs",0)<MIN_PAIRED_HOLDOUT or
+            stats.get("paired_holdout_utc_days",0)<MIN_HOLDOUT_DAYS or
+            stats.get("paired_holdout_descriptive_lcb_R") is None or
+            stats["paired_holdout_descriptive_lcb_R"]<=0):
+            reasons.append("PAIRED_MONITORING_NOT_POSITIVE_OR_INSUFFICIENT")
         if not coverage_ok:
             reasons.append("LOW_OR_UNKNOWN_SCHEDULER_COVERAGE")
         if (stats["day_cluster_95pct_descriptive_lcb_after_friction_R"] is None or
@@ -71,12 +86,15 @@ def evaluate(records, comparison, schedule_coverage=None):
             "frozen_holdout_days": len(holdout_days),
             "matched_pairs": stats["matched_pairs"],
             "matched_fraction": stats["matched_fraction"],
+            "paired_train_pairs": stats.get("paired_train_pairs",0),
+            "paired_monitoring_pairs": stats.get("paired_holdout_pairs",0),
+            "paired_monitoring_days": stats.get("paired_holdout_utc_days",0),
             "quality_gate_pass": not reasons,
             "blocking_reasons": reasons,
             "edge_proven": False,
         }
     return {
-        "method": "quality-gates-v1",
+        "method": "quality-gates-v2-frozen-day-paired-monitoring",
         "paper_only": True,
         "schedule_coverage": schedule_coverage,
         "schedule_coverage_gate": coverage_ok,
@@ -84,6 +102,6 @@ def evaluate(records, comparison, schedule_coverage=None):
         "min_matched_pairs": MIN_PAIRS,
         "min_frozen_holdout_days": MIN_HOLDOUT_DAYS,
         "multiple_testing": "No multiplicity-adjusted inference; no strategy can be declared proven",
-        "caveat": "Holdout counts are not paired holdout estimates. A pass is only data readiness, not edge validation.",
+        "caveat": "Only original-entry-day frozen matched controls enter paired monitoring evidence. Historical monitoring has been repeatedly inspected: a pass is data readiness, NOT independent alpha validation.",
         "arms": results,
     }
