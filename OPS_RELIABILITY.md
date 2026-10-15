@@ -457,3 +457,12 @@ recent-36 observed-gap coverage are shown separately from the unchanged
 strict last-72 headline number to make actual recovery visible while
 historical missed slots roll off naturally. Scheduled GitHub runners
 remain best effort and can consume substantial monthly CI minutes.
+
+
+### 750-family research catalogue expansion
+V9.3 factory covers 750 parameter settings with versioned deterministic
+families and preserved original 500 experiment IDs. CI verifies the
+complete count and family provenance against the published report;
+historical promotion remains blocked without independent, future-only
+prospective validation. Historical re-runs cost more compute; no v8
+trade history is rewritten or traded live.
