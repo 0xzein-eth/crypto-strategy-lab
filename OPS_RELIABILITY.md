@@ -466,3 +466,18 @@ complete count and family provenance against the published report;
 historical promotion remains blocked without independent, future-only
 prospective validation. Historical re-runs cost more compute; no v8
 trade history is rewritten or traded live.
+
+
+### Training-only screens and genuine paired monitoring
+- Historical Factory now identifies why 750 parameter combinations fail
+  initial training screening (insufficient trades, independent UTC days,
+  negative/unavailable daily lower bounds), reporting the highest-scoring
+  *rejected* training-only hypotheses without making forward selections.
+- `matched_controls.py` partitions actual one-to-one matched pairs by
+  frozen entry day before computing distinct daily descriptive lower
+  bounds. `research_quality.py` fails closed if either genuinely paired
+  training or paired monitoring evidence is insufficient or not positive.
+- The read-only matched-control workflow runs four times daily with
+  GitHub artifact outputs for a ledger-tip-linked strategy ranking. This
+  may consume extra CI minutes; no orders, position backfills, data-file
+  commits, or automatic promotion.

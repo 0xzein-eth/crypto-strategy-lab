@@ -361,3 +361,23 @@ pass `--count 30`, but **the engine never actually opens 30** unless
 the independent rolling sample coverage meets its predeclared
 quality threshold and symbol/15m/day/source gates permit. Recovery
 after a long scheduling gap still caps new entries at three.
+
+
+### Evidence-first automatic ranking and failure diagnosis (2026-10-15)
+The separate **Matched controls research** workflow now runs automatically
+four times daily in GitHub Actions. Its read-only 30-day artifacts contain
+both `matched-controls-report.json` and `strategy-leaderboard.json`,
+which report all eligible paper strategies with frozen entry-day one-to-one
+matched CTRL differences, **separately computed paired training and paired
+monitoring** (20% day-partition) and original source ledger-tip hash.
+A positive raw strategy expectancy is only descriptive; the quality gate
+also requires genuinely matched *positive day-cluster bounds in both
+partitions*, not merely unmatched profitable trades. This partition has
+been inspected repeatedly; it is **not** untouched independent validation
+and it never changes the online learner's allocations.
+The historical 750-variant walk-forward additionally publishes for each
+training fold the count of candidates failing sample/day/positive-day-bound
+requirements plus up to ten highest-scoring **disqualified training-only**
+variants. These are explicitly NOT selected for validation, promotion,
+or live trading; the previous positive-bound selection criterion is
+unchanged.

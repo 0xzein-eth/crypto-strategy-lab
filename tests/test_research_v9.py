@@ -196,6 +196,17 @@ class FactoryTests(unittest.TestCase):
         self.assertFalse(result["proven_edge"])
         self.assertIsNone(result["champion"])
         self.assertEqual(result["folds"][0]["purge_bars"], 96)
+        for fold in result["folds"]:
+            self.assertIn("training_screen_rejection_counts",fold)
+            self.assertIn("highest_scoring_unqualified_training_only",fold)
+            self.assertTrue(all(
+                c["training_day_cluster_lcb_R"] is None or
+                c["training_day_cluster_lcb_R"]<=0
+                for c in fold["highest_scoring_unqualified_training_only"]))
+            self.assertTrue(all(
+                not any(c["variant_id"]==s["variant_id"] for s in
+                        fold["selected_for_validation"])
+                for c in fold["highest_scoring_unqualified_training_only"]))
         previous = None
         for fold in result["folds"]:
             val_start = fold["validation_start_utc"]

@@ -11,7 +11,12 @@ def row(ident, strategy, day="2026-10-08"):
 def comparison(n=100, days=25, fraction=0.8, lcb=0.1):
     return {"arms": {"BR-v3": {"matched_pairs": n,
             "matched_entry_utc_days": days, "matched_fraction": fraction,
-            "day_cluster_95pct_descriptive_lcb_after_friction_R": lcb}}}
+            "day_cluster_95pct_descriptive_lcb_after_friction_R": lcb,
+            "paired_train_pairs":80,
+            "paired_train_descriptive_lcb_R":0.10,
+            "paired_holdout_pairs":30,
+            "paired_holdout_utc_days":6,
+            "paired_holdout_descriptive_lcb_R":0.10}}}
 
 class QualityTests(unittest.TestCase):
     def test_sparse_data_fails_closed(self):
@@ -34,6 +39,24 @@ class QualityTests(unittest.TestCase):
         result = rq.evaluate(rows, comparison(days=50), 0.99)
         self.assertTrue(result["arms"]["BR-v3"]["quality_gate_pass"])
         self.assertFalse(result["arms"]["BR-v3"]["edge_proven"])
+
+    def test_missing_paired_monitoring_fails_even_if_unmatched_holdout_is_positive(self):
+        import datetime as dt
+        rows=[row(str(i),"BR-v3",
+            (dt.date(2026,9,1)+dt.timedelta(days=i%50)).isoformat())
+            for i in range(300)]
+        score=comparison(days=50)
+        score["arms"]["BR-v3"]["paired_holdout_pairs"]=0
+        score["arms"]["BR-v3"]["paired_holdout_utc_days"]=0
+        score["arms"]["BR-v3"]["paired_holdout_descriptive_lcb_R"]=None
+        result=rq.evaluate(rows,score,0.99)["arms"]["BR-v3"]
+        self.assertIn("PAIRED_MONITORING_NOT_POSITIVE_OR_INSUFFICIENT",
+                      result["blocking_reasons"])
+        self.assertFalse(result["quality_gate_pass"])
+        score["arms"]["BR-v3"].update(
+            paired_holdout_pairs=30,paired_holdout_utc_days=6,
+            paired_holdout_descriptive_lcb_R=-0.02)
+        self.assertFalse(rq.evaluate(rows,score,0.99)["arms"]["BR-v3"]["quality_gate_pass"])
 
     def test_quality_workflow_refreshes_with_independent_clocks(self):
         path=Path(__file__).resolve().parents[1] / ".github" / "workflows" / "research-quality.yml"
