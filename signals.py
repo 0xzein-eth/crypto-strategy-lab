@@ -163,6 +163,26 @@ def classify(bars):
         add("RSI-v1","LONG","RSI14 <=22, trend not extremely one-sided")
     if f["rsi14"]>=78 and trend < 2.5:
         add("RSI-v1","SHORT","RSI14 >=78, trend not extremely one-sided")
+    # Three NEW frozen paper-only hypotheses from the SAME last confirmed
+    # 15m candle as all legacy rules; no new order or lookahead path.
+    # Channel confirmation uses the previous 20 completed bars exclusively,
+    # so the current bar cannot enlarge its own breakout threshold.
+    if f["vol_ratio"]>=1.05 and p>f["prev_high20"]+0.05*atr:
+        add("DC-v1","LONG","confirmed Donchian 20 high breakout >0.05 ATR; volume >=1.05x")
+    if f["vol_ratio"]>=1.05 and p<f["prev_low20"]-0.05*atr:
+        add("DC-v1","SHORT","confirmed Donchian 20 low breakout <-0.05 ATR; volume >=1.05x")
+    # RSI momentum continuation is explicitly filtered by trailing SMA50
+    # and trailing SMA20 direction; not merely an extreme reversion signal.
+    if f["rsi14"]>=62 and p>f["sma50"]+0.1*atr and f["sma20"]>=f["sma20prev"] and f["vol_ratio"]>=.85:
+        add("RSITREND-v1","LONG","RSI14>=62, above SMA50+0.1ATR, SMA20 rising, volume>=0.85x")
+    if f["rsi14"]<=38 and p<f["sma50"]-0.1*atr and f["sma20"]<=f["sma20prev"] and f["vol_ratio"]>=.85:
+        add("RSITREND-v1","SHORT","RSI14<=38, below SMA50-0.1ATR, SMA20 falling, volume>=0.85x")
+    # ATR-channel momentum relative to trailing SMA20. May overlap the
+    # Donchian arm: it remains a separate hypothesis, not independent proof.
+    if p>f["sma20"]+1.4*atr and p>f["c_prev"] and f["vol_ratio"]>=1.1:
+        add("ATRCHAN-v1","LONG","confirmed close>SMA20+1.4ATR; rising close; volume>=1.1x")
+    if p<f["sma20"]-1.4*atr and p<f["c_prev"] and f["vol_ratio"]>=1.1:
+        add("ATRCHAN-v1","SHORT","confirmed close<SMA20-1.4ATR; falling close; volume>=1.1x")
     # Volume-weighted mean reclaim/rejection on confirmed 15m closes.
     if f["vwap20"] is not None and f["vwap20prev"] is not None and f["vol_ratio"]>=1.2:
         if f["c_prev"]<=f["vwap20prev"] and p>f["vwap20"] and p>f["last_open"]:

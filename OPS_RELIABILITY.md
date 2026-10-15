@@ -446,3 +446,23 @@ validated perp vs spot snapshots, real active venue names and failed
 attempted source pairs. A fully spot-only tick stays observable but
 cannot masquerade as perpetual trade evidence. Venue health diagnostics
 never create an OPEN/CLOSE or modify the hash-chained original events.
+
+
+### Operating cadence recovery buffer
+The guardian keeps requesting a single safe workflow-run handoff when
+the 72-observation-slot measured coverage is below 95% rather than
+stopping immediately at 90%. It refuses parallel or queued successors,
+stale reports and unverifiable completion receipts. Recent-12 and
+recent-36 observed-gap coverage are shown separately from the unchanged
+strict last-72 headline number to make actual recovery visible while
+historical missed slots roll off naturally. Scheduled GitHub runners
+remain best effort and can consume substantial monthly CI minutes.
+
+
+### 750-family research catalogue expansion
+V9.3 factory covers 750 parameter settings with versioned deterministic
+families and preserved original 500 experiment IDs. CI verifies the
+complete count and family provenance against the published report;
+historical promotion remains blocked without independent, future-only
+prospective validation. Historical re-runs cost more compute; no v8
+trade history is rewritten or traded live.

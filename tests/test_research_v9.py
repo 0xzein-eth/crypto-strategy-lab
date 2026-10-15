@@ -115,6 +115,37 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue(any(x.family == "momentum" and x.lookback == 48 for x in items))
         self.assertTrue(any(x.family == "mean_revert" and x.threshold == 2.8 for x in items))
 
+    def test_seven_hundred_fifty_historical_variants_and_frozen_old_prefix(self):
+        baseline = factory.variant_catalog(500)
+        expanded = factory.variant_catalog(750)
+        self.assertEqual(len(expanded),750)
+        self.assertEqual([x.id for x in baseline],
+                         [x.id for x in expanded[:500]])
+        self.assertEqual(len({x.id for x in expanded}),750)
+        for family in ("donchian","ztrend","rsi_trend"):
+            self.assertIn(family,{x.family for x in expanded})
+        with self.assertRaises(ValueError):
+            factory.variant_catalog(776)
+
+    def test_new_families_use_only_confirmed_trailing_bars(self):
+        original=market(400)
+        future=[bar.copy() for bar in original]
+        future[310][4]*=1.5
+        future[310][2]=max(future[310][2],future[310][4]+1)
+        for family,lookback,gate in (
+            ("donchian",20,1.1),("ztrend",20,0.6),
+            ("rsi_trend",14,60)):
+            with self.subTest(family=family):
+                v=factory.Variant(family,lookback,gate,0,4)
+                self.assertEqual(
+                    factory.signal(factory.Features(original),v,300),
+                    factory.signal(factory.Features(future),v,300))
+                events=factory.backtest(original,v)
+                self.assertTrue(all(e["exit_ts"]>e["entry_ts"]
+                                    for e in events))
+                self.assertTrue(all(e["settled_funding_paid_pct"] is None
+                                    for e in events))
+
     def test_day_cluster_stress_and_funding_sensitivity(self):
         sample = factory.backtest(market(1100),
                  factory.Variant("long_control", 0, 0.0, 0, 4))

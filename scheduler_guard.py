@@ -125,7 +125,7 @@ def handoff_decision(report, workflow_runs, now, completed_run_id):
     Only workflow_run completions for main may supply an ID. The GitHub
     workflow-specific API independently confirms it was the most recent
     successfully completed lab job. This is not a cron SLA or a retry storm:
-    any queued/running job, missing provenance or recovered >=90% cadence
+    any queued/running job, missing provenance or recovered >=95% cadence
     prevents dispatch. A second authoritative check is required by execute().
     """
     if (not isinstance(completed_run_id,int) or
@@ -138,7 +138,7 @@ def handoff_decision(report, workflow_runs, now, completed_run_id):
     n=metrics.get("recent_observed_intervals",0)
     if (not isinstance(n,int) or isinstance(n,bool) or n<12 or
             isinstance(ratio,bool) or not isinstance(ratio,(int,float)) or
-            not 0<=ratio<0.90):
+            not 0<=ratio<0.95):
         return None
     mains=[r for r in workflow_runs if r.get("head_branch")=="main"]
     if not mains or any(r.get("status") in
@@ -154,7 +154,7 @@ def handoff_decision(report, workflow_runs, now, completed_run_id):
         return None
     return {"status":"NEEDS_HANDOFF","reason":(
         "A successful completed main lab run has no queued/running successor; "
-        "measured 10-minute coverage is under 90%. Request one new bounded "
+        "measured 10-minute coverage is under 95% (90% target plus safety margin). Request one new bounded "
         "paper observation run, no historical backfills.") ,
         "handoff_source_run_id":completed_run_id,
         "handoff_coverage":ratio}
