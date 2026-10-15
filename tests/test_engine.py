@@ -143,6 +143,10 @@ class EngineTests(unittest.TestCase):
                 self.assertEqual(result["created"],0)
                 self.assertEqual(result["verified_events"],0)
                 self.assertEqual(result["provider_observations"],1)
+                self.assertEqual(result["live_source_quality"]["validated_perpetual_quotes"],1)
+                self.assertEqual(result["live_source_quality"]["validated_spot_proxy_quotes"],0)
+                self.assertTrue(result["live_source_quality"]["real_perpetual_quote_available_this_tick"])
+                self.assertEqual(result["live_source_quality"]["successful_sources"],["okx-swap"])
                 self.assertTrue(result["observation_heartbeat"]["attested_by_real_quote"])
                 self.assertEqual(result["observation_heartbeat"]["provider"],"okx-swap")
                 self.assertEqual(result["observation_heartbeat"]["observed_at"],
