@@ -16,7 +16,7 @@ from research_v9.promotion import build_queue
 ROOT = Path(__file__).resolve().parent
 RESULT_PATH = ROOT / "research_results" / "latest.json"
 QUEUE_PATH = ROOT / "research_results" / "forward_candidates.json"
-DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK", "XRP", "ADA", "AVAX", "DOGE")  # eight funding-audited venues
+DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK", "XRP", "ADA", "AVAX", "DOGE", "DOT", "NEAR")  # ten predeclared OKX perpetual candidates; actual funding completeness checked
 
 
 def dataset_digest(bars):
@@ -46,7 +46,7 @@ def trim_research_window(datasets, window_days=90):
 
 
 def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
-            update_pages=10, max_variants=750, now=None,
+            update_pages=10, max_variants=1200, now=None,
             backfill_pages=10, funding_pages=5, funding_window_days=90):
     now = now or dt.datetime.now(dt.timezone.utc)
     if now.tzinfo is None:
@@ -178,7 +178,7 @@ def main():
     parser.add_argument("--backfill-pages", type=int, default=10)
     parser.add_argument("--funding-pages", type=int, default=8)
     parser.add_argument("--funding-window-days", type=int, default=90)
-    parser.add_argument("--max-variants", type=int, default=750)
+    parser.add_argument("--max-variants", type=int, default=1200)
     args = parser.parse_args()
     report = produce(args.symbols, args.offline, args.cold_pages,
                      args.update_pages, args.max_variants,
