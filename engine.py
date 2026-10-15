@@ -98,6 +98,25 @@ def recent_schedule_coverage(previous_report, latest_gap_minutes, limit=72):
     missed = sum(max(0, math.ceil((gap - 3) / 10) - 1) for gap in gaps)
     expected = observed_slots + missed
     ratio = round(observed_slots / expected, 4) if expected else None
+    # This is a COUNTERFACTUAL diagnostic, NOT an actual higher coverage
+    # estimate. Count the number of genuinely future 10m observations
+    # required until oldest missed/duplicate gaps roll out of the existing
+    # 72-interval window. Never pad the canonical actual observation series.
+    def strict_ratio(series):
+        valid = sum(g >= 5 for g in series)
+        missing = sum(max(0, math.ceil((g - 3) / 10) - 1) for g in series)
+        return valid / (valid + missing) if valid + missing else None
+
+    def future_clean_slots_to_reach(target):
+        if len(gaps) != limit:
+            return None
+        for future in range(limit+1):
+            simulated = (gaps[future:] + [10.0]*future)
+            projected = strict_ratio(simulated)
+            if projected is not None and projected >= target:
+                return future
+        return None
+
     # Separate shorter windows expose genuine recovery progress without
     # erasing missed slots from the strict 72-interval primary metric.
     def interval_ratio(last_n):
@@ -109,6 +128,9 @@ def recent_schedule_coverage(previous_report, latest_gap_minutes, limit=72):
         "last_12_observed_gap_coverage": interval_ratio(12),
         "last_36_observed_gap_coverage": interval_ratio(36),
         "coverage_windows_are_diagnostics_only": True,
+        "clean_future_10m_intervals_to_reach_90pct": future_clean_slots_to_reach(0.90),
+        "clean_future_10m_intervals_to_reach_95pct": future_clean_slots_to_reach(0.95),
+        "coverage_recovery_projection_is_counterfactual": True,
         "recent_observation_gaps_minutes": gaps,
         "recent_observed_intervals": len(gaps),
         "estimated_distinct_10m_observation_intervals": observed_slots,
