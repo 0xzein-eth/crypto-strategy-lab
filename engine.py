@@ -881,6 +881,24 @@ def run(requested=14, clock=utcnow):
                   timestamp=stamp(current), added=len(opens), closed_this_run=len(closures),
                   late_closed_this_run=late, missed_due_snapshots=missing,
                   provider_observations=observations, source_errors=errors,
+                  live_source_quality={
+                      "validated_real_public_quotes": observations,
+                      "validated_perpetual_quotes": sum(
+                          q is not None and q["market_type"]=="perpetual"
+                          for q in cache.values()),
+                      "validated_spot_proxy_quotes": sum(
+                          q is not None and q["market_type"]=="spot_proxy"
+                          for q in cache.values()),
+                      "successful_sources": sorted({
+                          provider for (_,provider),q in cache.items()
+                          if q is not None}),
+                      "unavailable_symbol_source_requests": sum(
+                          q is None for q in cache.values()),
+                      "real_perpetual_quote_available_this_tick": any(
+                          q is not None and q["market_type"]=="perpetual"
+                          for q in cache.values()),
+                      "note": "Fresh validated public snapshots only. Spot proxies do not count toward perpetual strategy evidence.",
+                  },
                   observation_heartbeat={
                       "attempted_symbols": heartbeat_attempted,
                       "attested_by_real_quote": heartbeat is not None,
