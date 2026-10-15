@@ -362,7 +362,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 6331,
-  "closed_this_run": 1,
+  "closed_this_run": 0,
   "created": 6636,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.0285,
@@ -2394,12 +2394,14 @@
   "net_expectancy_R": -0.04067,
   "net_pnl_usd": -38619.22,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-10-15T20:22:04.166000Z",
+    "provider": "okx-swap"
   },
   "open": 305,
   "pending": 0,
@@ -2420,20 +2422,19 @@
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
     "entry_sampling_quality_gate": "healthy_scheduler_coverage",
-    "estimated_10m_slot_coverage": 0.9855,
-    "estimated_distinct_10m_observation_intervals": 68,
+    "estimated_10m_slot_coverage": 0.9853,
+    "estimated_distinct_10m_observation_intervals": 67,
     "estimated_missed_10m_slots": 1,
     "horizon_sampling_quality_gate": "all_horizons_adequate_cadence",
     "jitter_tolerance_minutes": 3,
     "last_12_observed_gap_coverage": 1.0,
-    "last_36_observed_gap_coverage": 0.9722,
+    "last_36_observed_gap_coverage": 0.9714,
     "max_observed_gap_minutes": 15.549,
-    "near_duplicate_fast_intervals": 4,
+    "near_duplicate_fast_intervals": 5,
     "normal_requested_new": 36,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.004,
+    "prior_observation_gap_minutes": 0.36,
     "recent_observation_gaps_minutes": [
-      10.004,
       0.881,
       10.005,
       10.005,
@@ -2504,7 +2505,8 @@
       10.004,
       10.005,
       10.005,
-      10.004
+      10.004,
+      0.36
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -3136,7 +3138,7 @@
       "net_R": 0.13732
     }
   },
-  "timestamp": "2026-10-15T20:21:42.369860Z",
+  "timestamp": "2026-10-15T20:22:03.983751Z",
   "total_round_trip_fees_usd": 63310.0,
   "universe_size": 38,
   "universe_version": "2026-10-08-v2",
