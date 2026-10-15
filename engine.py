@@ -846,10 +846,29 @@ def run(requested=14, clock=utcnow):
     for r in opens:
         records[r["id"]] = r
     events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
-    # Avoid writing a partial ledger and misreporting green on total provider failure.
+    # A no-signal/no-due tick previously called NO providers, then failed as
+    # "all public market sources failed: {}". Independently sample a REAL
+    # current public quote to attest the tick; this is NOT a simulated trade,
+    # an invented fill or a backdated quote. Prefer the liquid majors, and
+    # only when the regular OPEN/CLOSE workflow observed no valid quotes.
     observations = sum(x is not None for x in cache.values())
+    heartbeat_attempted = []
+    heartbeat = None
     if not observations:
-        raise RuntimeError("DATA_UNAVAILABLE: all public market sources failed: " +
+        for symbol in ("BTC", "ETH", "SOL", "XRP"):
+            heartbeat_attempted.append(symbol)
+            try:
+                heartbeat = read_quote(symbol)
+                break
+            except RuntimeError:
+                # Expected per-symbol provider exhaustion. The source error
+                # record retains all real venue response failures.
+                continue
+        observations = sum(x is not None for x in cache.values())
+    if not observations:
+        raise RuntimeError("DATA_UNAVAILABLE: all public market sources failed; "
+                           "heartbeat symbols attempted=" +
+                           ",".join(heartbeat_attempted) + "; errors=" +
                            json.dumps(errors, sort_keys=True)[:1000])
     # In CI/GitHub Actions, ledger + summary are committed together as one Git commit.
     seq, prev_hash = append_events(events, seq, prev_hash, current)
@@ -862,6 +881,14 @@ def run(requested=14, clock=utcnow):
                   timestamp=stamp(current), added=len(opens), closed_this_run=len(closures),
                   late_closed_this_run=late, missed_due_snapshots=missing,
                   provider_observations=observations, source_errors=errors,
+                  observation_heartbeat={
+                      "attempted_symbols": heartbeat_attempted,
+                      "attested_by_real_quote": heartbeat is not None,
+                      "provider": heartbeat["provider"] if heartbeat else None,
+                      "instrument": heartbeat["instrument"] if heartbeat else None,
+                      "observed_at": heartbeat["observed_at"] if heartbeat else None,
+                      "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
+                  },
                   blocked_market_providers=blocked_providers,
                   scheduling_diagnostics={
                       **coverage,
