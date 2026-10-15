@@ -272,3 +272,24 @@ strategies retain a positive exploration weight and may be re-evaluated
 on future regimes. The holdout/monitoring partition is NEVER used in
 the allocation decision. This is allocation triage, not evidence of
 trading profitability, and no rule can enable real trading.
+
+
+### Idle market heartbeat and resilient paper observation (October 2026)
+
+An empty/no-new-signal tick must not be mislabeled an exchange outage.
+When the normal OPEN/CLOSE path did not read any valid quote, `engine.py`
+now independently probes **actual current quotes** from BTC, ETH, SOL and
+XRP until at least one properly validated public venue observation is
+available. A heartbeat is **not** a fill, simulated trade, or an OPEN/CLOSE
+event: it only refreshes the persisted quote-observation report at its real
+time. If all providers fail, the engine still refuses to claim a new tick;
+its source errors and attempted symbols are explicit.
+
+The long GitHub runner now exposes Python engine failures in GitHub
+Actions logs instead of hiding their stderr behind a generic
+`CalledProcessError`. On a confirmed `DATA_UNAVAILABLE` outage, it
+skips that actual ten-minute sampling slot rather than fabricating a
+quote, sleeps before its next attempt and stops after three consecutive
+outages for incident triage. Integrity and programming errors remain
+fatal; all prior events are preserved. This improves observability and
+transient outage tolerance, not guaranteed GitHub cron delivery.

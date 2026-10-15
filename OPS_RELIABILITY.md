@@ -411,3 +411,22 @@ bound and underperformance vs the original CTRL pass simultaneously.
 Monitoring/holdout scores cannot influence decisions, no arm is
 removed, and the precommitted minimum control sampling stays >=20%
 when offered. Do not infer live tradability from any exploratory gain.
+
+
+## Incident fix: empty real-price sampling and diagnostic resilience
+
+Root-cause audit (October 15, 2026) showed `DATA_UNAVAILABLE: all
+public market sources failed: {}` can arise with **no public requests**
+when every position is not due and no symbol passes the predeclared
+entry gate. The idle-observation heartbeat attempts only real current
+public BTC/ETH/SOL/XRP quotes, without adding or changing immutable
+trade events. If the source cannot actually be verified the tick fails
+closed. The report separately freezes whether heartbeat sampling was
+needed, its original source instrument and observation time.
+
+The GitHub continuous observer logs a limited engine stderr on
+nonzero exit. Verified all-provider failures skip the corresponding
+ten-minute slot and retry only at a later real wall-clock time, with
+three-consecutive-outage circuit breaker. Other exceptions and ledger
+integrity failures still terminate immediately. No stale quote can be
+relabelled as a successful observation; missed slots remain missed.

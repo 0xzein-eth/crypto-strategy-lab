@@ -17,6 +17,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import time
 
 import engine
@@ -26,6 +27,7 @@ MAX_PULSES = 18
 DEFAULT_PULSES = 6
 DEFAULT_INTERVAL_MINUTES = 10
 MAX_INITIAL_AGE_MINUTES = 10
+MAX_CONSECUTIVE_QUOTE_FAILURES = 3
 UTC = dt.timezone.utc
 
 
@@ -100,8 +102,24 @@ def remaining_seconds(last_timestamp, now, interval_minutes):
 
 
 def run_checked(command, cwd=ROOT):
-    return subprocess.run(command, cwd=cwd, check=True, text=True,
-                          capture_output=True).stdout.strip()
+    """Surface safe observer diagnostics instead of suppressing engine stderr.
+
+    CI suppresses the verbose success report, but on an engine failure it
+    exposes the diagnostic and raises the original CalledProcessError.
+    Do not echo arbitrary Git outputs, git credentials, or environment vars.
+    """
+    done = subprocess.run(command, cwd=cwd, check=False, text=True,
+                          capture_output=True)
+    if done.returncode:
+        if command[:2] == ["python", "engine.py"]:
+            # Expected engine diagnostics include exception class / source
+            # failure, not HTTP authorization headers or credentials.
+            print("PAPER_OBSERVER_ERROR: " + (done.stderr or "")[-2200:],
+                  file=sys.stderr)
+        raise subprocess.CalledProcessError(done.returncode, command,
+                                            output=done.stdout,
+                                            stderr=done.stderr)
+    return done.stdout.strip()
 
 
 def publish(root, runner):
@@ -158,11 +176,16 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
         raise RuntimeError("INTEGRITY_FAILURE: dirty checkout before recovery window")
     total = 0
     last_stamp = initial["timestamp"]
+    last_attempt_stamp = last_stamp
     observations = []
+    quote_failure_streak = 0
     consecutive_remote_advances = 0
     superseded = False
     for index in range(selected_pulses):
-        delay = remaining_seconds(last_stamp, current(), interval_minutes)
+        # A failed attempt is NOT a completed observation. Use its REAL
+        # attempt time for the next wait to avoid rapid-fire retries, while
+        # retaining last_stamp solely for proven canonical observations.
+        delay = remaining_seconds(last_attempt_stamp, current(), interval_minutes)
         if delay:
             sleeper(delay)
         if runner(["git", "status", "--porcelain"], root):
@@ -175,6 +198,8 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
             # Another successfully committed real observation advanced main.
             # Do not submit redundant market requests or synthetic events.
             last_stamp = recent["timestamp"]
+            last_attempt_stamp = last_stamp
+            quote_failure_streak = 0
             observations.append({"pulse": index + 1, "status": "SKIPPED_NEWER_MAIN"})
             consecutive_remote_advances += 1
             if consecutive_remote_advances >= 2:
@@ -188,12 +213,34 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
         if recent["timestamp"] != last_stamp:
             raise RuntimeError("CLOCK_INTEGRITY: canonical report went backwards")
         # A fresh observed quote, not historical interpolation/backfill.
-        runner(["python", "engine.py", "--count", "24"], root)
+        # A temporary ALL-PROVIDER outage must not terminate the entire
+        # multi-hour observer after one failed tick. Skip the real slot,
+        # preserve last canonical data and retry at a later actual time.
+        try:
+            runner(["python", "engine.py", "--count", "24"], root)
+        except subprocess.CalledProcessError as exc:
+            detail=(exc.stderr or "") + "\n" + (exc.output or "")
+            if ("DATA_UNAVAILABLE:" not in detail or
+                    exc.cmd[:2] != ["python", "engine.py"]):
+                raise
+            quote_failure_streak += 1
+            observations.append({"pulse": index + 1,
+                                 "status": "SKIPPED_REAL_PROVIDER_OUTAGE",
+                                 "attempted_at_utc": engine.stamp(current()),
+                                 "note": "No verified market price; never create a retrospective tick"})
+            last_attempt_stamp = engine.stamp(current())
+            if quote_failure_streak >= MAX_CONSECUTIVE_QUOTE_FAILURES:
+                raise RuntimeError(
+                    "DATA_UNAVAILABLE: three consecutive real quote sampling failures; "
+                    "paper ledger unchanged, aborting to allow guardian investigation") from exc
+            continue
+        quote_failure_streak = 0
         updated = report_at(root)
         if engine.parse(updated["timestamp"]) <= engine.parse(last_stamp):
             raise RuntimeError("CLOCK_INTEGRITY: recovery report did not advance")
         publish(root, runner)
         last_stamp = updated["timestamp"]
+        last_attempt_stamp = last_stamp
         total += 1
         observations.append({"pulse": index + 1, "status": "PUBLISHED",
                              "observation_utc": last_stamp,
@@ -207,6 +254,8 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
                "completed_pulses": total,
                "pulses_skipped_newer_main":sum(x["status"]=="SKIPPED_NEWER_MAIN"
                                              for x in observations),
+               "pulses_skipped_provider_outage":sum(
+                   x["status"]=="SKIPPED_REAL_PROVIDER_OUTAGE" for x in observations),
                "observations": observations,
                "note": "Each recovery observation is actual-time paper data; no backfill"}
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
