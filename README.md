@@ -355,3 +355,9 @@ same 8 OKX perpetual funding-aware symbols, 90-day common analysis
 window, purged 96-candle walk-forward, fees/slippage stress and
 unchanged manual-only promotion. 750 related hypotheses substantially
 increase multiple-testing risk and do not establish profitability.
+
+The canonical scheduled paper workflow and each bounded 10-minute observer
+pass `--count 30`, but **the engine never actually opens 30** unless
+the independent rolling sample coverage meets its predeclared
+quality threshold and symbol/15m/day/source gates permit. Recovery
+after a long scheduling gap still caps new entries at three.
