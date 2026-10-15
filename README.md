@@ -311,3 +311,19 @@ symbol/venue requests, and the sources that actually provided usable
 fresh prices. **Spot-proxy quotes do not qualify as perpetual-market
 evidence.** This distinguishes heartbeat liveness from the reliability
 of derivative-instrument pricing.
+
+
+### Cadence target and quality-gated prospective throughput (2026-10-15)
+The strict 72-real-gap rolling cadence ratio is **not** smoothed or
+retroactively rewritten. Extra recent-12 and recent-36 gap metrics are
+separate diagnostics only: old outages remain in the headline metric until
+the actual rolling window advances. On a successful completed run with no
+active successor the audited guardian may hand off below **95%** (a buffer
+above the 90% operating target), still requiring a fresh main report and
+two independent GitHub queue reads. These triggers cost GitHub runner minutes
+and cannot guarantee a 90% SLA.
+The prospective intake is capped at 5 if coverage <40%, 12 at <75%,
+20 at <90%, and up to 30 at >=90% with at least 12 observed intervals.
+The recovery-gap throttle remains 3; all sector/15-minute duplicate,
+source, open-position and UTC-day caps and control-policy gates remain
+unchanged. More hypotheses are not more statistically independent trials.
