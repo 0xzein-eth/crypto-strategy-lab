@@ -293,3 +293,21 @@ quote, sleeps before its next attempt and stops after three consecutive
 outages for incident triage. Integrity and programming errors remain
 fatal; all prior events are preserved. This improves observability and
 transient outage tolerance, not guaranteed GitHub cron delivery.
+
+
+### Periodic independently replayed evidence checks and venue-health provenance
+
+The read-only **Research quality gates** workflow now evaluates the
+canonical SHA-chained event ledger automatically twice daily on a
+best-effort GitHub schedule, and on successful completion of the
+historical Research Factory. It continues running on pull requests.
+Each 30-day GitHub artifact contains the source report observation
+timestamp and exact ledger-tip SHA; no previous events are changed.
+All gates remain descriptive and do not establish tradeable profits.
+
+Every genuine prospective tick also reports counts of successful real
+perpetual public quotes, successful spot-proxy quotes, failed
+symbol/venue requests, and the sources that actually provided usable
+fresh prices. **Spot-proxy quotes do not qualify as perpetual-market
+evidence.** This distinguishes heartbeat liveness from the reliability
+of derivative-instrument pricing.
