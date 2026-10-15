@@ -492,3 +492,11 @@ breadth. Their validation outcomes are explicitly flagged exploratory,
 and controls are same-horizon descriptive aggregate comparisons,
 not paired randomized experiments. No shadow candidate can enter the
 forward review queue, regardless of its reported return.
+
+
+### Rolling schedule recovery projection (strict, non-authoritative)
+The report includes `clean_future_10m_intervals_to_reach_90pct` and
+`clean_future_10m_intervals_to_reach_95pct` when all 72 actual gap
+samples exist. These are modeled counts of **future valid observations**
+if every new gap equals exactly 10 minutes; zero intervals are backfilled.
+A scheduled job may start late; the projections are not a guarantee.
