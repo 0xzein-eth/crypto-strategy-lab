@@ -35,7 +35,7 @@ FEE_SIDE_PCT = 0.05
 RESEARCH_RISK_PCT = 1.5
 MAX_OPEN = 850
 MAX_PER_SYMBOL = 50
-MAX_NEW_PER_RUN = 24
+MAX_NEW_PER_RUN = 30  # Healthy prospective quota; never bypass per-symbol/slot caps
 MAX_NEW_PER_UTC_DAY = 1400
 MAX_NEW_PER_SYMBOL_PER_DAY = 65
 # One new OPEN per instrument symbol per frozen completed-candle signal slot.
@@ -98,7 +98,17 @@ def recent_schedule_coverage(previous_report, latest_gap_minutes, limit=72):
     missed = sum(max(0, math.ceil((gap - 3) / 10) - 1) for gap in gaps)
     expected = observed_slots + missed
     ratio = round(observed_slots / expected, 4) if expected else None
+    # Separate shorter windows expose genuine recovery progress without
+    # erasing missed slots from the strict 72-interval primary metric.
+    def interval_ratio(last_n):
+        recent = gaps[-last_n:]
+        observed = sum(g >= 5 for g in recent)
+        missing = sum(max(0, math.ceil((g - 3) / 10) - 1) for g in recent)
+        return round(observed/(observed+missing),4) if observed+missing else None
     return {
+        "last_12_observed_gap_coverage": interval_ratio(12),
+        "last_36_observed_gap_coverage": interval_ratio(36),
+        "coverage_windows_are_diagnostics_only": True,
         "recent_observation_gaps_minutes": gaps,
         "recent_observed_intervals": len(gaps),
         "estimated_distinct_10m_observation_intervals": observed_slots,
@@ -132,8 +142,10 @@ def prospective_entry_budget(requested, coverage, recovery=False):
     if ratio < 0.40:
         return min(requested, 5), "severe_scheduler_coverage"
     if ratio < 0.75:
-        return min(requested, 10), "degraded_scheduler_coverage"
-    return requested, "adequate_scheduler_coverage"
+        return min(requested, 12), "degraded_scheduler_coverage"
+    if ratio < 0.90:
+        return min(requested, 20), "recovering_scheduler_coverage"
+    return min(requested, MAX_NEW_PER_RUN), "healthy_scheduler_coverage"
 
 
 def sampling_horizons(coverage):
