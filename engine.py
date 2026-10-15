@@ -587,7 +587,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "allocation_policy":"learner-v3-train-only-monitoring-separated",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
-                  "signal_catalog_version":"2026-10-08",
+                  "signal_catalog_version":"2026-10-15-confirmed-v2",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
