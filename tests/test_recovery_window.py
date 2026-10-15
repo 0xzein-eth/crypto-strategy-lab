@@ -270,6 +270,73 @@ class RecoveryWindowTests(unittest.TestCase):
         self.assertEqual((commits[-1]-commits[0]).total_seconds(),17*600)
         self.assertEqual((commits[-1]-NOW).total_seconds(),180*60)
 
+    def test_transient_provider_failure_skips_real_slot_without_fake_commit(self):
+        now=[NOW]
+        self.save(report(NOW))
+        cmds=[]
+        clock_attempts=[]
+        def sleeper(seconds):
+            now[0]+=dt.timedelta(seconds=seconds)
+        def runner(cmd,root):
+            cmds.append(cmd)
+            if cmd[:2]==["git","status"]:
+                return ""
+            if cmd[:4]==["git","diff","--cached","--name-only"]:
+                return "data/report.json"
+            if cmd[:3]==["python","engine.py","--count"]:
+                clock_attempts.append(now[0])
+                if len(clock_attempts)==1:
+                    raise subprocess.CalledProcessError(
+                        1,cmd,output="",stderr="RuntimeError: DATA_UNAVAILABLE: no live quote")
+                self.save(report(now[0],gap=20,recover=False))
+            return ""
+        outcome=window.run_window(root=self.root,pulses=3,now=lambda:now[0],
+                                  sleeper=sleeper,runner=runner)
+        self.assertEqual(outcome["completed_pulses"],2)
+        self.assertEqual(outcome["pulses_skipped_provider_outage"],1)
+        self.assertEqual(outcome["observations"][0]["status"],"SKIPPED_REAL_PROVIDER_OUTAGE")
+        self.assertEqual(len(clock_attempts),3)
+        self.assertEqual((clock_attempts[1]-clock_attempts[0]).total_seconds(),600)
+        self.assertEqual(sum(cmd[:2]==["git","commit"] for cmd in cmds),2)
+
+    def test_persistent_provider_outage_aborts_without_committing(self):
+        now=[NOW]
+        self.save(report(NOW))
+        calls=[]
+        def runner(cmd,root):
+            calls.append(cmd)
+            if cmd[:2]==["git","status"]:
+                return ""
+            if cmd[:3]==["python","engine.py","--count"]:
+                raise subprocess.CalledProcessError(
+                    1,cmd,output="",stderr="DATA_UNAVAILABLE: no valid market source")
+            return ""
+        def sleeper(sec):
+            now[0]+=dt.timedelta(seconds=sec)
+        with self.assertRaisesRegex(RuntimeError,"three consecutive"):
+            window.run_window(root=self.root,pulses=18,
+                              now=lambda:now[0],sleeper=sleeper,runner=runner)
+        self.assertEqual(sum(cmd[:2]==["git","commit"] for cmd in calls),0)
+        self.assertEqual(sum(cmd[:3]==["python","engine.py","--count"]
+                             for cmd in calls),3)
+        self.assertEqual((now[0]-NOW).total_seconds(),1800)
+
+    def test_programming_errors_fail_closed_not_treated_as_market_outage(self):
+        self.save(report(NOW))
+        now=[NOW]
+        def sleeper(sec):
+            now[0]+=dt.timedelta(seconds=sec)
+        def runner(cmd,root):
+            if cmd[:2]==["git","status"]:
+                return ""
+            if cmd[:3]==["python","engine.py","--count"]:
+                raise subprocess.CalledProcessError(
+                    1,cmd,output="",stderr="ValueError: INTEGRITY_FAILURE")
+            return ""
+        with self.assertRaises(subprocess.CalledProcessError):
+            window.run_window(root=self.root,pulses=3,now=lambda:now[0],
+                              sleeper=sleeper,runner=runner)
+
     def test_cannot_request_unbounded_runner(self):
         self.save(report(NOW))
         with self.assertRaisesRegex(ValueError, "max recovery pulses"):
