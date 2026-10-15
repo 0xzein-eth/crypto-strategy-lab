@@ -217,7 +217,7 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
         # multi-hour observer after one failed tick. Skip the real slot,
         # preserve last canonical data and retry at a later actual time.
         try:
-            runner(["python", "engine.py", "--count", "30"], root)
+            runner(["python", "engine.py", "--count", "36"], root)
         except subprocess.CalledProcessError as exc:
             detail=(exc.stderr or "") + "\n" + (exc.output or "")
             if ("DATA_UNAVAILABLE:" not in detail or
