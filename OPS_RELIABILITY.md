@@ -481,3 +481,14 @@ trade history is rewritten or traded live.
   GitHub artifact outputs for a ledger-tip-linked strategy ranking. This
   may consume extra CI minutes; no orders, position backfills, data-file
   commits, or automatic promotion.
+
+
+### Shadow experiment interpretation
+
+When no candidate passes the positive clustered training lower bound,
+the historical system continues **research only** with up to four
+training-preselected rejected variants per fold, emphasizing family
+breadth. Their validation outcomes are explicitly flagged exploratory,
+and controls are same-horizon descriptive aggregate comparisons,
+not paired randomized experiments. No shadow candidate can enter the
+forward review queue, regardless of its reported return.
