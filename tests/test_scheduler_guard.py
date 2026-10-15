@@ -130,6 +130,19 @@ class GuardianTests(unittest.TestCase):
         self.assertEqual(len(api.calls),5)
         self.assertEqual(api.calls[-1][1],{"ref":"main"})
 
+    def test_handoff_uses_ninety_five_safety_margin(self):
+        base=report(8)
+        base["scheduling_diagnostics"]={
+            "recent_observed_intervals":72,
+            "estimated_10m_slot_coverage":0.925}
+        last=run(195)
+        last.update(id=321,conclusion="success",updated_at=timestamp(3))
+        api=FakeApi(base,[last])
+        state=guard.execute("0xzein-eth/crypto-strategy-lab",api,NOW,
+                            allow_dispatch=True,handoff_run_id=321)
+        self.assertEqual(state["status"],"HANDOFF_DISPATCHED")
+        self.assertEqual(len(api.calls),5)
+
     def test_handoff_never_dispatches_without_independent_conditions(self):
         base=report(8)
         base["scheduling_diagnostics"]={
@@ -141,7 +154,7 @@ class GuardianTests(unittest.TestCase):
             (base,[recent],999),
             (dict(base,scheduling_diagnostics={
                 "recent_observed_intervals":72,
-                "estimated_10m_slot_coverage":0.94}),[recent],123),
+                "estimated_10m_slot_coverage":0.96}),[recent],123),
             (report(8),[recent],123),
             (base,[dict(recent,conclusion="failure")],123),
             (base,[dict(recent,updated_at=timestamp(30))],123),
