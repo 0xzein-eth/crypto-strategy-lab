@@ -327,3 +327,16 @@ The prospective intake is capped at 5 if coverage <40%, 12 at <75%,
 The recovery-gap throttle remains 3; all sector/15-minute duplicate,
 source, open-position and UTC-day caps and control-policy gates remain
 unchanged. More hypotheses are not more statistically independent trials.
+
+
+### Prospective confirmed-candle hypothesis expansion (October 2026)
+Three new predeclared paper-only 15m OKX swap hypotheses are now
+available **only** when the OHLCV source sequence has genuine confirmed,
+gap-free candles: `DC-v1` (Donchian break of the *prior* 20 bars with
+volume/ATR buffer), `RSITREND-v1` (RSI continuation filtered by the
+trailing SMA50 and SMA20 slope), and `ATRCHAN-v1` (directional ATR
+channel breakout around SMA20 with volume). The unchanged CTRL-v1
+control branch, one asset/15-minute decision slot, same venue fills,
+stress-friction and no-lookahead checks still apply.
+These arms may have substantial correlation with existing hypotheses,
+so paper volume is never presented as independent statistical evidence.
