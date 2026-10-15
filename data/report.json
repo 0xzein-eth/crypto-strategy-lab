@@ -362,7 +362,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 6404,
-  "closed_this_run": 2,
+  "closed_this_run": 0,
   "created": 6636,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.02967,
@@ -676,7 +676,7 @@
       }
     },
     "evaluation_next_24_hours": 232,
-    "evaluation_next_hour": 13,
+    "evaluation_next_hour": 16,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
@@ -2383,8 +2383,8 @@
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 2,
-    "validated_real_public_quotes": 2,
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
     "validated_spot_proxy_quotes": 0
   },
   "losses": 3369,
@@ -2394,17 +2394,19 @@
   "net_expectancy_R": -0.04146,
   "net_pnl_usd": -39826.44,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-10-15T23:52:34.863000Z",
+    "provider": "okx-swap"
   },
   "open": 232,
   "pending": 0,
   "profit_factor": 0.9355,
-  "provider_observations": 2,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -2433,7 +2435,6 @@
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
     "prior_observation_gap_minutes": 10.004,
     "recent_observation_gaps_minutes": [
-      10.013,
       10.005,
       10.005,
       10.006,
@@ -2497,6 +2498,7 @@
       10.004,
       10.004,
       0.411,
+      10.004,
       10.004,
       10.004,
       10.004,
@@ -3154,7 +3156,7 @@
       "net_R": 2.36966
     }
   },
-  "timestamp": "2026-10-15T23:42:33.690064Z",
+  "timestamp": "2026-10-15T23:52:33.911426Z",
   "total_round_trip_fees_usd": 64040.0,
   "universe_size": 38,
   "universe_version": "2026-10-08-v2",
