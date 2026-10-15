@@ -342,15 +342,40 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
     for fold_number, (val_start, val_end) in enumerate(boundaries, 1):
         train_cutoff = val_start - EMBARGO_BARS*BAR_MS
         eligible_train = {}
+        train_screen = []
+        disqualified = defaultdict(int)
         for v in variants:
             trades = per_variant[v.id]
             sample = [r for r in trades if r["entry_ts"] >= start
                       and r["exit_ts"] < train_cutoff]
             stat = statistics_for(sample)
-            if v.family not in ("control", "long_control") and (
-                stat["n"] >= 10 and stat["days"] >= 4 and
-                stat["day_lcb_R"] is not None and stat["day_lcb_R"] > 0):
+            if v.family in ("control", "long_control"):
+                continue
+            reasons=[]
+            if stat["n"] < 10:
+                reasons.append("TOO_FEW_TRAINING_TRADES")
+            if stat["days"] < 4:
+                reasons.append("TOO_FEW_TRAINING_UTC_DAYS")
+            if stat["day_lcb_R"] is None or stat["day_lcb_R"] <= 0:
+                reasons.append("NONPOSITIVE_OR_UNAVAILABLE_DAILY_LCB")
+            for reason in reasons:
+                disqualified[reason]+=1
+            if not reasons:
                 eligible_train[v.id] = stat
+            elif stat["n"]>=10 and stat["days"]>=4:
+                # Reporting only: do not select these failed hypotheses for
+                # validation and NEVER inspect their future validation bars.
+                train_screen.append({
+                    "variant_id":v.id,"family":v.family,
+                    "training_trades":stat["n"],
+                    "training_days":stat["days"],
+                    "training_after_fee_mean_R":stat["avg_R"],
+                    "training_day_cluster_lcb_R":stat["day_lcb_R"],
+                    "blocking_reasons":reasons,
+                })
+        train_screen.sort(key=lambda r:(
+            -(r["training_day_cluster_lcb_R"] if r["training_day_cluster_lcb_R"] is not None else -1e9),
+            -r["training_trades"],r["variant_id"]))
 
         ranked = sorted(eligible_train, key=lambda ident: (
             -eligible_train[ident]["day_lcb_R"],
@@ -379,6 +404,11 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                 dt.datetime.fromtimestamp(val_end/1000, dt.timezone.utc).isoformat(),
             "purge_bars": EMBARGO_BARS,
             "train_qualified": len(ranked),
+            "training_screen_rejection_counts":dict(sorted(disqualified.items())),
+            "highest_scoring_unqualified_training_only":train_screen[:10],
+            "training_screen_note":(
+                "Training-only diagnostic; failures never enter validation or promotion; "
+                "top rejected variants are NOT winners"),
             "selected_for_validation": validated,
             "controls": controls,
         })
