@@ -45,7 +45,8 @@ class LearningTests(unittest.TestCase):
                 rows.append(trade("BR-v3",date,1.0))
                 rows.append(trade("CTRL-v1",date,-0.1))
         p=learner.analysis(rows)
-        self.assertEqual(p["champion"],"BR-v3")
+        self.assertIsNone(p["champion"])
+        self.assertIn("BR-v3",p["provisional_leaders"])
         self.assertTrue(p["arms"]["BR-v3"]["preferential"])
         for r in rows:
             if r["strategy"]=="BR-v3" and learner.stable_bucket("holdout:"+learner.day_of(r),5)==0:
@@ -115,9 +116,9 @@ class LearningTests(unittest.TestCase):
         mr=sum(p["strategy"]=="MR-proxy-v1" for p,_ in selected)
         ctrl=sum(p["strategy"]=="CTRL-v1" for p,_ in selected)
         self.assertGreater(br,0)
-        self.assertGreater(mr,br*2)
+        self.assertLess(abs(mr-br),250)
         self.assertGreaterEqual(ctrl,240)
-        self.assertTrue(any(mode=="training_underperformer_downweighted"
+        self.assertTrue(all("neutral_exploration" in mode or mode=="control_exploration"
                             for _,mode in selected))
         # A different MONITORING outcome cannot influence next-round choices.
         changed=[dict(x) for x in rows]
@@ -132,6 +133,21 @@ class LearningTests(unittest.TestCase):
             selected,
             [learner.choose(controls,changed,"BTC",4,k,0,p2)
              for k in range(1500)])
+
+    def test_training_ranks_never_prioritize_before_independent_validation(self):
+        choices=[{"strategy":"BR-proxy-v1","side":"LONG"},
+                 {"strategy":"MR-proxy-v1","side":"SHORT"},
+                 {"strategy":"CTRL-v1","side":"LONG"}]
+        leading={"allocation_leaders":["BR-proxy-v1"],
+                 "training_only_underperformers":["MR-proxy-v1"]}
+        reversed_leading={"allocation_leaders":["MR-proxy-v1"],
+                          "training_only_underperformers":["BR-proxy-v1"]}
+        for slot in range(200):
+            one=learner.choose(choices,[],"BTC",4,slot,0,profile=leading)
+            two=learner.choose(choices,[],"BTC",4,slot,0,profile=reversed_leading)
+            self.assertEqual(one,two)
+            self.assertNotIn(one[1],("train_only_exploratory_allocation",
+                                    "training_underperformer_downweighted"))
 
     def test_few_days_cannot_downweight_even_large_negative_sample(self):
         rows=[]
