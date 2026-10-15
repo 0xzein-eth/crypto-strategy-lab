@@ -119,6 +119,48 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(len(breadth["recent_14_entry_days"]),2)
         self.assertEqual(breadth["recent_14_entry_days"][0]["eligible_closes"],1)
 
+    def test_idle_tick_uses_a_real_public_quote_without_fake_trade(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base=Path(folder)
+            (base/"data").mkdir()
+            calls=[]
+            def current_quote(symbol,provider,clock=None):
+                calls.append((symbol,provider))
+                if (symbol,provider)!=("BTC","okx-swap"):
+                    raise RuntimeError("only BTC market available")
+                return {"symbol":"BTC","price":100,"pct24h":0,
+                        "quote_volume_24h":4_000_000,
+                        "observed_at":engine.stamp(self.t),
+                        "provider":"okx-swap","market_type":"perpetual",
+                        "instrument":"BTC-USDT-SWAP"}
+            with patch.object(engine,"BASE",base),patch.object(engine,"EVENTS",base/"data"/"events"),\
+                 patch.object(engine,"REPORT",base/"data"/"report.json"),\
+                 patch.object(engine,"STATE",base/"data"/"state.json"),\
+                 patch.object(engine,"LEGACY",base/"data"/"ledger.json"),\
+                 patch.object(engine,"quote",side_effect=current_quote):
+                result=engine.run(0,clock=lambda:self.t)
+                self.assertEqual(result["status"],"NO_NEW_SIGNALS")
+                self.assertEqual(result["created"],0)
+                self.assertEqual(result["verified_events"],0)
+                self.assertEqual(result["provider_observations"],1)
+                self.assertTrue(result["observation_heartbeat"]["attested_by_real_quote"])
+                self.assertEqual(result["observation_heartbeat"]["provider"],"okx-swap")
+                self.assertEqual(result["observation_heartbeat"]["observed_at"],
+                                 engine.stamp(self.t))
+                self.assertEqual(calls,[("BTC","okx-swap")])
+                self.assertEqual(engine.replay(base)[1],0)
+                later=self.t+dt.timedelta(minutes=10)
+                with patch.object(engine,"quote",side_effect=lambda sym,p,clock=None: {
+                    "symbol":"BTC","price":101,"pct24h":0,
+                    "quote_volume_24h":4_000_000,
+                    "observed_at":engine.stamp(later),
+                    "provider":"okx-swap","market_type":"perpetual",
+                    "instrument":"BTC-USDT-SWAP"}):
+                    second=engine.run(0,clock=lambda:later)
+                self.assertEqual(second["created"],0)
+                self.assertEqual(second["verified_events"],0)
+                self.assertEqual(second["scheduling_diagnostics"]["prior_observation_gap_minutes"],10)
+
     def test_no_data_does_not_create_events(self):
         with tempfile.TemporaryDirectory() as folder:
             base=Path(folder)
@@ -128,7 +170,7 @@ class EngineTests(unittest.TestCase):
                  patch.object(engine,"STATE",base/"data"/"state.json"),\
                  patch.object(engine,"LEGACY",base/"data"/"ledger.json"),\
                  patch.object(engine,"quote",side_effect=RuntimeError("offline")):
-                with self.assertRaisesRegex(RuntimeError,"DATA_UNAVAILABLE"):
+                with self.assertRaisesRegex(RuntimeError,"heartbeat symbols attempted=BTC,ETH,SOL,XRP"):
                     engine.run(5,clock=lambda:self.t)
                 self.assertFalse((base/"data"/"events").exists())
                 self.assertFalse((base/"data"/"report.json").exists())
