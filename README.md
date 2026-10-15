@@ -381,3 +381,19 @@ requirements plus up to ten highest-scoring **disqualified training-only**
 variants. These are explicitly NOT selected for validation, promotion,
 or live trading; the previous positive-bound selection criterion is
 unchanged.
+
+
+### Shadow validation of rejected historical hypotheses
+
+V9 historical research can validly report **zero** positively selected
+strategy variants after 750 tests. Instead of claiming the least-bad
+training result is an edge, each expanding chronological fold now
+preselects **up to four training-rejected** parameter variants (preferring
+different families) and evaluates them descriptively on the next purged
+validation fold. Every shadow result includes the frozen training
+rejection, subsequent held-out descriptive P&L, stress metrics, and a
+same-horizon two-control comparison when sample sizes permit.
+`SHADOW_EXPLORATORY_ONLY` results **never** enter
+`walk_forward_selected`, `eligible_for_forward_code_review`,
+a prospective paper trade, or an order. Validation is repeatedly
+inspected and is NOT a clean confirmatory holdout.
