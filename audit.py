@@ -6,6 +6,35 @@ import engine
 
 ROOT = Path(__file__).resolve().parent
 
+
+def _retained_fields_match(old, new):
+    """On one named additive schema migration, verify ALL historical fields.
+
+    New derived telemetry must never require rewriting original ledger events.
+    Only genuinely added keys are tolerated, even in deeply nested per-arm
+    dicts. An altered existing count/return/gate still fails the audit.
+    """
+    if isinstance(old, dict):
+        return isinstance(new, dict) and all(
+            key in new and _retained_fields_match(val,new[key])
+            for key,val in old.items())
+    return old == new
+
+
+def _maturity_compatible(actual, expected):
+    if actual == expected:
+        return True
+    if (not isinstance(actual,dict) or not isinstance(expected,dict)
+            or actual.get("version") != "prospective-entry-day-maturity-v1"
+            or expected.get("version") != "prospective-entry-day-maturity-v2"):
+        return False
+    # Policy explanation and schema identifier are versioned; every retained
+    # substantive field and per-arm result must remain exactly auditable.
+    older={k:v for k,v in actual.items() if k not in ("version","note")}
+    newer={k:v for k,v in expected.items() if k not in ("version","note")}
+    return _retained_fields_match(older,newer)
+
+
 def verify(root=ROOT):
     records, seq, tip, next_id = engine.replay(root)
     report_path = root / "data" / "report.json"
@@ -43,7 +72,11 @@ def verify(root=ROOT):
         # allowing only additional derived diagnostics at the next real tick.
         expected=summary["evidence_quality"]
         for key,value in report["evidence_quality"].items():
-            if key not in expected or expected[key]!=value:
+            if key == "temporal_maturity" and key in expected:
+                compatible = _maturity_compatible(value,expected[key])
+            else:
+                compatible = key in expected and expected[key] == value
+            if not compatible:
                 raise ValueError(
                     "INTEGRITY_FAILURE: evidence quality statistics mismatch: "+key)
         # A v4 report must publish and independently reconcile the new field.

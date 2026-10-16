@@ -43,10 +43,12 @@ def check(root=ROOT, moment=None, max_hours=MAX_STALENESS_HOURS):
                 recent_observed_intervals=scheduling.get("recent_observed_intervals"),
                 estimated_missed_10m_slots=scheduling.get("estimated_missed_10m_slots"),
                 estimated_10m_slot_coverage=scheduling.get("estimated_10m_slot_coverage"),
+                target_10m_slot_coverage=0.95,
+                last_12_observed_gap_coverage=scheduling.get("last_12_observed_gap_coverage"),
                 schedule_quality=("INSUFFICIENT_SAMPLE"
                                   if (scheduling.get("recent_observed_intervals") or 0) < 12
                                   else ("BELOW_TARGET"
-                                        if (scheduling.get("estimated_10m_slot_coverage") or 0) < 0.9
+                                        if (scheduling.get("estimated_10m_slot_coverage") or 0) < 0.95
                                         else "ON_TARGET")))
 
 

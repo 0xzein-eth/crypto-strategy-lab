@@ -493,3 +493,22 @@ positions in one price regime creates independent evidence.
   strategies stay performance-neutral.
 - Historic day counts are never fabricated or interpolated; historical
   backtests cannot be counted as future observed paper entry dates.
+
+## Cadence gap early warning and daily evidence coverage (2026-10-16)
+
+The independent GitHub-native clocks cannot guarantee time-to-run; a continuous
+observer can remain **running while the actual market report is stale**.
+The guardian now emits `PAPER_OBSERVATION_GAP` immediately after the authoritative
+report crosses the configured freshness threshold *even if the worker is
+IN_FLIGHT*. It does **not** queue a duplicate ledger writer, cancel a possibly
+healthy observation runner, create fake historical ticks, or bypass venue data
+validation. The 95% rolling-slot goal is monitored separately from the 90%
+entry-throttling safety threshold.
+
+The read-only `temporal_evidence` quality artifact and canonical derived
+report now distinguish **today's incomplete UTC day** from the **last seven
+fully completed UTC days**. A missing day appears explicitly (no filled
+dates), alongside coverage breadth targets: >=10 genuine bidirectional-regime
+days and >=6 genuine full four-daypart days. Targets measure diversity, NOT
+statistical independence or evidence of profit. The preexisting 20-day /
+4-week quality gate and performance-neutral seven-day OPEN sampling remain.

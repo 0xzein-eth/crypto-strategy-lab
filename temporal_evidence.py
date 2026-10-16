@@ -14,6 +14,8 @@ import learner
 MIN_MATURE_DAYS = 20
 MIN_MATURE_WEEKS = 4
 MIN_WEEKDAY_BREADTH = 5
+MIN_BIDIRECTIONAL_DAYS = 10
+MIN_FULL_DAYPART_DAYS = 6
 
 
 def _time(value):
@@ -57,6 +59,16 @@ def _metrics(rows, today):
     # inference of independent trading outcomes or an alpha sample size.
     effective = (round(1 / concentration, 2) if concentration else 0.0)
     last = days[-1] if days else None
+    # Reporting boundaries must treat today's PARTIAL UTC day differently
+    # from the seven most recent fully completed UTC calendar days.
+    completed_days = [today - dt.timedelta(days=offset)
+                      for offset in range(7,0,-1)]
+    completed_missing = [day.isoformat() for day in completed_days
+                         if day not in by_day]
+    bidirectional_days = sum(
+        {"24h_up", "24h_down"}.issubset(regimes[d]) for d in days)
+    full_daypart_days = sum(
+        all(day in six_hour_bins[k] for k in six_hour_bins) for day in days)
     def window(n):
         cutoff = today - dt.timedelta(days=n-1)
         selection = [r for day in days if cutoff <= day <= today
@@ -72,10 +84,26 @@ def _metrics(rows, today):
         "distinct_entry_utc_days": len(days),
         "distinct_iso_weeks": len(weeks),
         "distinct_weekdays": len(weekdays),
-        "days_with_both_up_and_down": sum(
-            {"24h_up", "24h_down"}.issubset(regimes[d]) for d in days),
-        "days_covering_all_four_six_hour_bins": sum(
-            all(day in six_hour_bins[k] for k in six_hour_bins) for day in days),
+        "days_with_both_up_and_down": bidirectional_days,
+        "days_covering_all_four_six_hour_bins": full_daypart_days,
+        "bidirectional_regime_breadth_target_days": MIN_BIDIRECTIONAL_DAYS,
+        "four_daypart_breadth_target_days": MIN_FULL_DAYPART_DAYS,
+        "bidirectional_regime_breadth_ready": (
+            bidirectional_days >= MIN_BIDIRECTIONAL_DAYS),
+        "four_daypart_breadth_ready": (
+            full_daypart_days >= MIN_FULL_DAYPART_DAYS),
+        "additional_bidirectional_regime_days_needed": max(
+            0,MIN_BIDIRECTIONAL_DAYS-bidirectional_days),
+        "additional_four_daypart_days_needed": max(
+            0,MIN_FULL_DAYPART_DAYS-full_daypart_days),
+        "completed_utc_day_yesterday":completed_days[-1].isoformat(),
+        "completed_utc_day_yesterday_has_eligible_close": (
+            completed_days[-1] in by_day),
+        "missing_eligible_entry_days_last_7_completed_utc_days":completed_missing,
+        "observed_entry_days_last_7_completed_utc_days":(
+            7-len(completed_missing)),
+        "longest_unobserved_calendar_gap_between_entry_days":max(
+            [(later-earlier).days-1 for earlier,later in zip(days,days[1:])] or [0]),
         "six_hour_bin_day_coverage": {
             "%02d-%02d_UTC" % (k*6, k*6+5): len(v)
             for k, v in six_hour_bins.items()},
@@ -108,11 +136,13 @@ def summarize(records, moment):
     for r in eligible:
         by_strategy[r["strategy"]].append(r)
     return {
-        "version": "prospective-entry-day-maturity-v1",
+        "version": "prospective-entry-day-maturity-v2",
         "as_of_utc": now.isoformat(),
         "min_distinct_entry_days": MIN_MATURE_DAYS,
         "min_distinct_iso_weeks": MIN_MATURE_WEEKS,
         "min_distinct_weekdays": MIN_WEEKDAY_BREADTH,
+        "minimum_bidirectional_regime_days": MIN_BIDIRECTIONAL_DAYS,
+        "minimum_full_daypart_days": MIN_FULL_DAYPART_DAYS,
         "overall": _metrics(eligible, now.date()),
         "by_strategy": {arm: _metrics(rows, now.date())
                         for arm, rows in sorted(by_strategy.items())},
@@ -121,7 +151,10 @@ def summarize(records, moment):
         "note": (
             "Only authentic eligible closed prospective paper observations. "
             "Distinct days and weeks improve temporal coverage, but correlated "
-            "crypto exposures are not statistically independent. 1/sum(day "
+            "crypto exposures are not statistically independent. Today's "
+            "partial UTC day is excluded from completed-day diagnostics. "
+            "Bidirectional/daypart targets measure coverage only, not alpha. "
+            "1/sum(day "
             "weight squared) describes concentration only, not an alpha "
             "effective sample size. A readiness pass never promotes an arm."),
     }

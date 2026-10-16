@@ -49,6 +49,23 @@ class HealthTests(unittest.TestCase):
                     health.check_guarded(root,moment=at,max_hours=1.25,
                                          guardian_decision=dict(receipt,ledger_events=1000))
 
+    def test_ninety_five_percent_is_a_quality_target_not_ninety(self):
+        import json
+        at=dt.datetime(2026,10,8,9,tzinfo=dt.timezone.utc)
+        with tempfile.TemporaryDirectory() as dirname:
+            root=Path(dirname)
+            (root/"data").mkdir()
+            (root/"data"/"report.json").write_text(json.dumps({
+                "timestamp":"2026-10-08T09:00:00Z",
+                "provider_observations":12,
+                "scheduling_diagnostics":{
+                    "recent_observed_intervals":72,
+                    "estimated_10m_slot_coverage":0.9444}}))
+            with patch.object(health.audit,"verify",return_value={"verified":True}):
+                result=health.check(root,moment=at)
+                self.assertEqual(result["schedule_quality"],"BELOW_TARGET")
+                self.assertEqual(result["target_10m_slot_coverage"],0.95)
+
     def test_in_flight_staleness_is_bounded(self):
         import json
         at=dt.datetime(2026,10,8,12,0,tzinfo=dt.timezone.utc)

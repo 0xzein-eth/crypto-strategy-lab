@@ -225,6 +225,22 @@ class GuardianTests(unittest.TestCase):
         self.assertTrue(state["recheck_prevented_duplicate"])
         self.assertEqual(len(api.calls), 4)
 
+    def test_in_flight_worker_does_not_mask_a_stale_market_observation(self):
+        api=FakeApi(report(46),[run(50,"in_progress")])
+        state=guard.execute("0xzein-eth/crypto-strategy-lab",api,NOW,
+                            allow_dispatch=True,threshold_minutes=14)
+        self.assertEqual(state["status"],"IN_FLIGHT")
+        self.assertTrue(state["observation_gap_alert"])
+        self.assertFalse(state["market_data_fresh"])
+        self.assertFalse(state["recovery_requested"])
+        self.assertEqual(len(api.calls),2)
+        # Fresh report remains healthy regardless of workflow age.
+        fresh=guard.execute("0xzein-eth/crypto-strategy-lab",
+            FakeApi(report(4),[run(50,"in_progress")]),NOW,
+            allow_dispatch=True,threshold_minutes=14)
+        self.assertFalse(fresh["observation_gap_alert"])
+        self.assertTrue(fresh["market_data_fresh"])
+
     def test_guardian_does_not_dispatch_an_active_job(self):
         for status in ("queued", "in_progress", "waiting", "pending", "requested"):
             with self.subTest(status=status):

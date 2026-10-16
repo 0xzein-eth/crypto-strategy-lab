@@ -82,6 +82,8 @@ def evaluate(report, workflow_runs, now, threshold_minutes=MAX_REPORT_AGE_MINUTE
         "last_report_utc": report["timestamp"],
         "ledger_events": report["verified_events"],
         "recovery_requested": False,
+        "observation_gap_alert": False,
+        "market_data_fresh": age <= threshold_minutes,
         "reason": "Current report is within the observation freshness target",
     }
     if age <= threshold_minutes:
@@ -104,7 +106,16 @@ def evaluate(report, workflow_runs, now, threshold_minutes=MAX_REPORT_AGE_MINUTE
             if elapsed > PENDING_RUN_ALERT_MINUTES:
                 result.update(status="STUCK", reason="An existing lab run is stuck; refusing duplicate dispatch")
             else:
-                result.update(status="IN_FLIGHT", reason="An existing lab run is queued or executing")
+                # Detect absence of genuine market observations *even while*
+                # a long-running paper job holds the canonical ledger lock.
+                # No second writer is dispatched; surface this as an alert
+                # rather than treating job liveness as quote-data freshness.
+                result.update(
+                    status="IN_FLIGHT",
+                    observation_gap_alert=True,
+                    reason=("An existing lab run is queued/executing, but "
+                            "the authoritative market observation is stale; "
+                            "no concurrent duplicate is dispatched"))
             return result
     if runs:
         latest = max(runs, key=lambda item: utc(item["created_at"]))
@@ -292,6 +303,10 @@ def main():
                     threshold_minutes=args.threshold_minutes,
                     handoff_run_id=args.handoff_run_id)
     print(json.dumps(state, indent=2, sort_keys=True))
+    if state.get("observation_gap_alert"):
+        print("::warning::PAPER_OBSERVATION_GAP: active/queued workflow "
+              "does not establish a fresh quote; investigate real UTC "
+              "gap, do not backfill missing observations")
     if args.status_file is not None:
         import tempfile
         fd, temporary = tempfile.mkstemp(prefix=".guardian-", dir=args.status_file.parent)
