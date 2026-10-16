@@ -13,10 +13,13 @@ ASSET_SECTORS = {
     "XLM": "payments", "HBAR": "layer1", "SEI": "layer1", "ICP": "infrastructure",
     "ALGO": "layer1", "RUNE": "defi", "JUP": "defi", "SHIB": "meme",
     "CRV": "defi", "GRT": "infrastructure", "POL": "layer2",
+    "RENDER": "infrastructure", "STX": "layer2", "TIA": "infrastructure",
+    "JTO": "defi", "IMX": "gaming", "PYTH": "oracle",
+    "LDO": "defi", "WLD": "infrastructure", "ENA": "defi", "ENS": "infrastructure",
 }
 # Static, versioned: newly listed venues/derivatives must be observed from the provider.
 SYMBOLS = tuple(ASSET_SECTORS)
-UNIVERSE_VERSION = "2026-10-08-v2"
+UNIVERSE_VERSION = "2026-10-16-v3"
 
 def sector(symbol):
     return ASSET_SECTORS[symbol]

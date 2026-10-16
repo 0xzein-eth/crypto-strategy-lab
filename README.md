@@ -50,15 +50,15 @@ The lab now scores a frozen set of **14 auditable paper-only strategy hypotheses
 
 - [Read the learning design](LEARNING.md)
 - Dashboard now displays adaptive arm evidence, monitoring samples and provisional status.
-- Normal target: **14 new experiments per scheduled run** (hard max 24; 850 OPEN overall; 50 OPEN per symbol; UTC day cap 1,400), if source and strategy filters allow.
+- Normal healthy target: **up to 44 new paper experiments per observation** (1,050 OPEN overall; 50 OPEN per symbol; UTC day cap 1,750), if source and strategy filters allow.
 - [Schedule guardian](.github/workflows/health.yml) dan [redundant clock](.github/workflows/rescue.yml) memeriksa integritas event, mencegah pemicu berulang, dan memicu pemulihan jika perlu. **Baru:** setelah run yang terlambat berhasil, [recovery_window.py](recovery_window.py) dapat mengambil maksimal enam snapshot baru dengan jarak nyata 10 menit, lalu berhenti. Indikator `estimated_10m_slot_coverage` dalam [report](data/report.json) memperlihatkan perkiraan slot yang berhasil dari 72 jeda observasi terakhir; perlu minimal 12 jeda untuk interpretasi. Semua tetap penelitian tanpa order riil; cron GitHub tidak menjamin 24/7.
 
 ## Peningkatan kapasitas dan kualitas sampel (Oktober 2026)
 
-- **38 pasar kandidat** lintas kelompok aset; sistem hanya menerima harga dari instrumen yang sungguh tersedia, tidak menciptakan harga atau memaksa aset tidak terdaftar.
-- **4 pemindaian per jam** secara best-effort (sebelumnya dua), target **14 eksperimen per run**, sampai 24 bila dikonfigurasi manual. Batas 1.400 entri baru per hari UTC mencegah lonjakan tidak sengaja.
+- **48 pasar kandidat** lintas kelompok aset; sistem hanya menerima harga dari instrumen yang sungguh tersedia, tidak menciptakan harga atau memaksa aset tidak terdaftar.
+- **4 pemindaian per jam** secara best-effort (sebelumnya dua), target **maksimal 44 eksperimen baru per observasi** pada kondisi sehat. Batas 1.750 entri baru per hari UTC mencegah lonjakan tidak sengaja.
 - **Stratifikasi** berdasarkan sektor, arah pasar dan band volatilitas agar tidak seluruh eksperimen mengejar aset paling volatil; hasil tetap saling berkorelasi dan tidak otomatis independen.
-- **Kapasitas 850 posisi simulasi OPEN**, 50 OPEN per simbol. Berbagai horizon 1/2/4/8/12/24h tetap digunakan; duplikat aktif strategi×horizon pada venue yang sama dihindari.
+- **Kapasitas 1.050 posisi simulasi OPEN**, 50 OPEN per simbol. Berbagai horizon 1/2/4/8/12/24h tetap digunakan; duplikat aktif strategi×horizon pada venue yang sama dihindari.
 - **Skenario friction-stress** memakai bid/ask entry jika ada dan estimasi dampak pasar; dilaporkan terpisah dari P&L lama berbasis fee sehingga rekam historis tidak diubah.
 - **14 hipotesis terdaftar**, meliputi tiga baseline serta 11 sinyal berbasis candle. Metode terbaik baru dapat memperoleh alokasi tambahan setelah hasil prospektif memadai.
 - **Biaya Git storage** bisa bertambah besar pada throughput tinggi. Ini rancangan riset gratis selama masih dalam batas layanan; tidak dijamin tanpa batas waktu atau kapasitas.
@@ -430,3 +430,34 @@ interval succeeds and no slots are missed*. It slides historical gaps
 out of the fixed-size window; it never adds synthetic gap entries to
 the actual ledger, updates the headline metric, requests trades based
 on projected coverage, or guarantees a time-to-recovery SLA.
+
+## Research scale v11 (2026-10-16, paper only)
+
+**Scope:** The prospective candidate universe expands from 38 to 48 versioned
+symbols, with no assertion that every symbol is supported on every exchange.
+Unlisted/stale/illiquid assets fail closed: only real, matching provider quotes
+may result in a new paper OPEN. The guarded healthy-run request rises from 36 to
+44; real 15-minute symbol-slot uniqueness, maximum 1,750 new/day, 1,050
+simultaneous OPEN and 50 concurrent per symbol remain enforced. A market
+outage or low scheduler coverage always reduces, rather than inflates, trades.
+
+**Historical research:** 1,600 parameterized variants (previously 1,200) on
+12 requested OKX USDT perpetual symbols, with the original first 1,200 IDs in
+exact historical order. Two genuinely separate exploratory families are
+volume-climax wick rejection and RSI oversold/overbought recovery. Their
+prospective 15-minute counterparts use only confirmed and timely OKX candles.
+
+**Memory and data accounting:** Each variant's synthetic trades are processed
+into training-fold statistics then released before examining another variant;
+validation rows are recomputed only for variants frozen by training-only
+selection and a small labeled exploratory shadow sample. Derived reports include
+cumulative counts by variant family and market, **not** claims of unique
+observations or actual paper executions. Raw confirmed OHLCV cache capacity
+increases to 18,000 candles per instrument. Settled funding is never fabricated:
+comparison windows remain constrained to periods with real funding coverage.
+
+**Evidence:** No allocation based on performance or automatic promotion; keep
+the controls and realistic fee, extra friction, day-cluster, no-lookahead and
+source-provenance checks. More overlapping hypotheses increases multiple-testing
+risk and cannot establish profitability. GitHub Actions remains best effort and
+may incur runner usage charges.

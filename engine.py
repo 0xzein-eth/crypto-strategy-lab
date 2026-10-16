@@ -33,11 +33,11 @@ START_ID = 116
 NOTIONAL_USD = 10000.0
 FEE_SIDE_PCT = 0.05
 RESEARCH_RISK_PCT = 1.5
-MAX_OPEN = 850
+MAX_OPEN = 1050
 MAX_PER_SYMBOL = 50
-MAX_NEW_PER_RUN = 36  # Healthy prospective quota; preserve one OPEN per symbol per frozen 15m slot
-MAX_NEW_PER_UTC_DAY = 1400
-MAX_NEW_PER_SYMBOL_PER_DAY = 65
+MAX_NEW_PER_RUN = 44  # Healthy paper-only quota; never bypass confirmed 15m symbol-slot uniqueness
+MAX_NEW_PER_UTC_DAY = 1750
+MAX_NEW_PER_SYMBOL_PER_DAY = 70
 # One new OPEN per instrument symbol per frozen completed-candle signal slot.
 # Ten-minute quotes are still sampled and all existing due exits still close.
 SIGNAL_SLOT_SECONDS = 900
@@ -610,7 +610,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
                   "performance_neutral_allocation":True,
-                  "signal_catalog_version":"2026-10-15-confirmed-v3",
+                  "signal_catalog_version":"2026-10-16-confirmed-v4",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
