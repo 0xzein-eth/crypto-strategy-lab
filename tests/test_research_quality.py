@@ -58,6 +58,20 @@ class QualityTests(unittest.TestCase):
             paired_holdout_descriptive_lcb_R=-0.02)
         self.assertFalse(rq.evaluate(rows,score,0.99)["arms"]["BR-v3"]["quality_gate_pass"])
 
+    def test_volume_cannot_replace_four_separate_weeks(self):
+        import datetime as dt
+        # More than 20 distinct days are needed, and the calendar must
+        # represent at least four actual ISO weeks rather than only two/three.
+        days=[dt.date(2026,9,7)+dt.timedelta(days=i) for i in range(20)]
+        rows=[row(str(i), "BR-v3", days[i%20].isoformat())
+              for i in range(400)]
+        result=rq.evaluate(rows,comparison(days=20),0.99)["arms"]["BR-v3"]
+        self.assertEqual(result["distinct_entry_iso_weeks"],3)
+        self.assertIn("INSUFFICIENT_DISTINCT_CALENDAR_WEEKS",
+                      result["blocking_reasons"])
+        self.assertFalse(result["quality_gate_pass"])
+        self.assertFalse(result["edge_proven"])
+
     def test_quality_workflow_refreshes_with_independent_clocks(self):
         path=Path(__file__).resolve().parents[1] / ".github" / "workflows" / "research-quality.yml"
         yml=path.read_text(encoding="utf-8")
@@ -67,6 +81,8 @@ class QualityTests(unittest.TestCase):
         self.assertIn("github.event.workflow_run.head_repository.full_name == github.repository",yml)
         self.assertIn("cancel-in-progress: false",yml)
         self.assertIn("source_ledger_tip_sha256",yml)
+        self.assertIn("prospective_temporal_evidence",yml)
+        self.assertIn("temporal_evidence.summarize(",yml)
         self.assertIn("actions/upload-artifact@v4",yml)
         self.assertNotIn("contents: write",yml)
 
