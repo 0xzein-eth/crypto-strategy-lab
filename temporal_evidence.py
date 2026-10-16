@@ -136,7 +136,7 @@ def summarize(records, moment):
     for r in eligible:
         by_strategy[r["strategy"]].append(r)
     return {
-        "version": "prospective-entry-day-maturity-v1",
+        "version": "prospective-entry-day-maturity-v2",
         "as_of_utc": now.isoformat(),
         "min_distinct_entry_days": MIN_MATURE_DAYS,
         "min_distinct_iso_weeks": MIN_MATURE_WEEKS,
