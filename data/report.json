@@ -396,7 +396,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 8185,
-  "closed_this_run": 7,
+  "closed_this_run": 0,
   "created": 8386,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.03729,
@@ -558,7 +558,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-16T19:53:29.840345+00:00",
+      "as_of_utc": "2026-10-16T20:03:30.161857+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 8,
@@ -5611,8 +5611,8 @@
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 7,
-    "validated_real_public_quotes": 7,
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
     "validated_spot_proxy_quotes": 0
   },
   "losses": 4333,
@@ -5622,17 +5622,19 @@
   "net_expectancy_R": -0.04831,
   "net_pnl_usd": -59311.13,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-10-16T20:03:30.077000Z",
+    "provider": "okx-swap"
   },
   "open": 201,
   "pending": 0,
   "profit_factor": 0.9241,
-  "provider_observations": 7,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -5643,7 +5645,7 @@
       24
     ],
     "clean_future_10m_intervals_to_reach_90pct": 0,
-    "clean_future_10m_intervals_to_reach_95pct": 5,
+    "clean_future_10m_intervals_to_reach_95pct": 4,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -5661,7 +5663,6 @@
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
     "prior_observation_gap_minutes": 10.005,
     "recent_observation_gaps_minutes": [
-      10.006,
       10.006,
       10.006,
       10.007,
@@ -5732,6 +5733,7 @@
       10.005,
       10.005,
       10.006,
+      10.005,
       10.005
     ],
     "recent_observed_intervals": 72,
@@ -6496,7 +6498,7 @@
       "net_R": 10.32824
     }
   },
-  "timestamp": "2026-10-16T19:53:29.840345Z",
+  "timestamp": "2026-10-16T20:03:30.161857Z",
   "total_round_trip_fees_usd": 81850.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
