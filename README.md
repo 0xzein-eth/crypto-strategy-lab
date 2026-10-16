@@ -461,3 +461,35 @@ the controls and realistic fee, extra friction, day-cluster, no-lookahead and
 source-provenance checks. More overlapping hypotheses increases multiple-testing
 risk and cannot establish profitability. GitHub Actions remains best effort and
 may incur runner usage charges.
+
+## Prospective temporal maturity and seven-day neutral coverage (2026-10-16)
+
+The research bottleneck is now **different, real UTC days and market
+regimes**, not raw overlapping hypothetical trade count. This release does
+not change the ten-minute observer cadence or claim that trading more
+positions in one price regime creates independent evidence.
+
+- New OPEN selection balances **frozen market sector/direction/volatility
+  strata across the preceding seven calendar days**, breaking ties using
+  the pre-existing same-day balance. It reads only original OPEN-time
+  metadata of both winning and losing records; no strategy PnL, later CLOSE,
+  adaptive leaderboard or future information can influence the weighting.
+- The canonical derived `data/report.json` includes an
+  `evidence_quality.temporal_maturity` summary by arm and overall:
+  distinct observed UTC entry days, ISO weeks, weekdays, six-hour dayparts,
+  precommitted direction regimes, 7/14/30-calendar-day activity, and the
+  largest day's share of eligible CLOSEs. Day concentration effective
+  count is a descriptive **upper bound**, never an iid or alpha sample size.
+- Read-only [research quality gates](research_quality.py) now require
+  four real ISO calendar weeks and five weekdays on top of existing
+  minimum matched days, strictly paired controls, funding/friction
+  safeguards and prospective scheduler quality. The [quality workflow]
+  (.github/workflows/research-quality.yml) saves an independent ledger-tip
+  linked maturity snapshot as an artifact; no extra order automation.
+- **Twenty separate eligible entry days and four ISO weeks** are
+  minimum *data maturity* targets, not a claim that strategy performance
+  becomes statistically valid after twenty days. Until measured reality
+  supplies the days, the status remains `NOT_PROVEN` and all experimental
+  strategies stay performance-neutral.
+- Historic day counts are never fabricated or interpolated; historical
+  backtests cannot be counted as future observed paper entry dates.

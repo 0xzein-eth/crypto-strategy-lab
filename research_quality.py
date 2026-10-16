@@ -9,6 +9,8 @@ import datetime as dt
 import math
 
 MIN_DAYS = 20
+MIN_WEEKS = 4
+MIN_WEEKDAYS = 5
 MIN_PAIRS = 100
 MIN_MATCH_FRACTION = 0.50
 MIN_HOLDOUT_DAYS = 5
@@ -46,6 +48,9 @@ def evaluate(records, comparison, schedule_coverage=None):
     for arm, stats in sorted(comparison["arms"].items()):
         arm_rows = by_arm[arm]
         days = {_day(r["created_at"]) for r in arm_rows}
+        dates={dt.date.fromisoformat(day) for day in days}
+        weeks={d.isocalendar()[:2] for d in dates}
+        weekdays={d.weekday() for d in dates}
         holdout = [r for r in arm_rows if _holdout(_day(r["created_at"]))]
         train = [r for r in arm_rows if not _holdout(_day(r["created_at"]))]
         holdout_days = {_day(r["created_at"]) for r in holdout}
@@ -54,6 +59,12 @@ def evaluate(records, comparison, schedule_coverage=None):
             reasons.append("INSUFFICIENT_MATCHED_PAIRS")
         if stats["matched_entry_utc_days"] < MIN_DAYS:
             reasons.append("INSUFFICIENT_MATCHED_DAYS")
+        # Even thousands of correlated positions over one week cannot create
+        # multi-week evidence. Temporal gates are necessary but not alpha proof.
+        if len(weeks) < MIN_WEEKS:
+            reasons.append("INSUFFICIENT_DISTINCT_CALENDAR_WEEKS")
+        if len(weekdays) < MIN_WEEKDAYS:
+            reasons.append("INSUFFICIENT_WEEKDAY_BREADTH")
         if (stats["matched_fraction"] or 0) < MIN_MATCH_FRACTION:
             reasons.append("LOW_MATCH_FRACTION")
         if len(holdout) < MIN_HOLDOUT_PAIRS or len(holdout_days) < MIN_HOLDOUT_DAYS:
@@ -81,6 +92,9 @@ def evaluate(records, comparison, schedule_coverage=None):
         results[arm] = {
             "eligible_closed": len(arm_rows),
             "distinct_entry_days": len(days),
+            "distinct_entry_iso_weeks": len(weeks),
+            "distinct_entry_weekdays": len(weekdays),
+            "additional_calendar_weeks_needed":max(0,MIN_WEEKS-len(weeks)),
             "train_closes": len(train),
             "frozen_holdout_closes": len(holdout),
             "frozen_holdout_days": len(holdout_days),
@@ -94,11 +108,13 @@ def evaluate(records, comparison, schedule_coverage=None):
             "edge_proven": False,
         }
     return {
-        "method": "quality-gates-v2-frozen-day-paired-monitoring",
+        "method": "quality-gates-v3-temporal-week-frozen-day-paired-monitoring",
         "paper_only": True,
         "schedule_coverage": schedule_coverage,
         "schedule_coverage_gate": coverage_ok,
         "min_distinct_matched_days": MIN_DAYS,
+        "min_distinct_iso_weeks": MIN_WEEKS,
+        "min_distinct_weekdays": MIN_WEEKDAYS,
         "min_matched_pairs": MIN_PAIRS,
         "min_frozen_holdout_days": MIN_HOLDOUT_DAYS,
         "multiple_testing": "No multiplicity-adjusted inference; no strategy can be declared proven",

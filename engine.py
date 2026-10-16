@@ -18,6 +18,7 @@ import learner
 import universe
 import friction
 import outcome_stats
+import temporal_evidence
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -467,7 +468,7 @@ def close_due(records, read_quote, moment, clock=None):
 
 
 
-def diversified_quotes(quotes, slot, prior_daily_strata=None):
+def diversified_quotes(quotes, slot, prior_daily_strata=None, prior_weekly_strata=None):
     """Prioritize sparsely sampled OPEN-era strata, with no outcome hindsight.
 
     Balancing uses only frozen *entry* metadata from the same UTC day,
@@ -480,8 +481,12 @@ def diversified_quotes(quotes, slot, prior_daily_strata=None):
         rows.sort(key=lambda q: (
             hashlib.sha256(f"{slot}:{q['symbol']}:{key}".encode()).hexdigest(),
             q["symbol"]))
+    # Balance *frozen* entry strata over an actual rolling seven-day window.
+    # Neither closed PnL nor any inferred missing market period participates.
     counts=prior_daily_strata or {}
+    weekly_counts=prior_weekly_strata or {}
     keys = sorted(buckets,key=lambda key: (
+        weekly_counts.get(key,0),
         counts.get(key,0),
         hashlib.sha256(("%s:%s"%(slot,key)).encode()).hexdigest(),
         key))
@@ -545,7 +550,19 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         frozen=(r.get("evidence") or {}).get("sampling_stratum")
         if isinstance(frozen,list) and len(frozen)==3:
             prior_daily_strata[tuple(frozen)]+=1
-    quotes = diversified_quotes(quotes, slot, prior_daily_strata)
+    # Weekly sampling context is purely ORIGINAL OPEN metadata, including
+    # trades that later closed or lost. No outcomes enter selection, and a
+    # non-observed UTC date never becomes a fabricated training sample.
+    prior_weekly_strata=defaultdict(int)
+    for r in records.values():
+        age=(utc_day-parse(r["created_at"]).date()).days
+        if not 0 <= age < 7:
+            continue
+        frozen=(r.get("evidence") or {}).get("sampling_stratum")
+        if isinstance(frozen,list) and len(frozen)==3:
+            prior_weekly_strata[tuple(frozen)]+=1
+    quotes = diversified_quotes(quotes, slot, prior_daily_strata,
+                                prior_weekly_strata)
     # Allocation is deliberately performance-neutral until independent research
     # requirements permit an explicit future policy version. No training-result
     # profile may reweight an experiment's probability during collection.
@@ -614,7 +631,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
-                  "stratum_balance_policy":"same_utc_day_prior_entry_counts_v1_no_outcomes",
+                  "stratum_balance_policy":"seven_calendar_day_frozen_entry_counts_v2_no_outcomes",
                   "signal_slot_utc":stamp(dt.datetime.fromtimestamp(
                       slot*SIGNAL_SLOT_SECONDS, UTC)),
                   "independent_symbol_slot_policy":"one_open_per_symbol_per_15m_signal_slot_v1",
@@ -762,6 +779,7 @@ def summarize(records, moment):
                 "eligible_share_of_all_closes":round(len(eligible)/len(closed),4) if closed else None,
                 "distinct_utc_days":adaptive["eligible_days"],
                 "market_breadth":eligible_market_breadth(eligible),
+                "temporal_maturity":temporal_evidence.summarize(records, moment),
                 "minimum_training_days":learner.MIN_TRAIN_DAYS,
                 "training_day_coverage_ready":adaptive["eligible_days"]>=learner.MIN_TRAIN_DAYS,
                 "validation_status":"NOT_PROVEN",

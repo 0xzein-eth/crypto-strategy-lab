@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'research_quality.py'
+      - 'temporal_evidence.py'
+      - 'tests/test_temporal_evidence.py'
       - 'tests/test_research_quality.py'
       - '.github/workflows/research-quality.yml'
   pull_request:
@@ -42,11 +44,20 @@ jobs:
           import engine
           import matched_controls
           import research_quality
+          import temporal_evidence
+          import datetime as dt
           records, _, _, _ = engine.replay()
           report = json.loads(engine.REPORT.read_text(encoding="utf-8"))
           coverage = report.get("scheduling_diagnostics", {}).get("estimated_10m_slot_coverage")
           matched = matched_controls.compare(records)
           result = research_quality.evaluate(records, matched, coverage)
+          observed_at = dt.datetime.fromisoformat(report["timestamp"].replace("Z","+00:00"))
+          # Diagnostic uses only ledger-verified observed eligible CLOSED paper
+          # trades; no retrospective backfill, strategy promotion, or fake days.
+          result["prospective_temporal_evidence"] = temporal_evidence.summarize(
+              records, observed_at)
+          assert result["prospective_temporal_evidence"]["edge_proven"] is False
+          assert not any(x["edge_proven"] for x in result["arms"].values())
           result["source_report_timestamp_utc"] = report["timestamp"]
           result["source_ledger_tip_sha256"] = report["ledger_tip_sha256"]
           with open("research-quality-report.json", "w", encoding="utf-8") as f:
