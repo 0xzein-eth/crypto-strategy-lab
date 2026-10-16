@@ -73,7 +73,7 @@ def validate_series(candles, min_bars=2):
     return candles
 
 
-def merge_series(existing, incoming, max_bars=12_000):
+def merge_series(existing, incoming, max_bars=18_000):
     if existing:
         validate_series(existing)
     if incoming:
