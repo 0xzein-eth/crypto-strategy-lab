@@ -79,6 +79,23 @@ class ScaleAndCostTests(unittest.TestCase):
         self.assertEqual({q["symbol"] for q in first},
                          {q["symbol"] for q in data})
 
+    def test_prior_seven_day_entry_breadth_is_neutral_to_outcomes(self):
+        quotes=[dict(self.quotes[s]) for s in ("BTC","DOGE")]
+        slot=int(self.t.timestamp()//engine.SIGNAL_SLOT_SECONDS)
+        major=universe.bucket("BTC",quotes[0]["pct24h"],
+                              quotes[0]["quote_volume_24h"])
+        meme=universe.bucket("DOGE",quotes[1]["pct24h"],
+                             quotes[1]["quote_volume_24h"])
+        # Weekly entry metadata is fixed at OPEN and never recalculated
+        # from realized strategy returns or the number of winning closes.
+        daily={major:0,meme:0}
+        weekly={major:60,meme:0}
+        order=engine.diversified_quotes(quotes,slot,daily,weekly)
+        self.assertEqual(order[0]["symbol"],"DOGE")
+        self.assertEqual(order,engine.diversified_quotes(
+            list(reversed(quotes)),slot,daily,weekly))
+        self.assertEqual({q["symbol"] for q in order},{"BTC","DOGE"})
+
     def test_horizon_quality_band_changes_only_future_experiments(self):
         all_h=engine.new_candidates({},self.read,self.t,116,24,clock=lambda:self.t)
         degraded_h=engine.new_candidates({},self.read,self.t,116,24,
