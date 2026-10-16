@@ -74,6 +74,38 @@ class TemporalMaturityTests(unittest.TestCase):
         self.assertFalse(m["four_daypart_breadth_ready"])
         self.assertEqual(m["additional_bidirectional_regime_days_needed"],10)
 
+    def test_old_temporal_report_upgrade_is_additive_and_checked(self):
+        import audit
+        new=te.summarize([
+            trade("a","2026-10-14"),trade("b","2026-10-15")
+        ],dt.datetime(2026,10,16,12,tzinfo=UTC))
+        import copy
+        old=copy.deepcopy(new)
+        old["version"]="prospective-entry-day-maturity-v1"
+        old["note"]="Older maturity explanation"
+        new_fields={
+            "bidirectional_regime_breadth_target_days",
+            "four_daypart_breadth_target_days",
+            "bidirectional_regime_breadth_ready",
+            "four_daypart_breadth_ready",
+            "additional_bidirectional_regime_days_needed",
+            "additional_four_daypart_days_needed",
+            "completed_utc_day_yesterday",
+            "completed_utc_day_yesterday_has_eligible_close",
+            "missing_eligible_entry_days_last_7_completed_utc_days",
+            "observed_entry_days_last_7_completed_utc_days",
+            "longest_unobserved_calendar_gap_between_entry_days",
+        }
+        for info in [old["overall"],*old["by_strategy"].values()]:
+            for key in new_fields:
+                info.pop(key)
+        self.assertTrue(audit._maturity_compatible(old,new))
+        old["overall"]["distinct_entry_utc_days"]=1000
+        self.assertFalse(audit._maturity_compatible(old,new))
+        old["overall"]["distinct_entry_utc_days"]=2
+        old["version"]="unregistered-v99"
+        self.assertFalse(audit._maturity_compatible(old,new))
+
     def test_future_eligible_events_and_naive_clock_fail_closed(self):
         with self.assertRaisesRegex(ValueError,"future"):
             te.summarize([trade("f","2026-10-17")],
