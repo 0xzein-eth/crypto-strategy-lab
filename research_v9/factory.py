@@ -42,14 +42,14 @@ class Variant:
 
 
 def variant_catalog(max_variants=300):
-    """Versioned deterministic catalogue; first 750 IDs remain stable.
+    """Versioned deterministic catalogue; first 1200 IDs remain stable.
 
-    The original 750-variant order is never silently shuffled: adding new
+    The original 1200-variant order is never silently shuffled: adding new
     families must not rewrite prior experimental hypotheses or introduce
     retrospective selection changes. Expansion is historical/backtest-only.
     """
-    if not 1 <= max_variants <= 1200:
-        raise ValueError("max_variants must be within 1..775")
+    if not 1 <= max_variants <= 1600:
+        raise ValueError("max_variants must be within 1..1600")
 
     def drain(by_family, limit):
         output = []
@@ -115,7 +115,20 @@ def variant_catalog(max_variants=300):
                 (8, 12, 16, 24, 32), (0.0, 0.1, 0.2, 0.3, 0.4, 0.5), HORIZONS):
             new_families["trend_reclaim"].append(
                 Variant("trend_reclaim", lookback, threshold, 50, h))
-        selected.extend(drain(new_families, max_variants - len(selected)))
+        selected.extend(drain(new_families, min(1200,max_variants) - len(selected)))
+    if max_variants > 1200:
+        # Experiment catalogue v5. First 1200 IDs/order must remain unchanged.
+        novel = defaultdict(list)
+        for lookback, volume_multiple, h in product(
+                (8, 12, 16, 20, 32, 48, 60),
+                (1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 3.0), HORIZONS):
+            novel["volume_climax_fade"].append(
+                Variant("volume_climax_fade",lookback,volume_multiple,0,h))
+        for period, threshold, h in product(
+                (7, 10, 14, 18, 21, 28, 35), (25, 30, 35, 40, 45, 50), HORIZONS):
+            novel["rsi_recovery"].append(
+                Variant("rsi_recovery",period,threshold,0,h))
+        selected.extend(drain(novel,max_variants-len(selected)))
     if len(selected) != max_variants or len({v.id for v in selected}) != len(selected):
         raise AssertionError("insufficient unique predeclared research hypotheses")
     return selected
@@ -238,6 +251,21 @@ def signal(f, v, closed):
                 close > current_fast + v.threshold*reference_range
                 else -1 if current_fast < slow and f.close[j-1] >= previous_fast and
                 close < current_fast - v.threshold*reference_range else 0)
+    if v.family == "volume_climax_fade":
+        prior_volume=f.window(f.vsum,j-1,v.lookback)
+        bar_range=f.high[j]-f.low[j]
+        if prior_volume<=0 or bar_range<=0 or f.vol[j]<v.threshold*prior_volume:
+            return 0
+        upper_wick=(f.high[j]-max(close,f.open[j]))/bar_range
+        lower_wick=(min(close,f.open[j])-f.low[j])/bar_range
+        return (-1 if upper_wick>=0.45 and close<f.open[j]
+                else 1 if lower_wick>=0.45 and close>f.open[j] else 0)
+    if v.family == "rsi_recovery":
+        previous=f.rsi(j-1,v.lookback)
+        current=f.rsi(j,v.lookback)
+        return (1 if previous<v.threshold<=current and close>f.close[j-1]
+                else -1 if previous>100-v.threshold>=current and
+                close<f.close[j-1] else 0)
     if v.family == "long_control":
         return 1
     if v.family == "control":
@@ -373,13 +401,47 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
     points = [start + int(n_bars*p)*BAR_MS for p in (0.55, 0.70, 0.85)]
     boundaries = list(zip(points, points[1:]+[end+BAR_MS]))
     variants = variant_catalog(max_variants)
-    per_variant = {}
+    variants_by_id = {v.id:v for v in variants}
+    # Bounded memory: keep aggregate TRAIN statistics, not every trade from
+    # every variant. Recompute only frozen TRAIN-selected validation/shadow
+    # arms when required; never use validation outcomes for arm selection.
+    training_by_fold = [dict() for _ in boundaries]
+    controls_by_fold = [dict() for _ in boundaries]
+    trade_counts_by_family = defaultdict(int)
+    trade_counts_by_symbol = defaultdict(int)
+    simulated_trades_total = 0
     for variant in variants:
         trades = []
         for symbol, rows in sorted(datasets.items()):
-            trades.extend(backtest(rows, variant, symbol,
-                                   funding_events=funding_by_symbol.get(symbol)))
-        per_variant[variant.id] = trades
+            batch = backtest(rows,variant,symbol,
+                             funding_events=funding_by_symbol.get(symbol))
+            trades.extend(batch)
+            trade_counts_by_symbol[symbol] += len(batch)
+            simulated_trades_total += len(batch)
+        trade_counts_by_family[variant.family] += len(trades)
+        for idx,(val_start,val_end) in enumerate(boundaries):
+            cutoff=val_start-EMBARGO_BARS*BAR_MS
+            if variant.family not in ("control","long_control"):
+                train_rows=[r for r in trades if r["entry_ts"]>=start
+                            and r["exit_ts"]<cutoff]
+                training_by_fold[idx][variant.id]=statistics_for(train_rows)
+            else:
+                validation_rows=[r for r in trades if
+                                 val_start<=r["entry_ts"] and r["exit_ts"]<val_end]
+                controls_by_fold[idx][variant.id]=statistics_for(validation_rows)
+        # Release variant-specific trade objects before processing next arm.
+        del trades
+
+    def validation_rows_for(ident,val_start,val_end):
+        """Re-run only a frozen selected/shadow arm's historical validation."""
+        variant=variants_by_id[ident]
+        result=[]
+        for symbol,rows in sorted(datasets.items()):
+            for trade in backtest(rows,variant,symbol,
+                                  funding_events=funding_by_symbol.get(symbol)):
+                if val_start<=trade["entry_ts"] and trade["exit_ts"]<val_end:
+                    result.append(trade)
+        return result
 
     fold_reports = []
     combined = defaultdict(list)
@@ -391,12 +453,9 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         train_screen = []
         disqualified = defaultdict(int)
         for v in variants:
-            trades = per_variant[v.id]
-            sample = [r for r in trades if r["entry_ts"] >= start
-                      and r["exit_ts"] < train_cutoff]
-            stat = statistics_for(sample)
             if v.family in ("control", "long_control"):
                 continue
+            stat = training_by_fold[fold_number-1][v.id]
             reasons=[]
             if stat["n"] < 10:
                 reasons.append("TOO_FEW_TRAINING_TRADES")
@@ -429,19 +488,12 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         selected_ids = ranked[:selections_per_fold]
         validated = []
         for ident in selected_ids:
-            selected = [r for r in per_variant[ident]
-                        if val_start <= r["entry_ts"] and r["exit_ts"] < val_end]
+            selected = validation_rows_for(ident,val_start,val_end)
             all_chosen.add(ident)
             combined[ident].extend(selected)
             validated.append({"variant_id": ident, "train": eligible_train[ident],
                               "validation": statistics_for(selected)})
-        controls = {}
-        for v in variants:
-            if v.family not in ("control", "long_control"):
-                continue
-            selected = [r for r in per_variant[v.id]
-                        if val_start <= r["entry_ts"] and r["exit_ts"] < val_end]
-            controls[v.id] = statistics_for(selected)
+        controls = controls_by_fold[fold_number-1]
         control_by_fold.append(controls)
         # Predeclared shadow-audit budget, selected SOLELY from the
         # disqualified TRAINING screen. This intentionally evaluates a
@@ -469,9 +521,8 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         shadow_evaluations = []
         for candidate in shadow_picks:
             ident = candidate["variant_id"]
-            future = [r for r in per_variant[ident]
-                      if val_start <= r["entry_ts"] and r["exit_ts"] < val_end]
-            future_stat = statistics_for(future)
+            future_stat = statistics_for(
+                validation_rows_for(ident,val_start,val_end))
             horizon = int(ident.rsplit("-H", 1)[1])
             comparators = [
                 c["avg_R"] for name,c in controls.items()
@@ -524,7 +575,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
     family_counts = {name:sum(v.family==name for v in variants)
                      for name in sorted({v.family for v in variants})}
     return {
-        "schema_version": 1, "factory_version": "v9-param-grid-4-1200-stress25bp",
+        "schema_version": 1, "factory_version": "v9-param-grid-5-1600-streaming-stress25bp",
         "validation_method": "expanding_train_three_chronological_folds_purged_96bars",
         "historical_only": True, "proven_edge": False, "champion": None,
         "measured_funding_symbols": sorted(funding_by_symbol),
@@ -532,9 +583,17 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                             "maintenance_margin_pct_assumed": 0.5,
                             "not_actual_liquidation": True},
         "candidates_evaluated": len(variants),
+        "hypothetical_historical_trades_tested": simulated_trades_total,
+        "hypothetical_trades_by_family": dict(sorted(trade_counts_by_family.items())),
+        "hypothetical_trades_by_symbol": dict(sorted(trade_counts_by_symbol.items())),
+        "simulation_accounting_note": (
+            "Overlapping hypothetical historical trades across correlated "
+            "variants are NOT independent observations, forward paper fills, "
+            "or evidence of a profitable trading strategy."),
+        "memory_policy": "aggregate_training_then_recompute_only_selected_validation",
         "predeclared_variants_by_family": family_counts,
         "hypothesis_selection_policy": (
-            "First 750 IDs unchanged; new deterministic families historical-only;"
+            "First 1200 IDs unchanged; new deterministic families historical-only;"
             " shadow evaluations of failed training variants NEVER promoted;"
             " not an independent alpha test"),
         "datasets_evaluated": len(datasets),
@@ -551,7 +610,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "Shadow evaluations for training-rejected hypotheses are exploratory, not formal candidate selection.",
             "Both ordinary and shadow walk-forward validation are REPEATEDLY inspected, not an untouched final holdout.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
-            "1200 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
+            "1600 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
             "A frozen untouched future dataset and prospective paper trials are REQUIRED."
         ],
