@@ -60,6 +60,20 @@ class TemporalMaturityTests(unittest.TestCase):
         self.assertEqual(m["recent_14_calendar_days"]["observed_entry_utc_days"],2)
         self.assertFalse(m["data_maturity_ready"])
 
+    def test_completed_days_exclude_today_and_never_fabricate_yesterday(self):
+        now=dt.datetime(2026,10,16,12,tzinfo=UTC)
+        data=[trade("x","2026-10-16"),trade("y","2026-10-14")]
+        m=te.summarize(data,now)["overall"]
+        self.assertFalse(m["completed_utc_day_yesterday_has_eligible_close"])
+        self.assertEqual(m["completed_utc_day_yesterday"],"2026-10-15")
+        self.assertEqual(m["observed_entry_days_last_7_completed_utc_days"],1)
+        self.assertIn("2026-10-15",
+                      m["missing_eligible_entry_days_last_7_completed_utc_days"])
+        self.assertEqual(m["longest_unobserved_calendar_gap_between_entry_days"],1)
+        self.assertFalse(m["bidirectional_regime_breadth_ready"])
+        self.assertFalse(m["four_daypart_breadth_ready"])
+        self.assertEqual(m["additional_bidirectional_regime_days_needed"],10)
+
     def test_future_eligible_events_and_naive_clock_fail_closed(self):
         with self.assertRaisesRegex(ValueError,"future"):
             te.summarize([trade("f","2026-10-17")],
