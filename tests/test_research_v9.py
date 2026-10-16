@@ -125,7 +125,7 @@ class FactoryTests(unittest.TestCase):
         for family in ("donchian","ztrend","rsi_trend"):
             self.assertIn(family,{x.family for x in expanded})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(1201)
+            factory.variant_catalog(1601)
 
     def test_twelve_hundred_variants_preserve_all_previous_750_ids(self):
         old = factory.variant_catalog(750)
@@ -136,7 +136,43 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue({"compression_breakout", "volatility_impulse",
                          "trend_reclaim"} <= {v.family for v in extended})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(1201)
+            factory.variant_catalog(1601)
+
+    def test_one_thousand_six_hundred_preserves_every_old_id(self):
+        original=factory.variant_catalog(1200)
+        larger=factory.variant_catalog(1600)
+        self.assertEqual([x.id for x in original],[x.id for x in larger[:1200]])
+        self.assertEqual(len({x.id for x in larger}),1600)
+        self.assertTrue({"volume_climax_fade","rsi_recovery"} <=
+                        {x.family for x in larger})
+        with self.assertRaises(ValueError):
+            factory.variant_catalog(1601)
+
+    def test_volume_fade_and_rsi_recovery_never_look_ahead(self):
+        original=market(400)
+        changed=[x.copy() for x in original]
+        changed[350][4] *= 1.2
+        changed[350][2] = max(changed[350][2],changed[350][4]+1)
+        for family,window,gate in (("volume_climax_fade",20,1.5),
+                                    ("rsi_recovery",14,30)):
+            v=factory.Variant(family,window,gate,0,4)
+            self.assertEqual(factory.signal(factory.Features(original),v,300),
+                             factory.signal(factory.Features(changed),v,300))
+            self.assertTrue(all(t["entry_ts"]<t["exit_ts"]
+                                for t in factory.backtest(original,v)))
+
+    def test_bounded_memory_historical_trade_accounting(self):
+        result=factory.walk_forward(
+            {"BTC":market(1100),"ETH":market(1100,base=220,slope=-.02)},
+            max_variants=24)
+        self.assertEqual(result["memory_policy"],
+                         "aggregate_training_then_recompute_only_selected_validation")
+        self.assertGreater(result["hypothetical_historical_trades_tested"],0)
+        self.assertEqual(result["hypothetical_historical_trades_tested"],
+                         sum(result["hypothetical_trades_by_family"].values()))
+        self.assertEqual(result["hypothetical_historical_trades_tested"],
+                         sum(result["hypothetical_trades_by_symbol"].values()))
+        self.assertFalse(result["proven_edge"])
 
     def test_added_signal_families_have_no_future_leakage(self):
         original = market(400)
@@ -314,7 +350,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(report["symbols_analyzed"], ["BTC", "ETH"])
             self.assertAlmostEqual(report["historical_overlap_days"], 1000/96, delta=0.01)
             self.assertFalse(report["ninety_day_overlap_reached"])
-            self.assertEqual(report["historical_cache_cap_bars_per_instrument"], 12000)
+            self.assertEqual(report["historical_cache_cap_bars_per_instrument"], 18000)
             self.assertEqual(json.loads(destination.read_text())["schema_version"], 1)
             self.assertFalse((root/"data"/"ledger.json").exists())
 
