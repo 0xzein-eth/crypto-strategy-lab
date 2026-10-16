@@ -56,7 +56,8 @@ class TemporalMaturityTests(unittest.TestCase):
         self.assertEqual(m["eligible_closes"],2)
         self.assertEqual(m["distinct_entry_utc_days"],2)
         self.assertEqual(m["calendar_span_days"],6)
-        self.assertEqual(m["recent_7_calendar_days"]["observed_entry_utc_days"],2)
+        self.assertEqual(m["recent_7_calendar_days"]["observed_entry_utc_days"],1)
+        self.assertEqual(m["recent_14_calendar_days"]["observed_entry_utc_days"],2)
         self.assertFalse(m["data_maturity_ready"])
 
     def test_future_eligible_events_and_naive_clock_fail_closed(self):
