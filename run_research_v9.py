@@ -16,7 +16,7 @@ from research_v9.promotion import build_queue
 ROOT = Path(__file__).resolve().parent
 RESULT_PATH = ROOT / "research_results" / "latest.json"
 QUEUE_PATH = ROOT / "research_results" / "forward_candidates.json"
-DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK", "XRP", "ADA", "AVAX", "DOGE", "DOT", "NEAR")  # ten predeclared OKX perpetual candidates; actual funding completeness checked
+DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK", "XRP", "ADA", "AVAX", "DOGE", "DOT", "NEAR", "LTC", "SUI")  # strictly verified OKX swaps; funding completeness audited
 
 
 def dataset_digest(bars):
@@ -46,13 +46,13 @@ def trim_research_window(datasets, window_days=90):
 
 
 def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
-            update_pages=10, max_variants=1200, now=None,
+            update_pages=10, max_variants=1600, now=None,
             backfill_pages=10, funding_pages=5, funding_window_days=90):
     now = now or dt.datetime.now(dt.timezone.utc)
     if now.tzinfo is None:
         raise ValueError("timestamp must be timezone-aware")
-    if len(set(symbols)) != len(symbols) or not 2 <= len(symbols) <= 10:
-        raise ValueError("select 2..10 distinct research symbols")
+    if len(set(symbols)) != len(symbols) or not 2 <= len(symbols) <= 12:
+        raise ValueError("select 2..12 distinct research symbols")
     if any(s not in universe.SYMBOLS for s in symbols):
         raise ValueError("symbol not in predeclared v8 universe")
     datasets, problems = {}, {}
@@ -118,7 +118,7 @@ def produce(symbols=DEFAULT_SYMBOLS, offline=False, cold_pages=16,
             min(b[-1][0] for b in datasets.values())/1000,
             dt.timezone.utc).isoformat(),
         "research_bars_by_symbol": {k:len(v) for k,v in sorted(datasets.items())},
-        "historical_cache_cap_bars_per_instrument": 12_000,
+        "historical_cache_cap_bars_per_instrument": 18_000,
         "ninety_day_overlap_reached": bool(metrics["common_bars"] >= 90 * 96),
         "history_quality_note": ("Trailing window is bounded to improve settlement coverage; "
                                  "shortening data reduces regime diversity, not proof of edge. "
@@ -178,7 +178,7 @@ def main():
     parser.add_argument("--backfill-pages", type=int, default=10)
     parser.add_argument("--funding-pages", type=int, default=8)
     parser.add_argument("--funding-window-days", type=int, default=90)
-    parser.add_argument("--max-variants", type=int, default=1200)
+    parser.add_argument("--max-variants", type=int, default=1600)
     args = parser.parse_args()
     report = produce(args.symbols, args.offline, args.cold_pages,
                      args.update_pages, args.max_variants,
