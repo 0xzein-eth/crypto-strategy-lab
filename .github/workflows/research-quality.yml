@@ -57,6 +57,18 @@ jobs:
           result["prospective_temporal_evidence"] = temporal_evidence.summarize(
               records, observed_at)
           assert result["prospective_temporal_evidence"]["edge_proven"] is False
+          # Genuine completed UTC days and entry-time regime breadth; neither
+          # changes trade allocation, backfills data nor promotes a strategy.
+          overall = result["prospective_temporal_evidence"]["overall"]
+          assert len(overall["missing_eligible_entry_days_last_7_completed_utc_days"]) <= 7
+          assert overall["additional_distinct_days_needed"] >= 0
+          if not overall["completed_utc_day_yesterday_has_eligible_close"]:
+              print("::warning::DATA_COVERAGE_GAP: yesterday UTC has no eligible "
+                    "closed perpetual entries as of this ledger snapshot; "
+                    "may still be pending at fixed horizon")
+          if not overall["four_daypart_breadth_ready"]:
+              print("::notice::RESEARCH_TIME_BREADTH: need more real UTC days "
+                    "covering every six-hour time bin")
           assert not any(x["edge_proven"] for x in result["arms"].values())
           result["source_report_timestamp_utc"] = report["timestamp"]
           result["source_ledger_tip_sha256"] = report["ledger_tip_sha256"]
