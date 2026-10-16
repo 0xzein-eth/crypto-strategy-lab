@@ -120,6 +120,26 @@ class SignalTests(unittest.TestCase):
             signals.parse_okx_candles({"code":"0","data":rows},
                                      latest+dt.timedelta(minutes=41))
 
+    def test_confirmed_volume_fade_and_rsi_recovery(self):
+        z=bars(70)
+        z[-1].update(open=100,high=110,low=98,close=99,volume=250)
+        found=signals.classify(z)
+        self.assertTrue(any(x["strategy"]=="VOLFADE-v1"
+                            and x["side"]=="SHORT" for x in found))
+        down=bars(70)
+        for i,index in enumerate(range(55,69)):
+            price=99-i
+            down[index].update(open=price+1,high=price+2,
+                               low=price-1,close=price,volume=100)
+        down[-1].update(open=86,high=93,low=85,close=92,volume=110)
+        self.assertLess(signals.features(down)["rsi14prev"],30)
+        self.assertGreaterEqual(signals.features(down)["rsi14"],30)
+        recovery=signals.classify(down)
+        self.assertTrue(any(x["strategy"]=="RSIREC-v1"
+                            and x["side"]=="LONG" for x in recovery))
+        self.assertTrue(all(x["evidence"]["bar_span"]=="15m confirmed OKX USDT-SWAP"
+                            for x in recovery))
+
     def test_nonmatching_provider_not_fetched(self):
         called=[]
         output=signals.from_okx("BTC",{"provider":"kraken-spot-proxy"},
