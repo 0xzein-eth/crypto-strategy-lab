@@ -59,6 +59,11 @@ def features(bars):
     gains=sum(max(x,0) for x in delta)
     losses=sum(max(-x,0) for x in delta)
     rsi14=(100 if gains>0 else 50) if losses==0 else (100-100/(1+gains/losses))
+    prev_delta=[c[i]-c[i-1] for i in range(len(c)-15,len(c)-1)]
+    prev_gain=sum(max(d,0) for d in prev_delta)
+    prev_loss=sum(max(-d,0) for d in prev_delta)
+    rsi14prev=(100 if prev_gain>0 else 50) if prev_loss==0 else (
+        100-100/(1+prev_gain/prev_loss))
     window=c[-20:]
     var=sum((x-sma20)**2 for x in window)/20
     sd=math.sqrt(var)
@@ -80,7 +85,7 @@ def features(bars):
             "last_high":cur["high"],"last_low":cur["low"],
             "last_volume":cur["volume"],"c_prev":c[-2],
             "sma20":sma20,"sma50":sma50,"sma20prev":sma20prev,
-            "sma50prev":sma50prev,"rsi14":rsi14,
+            "sma50prev":sma50prev,"rsi14":rsi14,"rsi14prev":rsi14prev,
             "vwap20":vw20,"vwap20prev":vw20prev,
             "z20":(c[-1]-sma20)/sd if sd>0 else 0,
             "atr14":atr,"prev_high20":prev_high,"prev_low20":prev_low,
@@ -215,6 +220,18 @@ def classify(bars):
         if (f["sma20"]<f["sma50"] and f["c_prev"]>=f["sma50prev_close"] and
                 p<f["sma50"]-0.15*atr):
             add("TRECLAIM-v1","SHORT","bear SMA20<50; prior close above prior SMA50; rejection")
+    # Verified high-volume rejection on the final CONFIRMED 15-minute candle.
+    if f["vol_ratio"]>=2.0:
+        if upper_wick>=0.45 and p<f["last_open"]:
+            add("VOLFADE-v1","SHORT",">=2x prior20 volume; upper wick>=45%; bearish close")
+        if lower_wick>=0.45 and p>f["last_open"]:
+            add("VOLFADE-v1","LONG",">=2x prior20 volume; lower wick>=45%; bullish close")
+    # Confirmed RSI crossing instead of permanently extreme RSI.
+    if f["vol_ratio"]>=0.85:
+        if f["rsi14prev"]<30<=f["rsi14"] and p>f["c_prev"]:
+            add("RSIREC-v1","LONG","RSI14 crosses up through 30 on confirmed close")
+        if f["rsi14prev"]>70>=f["rsi14"] and p<f["c_prev"]:
+            add("RSIREC-v1","SHORT","RSI14 crosses down through 70 on confirmed close")
     return events
 
 
