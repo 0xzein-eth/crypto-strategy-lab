@@ -16,7 +16,8 @@ ADVANCED=("TP-v3","BR-v3","MR-v3","LS-v3","FB-v3",
           "TREND-v1","VOL-v1","RANGE-v1","RSI-v1","CROSS-v1","VWAP-v1",
           "DC-v1","RSITREND-v1","ATRCHAN-v1",
           "COMPBR-v1","IMPULSE-v1","TRECLAIM-v1",
-          "VOLFADE-v1","RSIREC-v1")
+          "VOLFADE-v1","RSIREC-v1",
+          "BRREG-v1","TPREG-v1")
 MIN_TRAIN=10
 PREFER_TRAIN=30
 MIN_TRAIN_DAYS=7
