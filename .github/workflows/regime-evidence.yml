@@ -1,0 +1,48 @@
+name: Frozen regime evidence
+on:
+  push:
+    paths:
+      - 'regime_evidence.py'
+      - 'tests/test_regime_evidence.py'
+      - '.github/workflows/regime-evidence.yml'
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 07 * * *'
+permissions:
+  contents: read
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: All unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Verify immutable ledger
+        run: python audit.py
+      - name: Produce frozen entry regime evidence
+        run: |
+          python - <<'PY'
+          import json
+          import engine
+          import regime_evidence
+          records, seq, tip, _ = engine.replay()
+          report = json.loads(engine.REPORT.read_text(encoding="utf-8"))
+          result = regime_evidence.evaluate(records)
+          result["source_ledger_tip_sha256"] = tip
+          result["source_verified_events"] = seq
+          result["source_report_timestamp_utc"] = report["timestamp"]
+          assert all(not cell["edge_proven"] for cell in result["cells"])
+          with open("regime-evidence-report.json", "w", encoding="utf-8") as out:
+              json.dump(result, out, indent=2, sort_keys=True, allow_nan=False)
+          print("Evaluated", len(result["cells"]), "entry-frozen research strata")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frozen-regime-evidence
+          path: regime-evidence-report.json
+          retention-days: 30
