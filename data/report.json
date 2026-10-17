@@ -386,8 +386,11 @@
     "underperformer_policy": ">=50 eligible training closes and >=7 training UTC days, clipped daily upper bound < -0.05R, training mean >0.05R worse than CTRL; only 4:1 exploration reweight, never disable; monitoring outcomes excluded",
     "warning": "No strategy has demonstrated a reliable tradable edge. Training-only allocations never access monitoring results. Historical monitoring was previously used for allocations, so it is not an untouched final holdout. Selection remains observational, multi-tested and correlated."
   },
-  "added": 0,
-  "blocked_market_providers": {},
+  "added": 37,
+  "blocked_market_providers": {
+    "binance-futures": 451,
+    "bybit-linear": 403
+  },
   "capacity_policy": {
     "max_new_per_run": 44,
     "max_new_per_utc_day": 1750,
@@ -397,7 +400,7 @@
   },
   "closed": 8228,
   "closed_this_run": 0,
-  "created": 8386,
+  "created": 8423,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.03788,
     "n": 6881,
@@ -558,7 +561,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-16T23:49:59.939866+00:00",
+      "as_of_utc": "2026-10-17T00:00:00.390747+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 8,
@@ -568,7 +571,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 2,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -585,14 +588,13 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
             "2026-10-13",
             "2026-10-14"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 1,
+          "observed_entry_days_last_7_completed_utc_days": 2,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 75,
@@ -650,7 +652,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 9,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 4,
@@ -800,8 +802,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1736,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 1681,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 9,
@@ -818,7 +820,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 9,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 1,
@@ -959,8 +961,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 126,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 123,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 6,
@@ -977,7 +979,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 2,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -994,14 +996,13 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
             "2026-10-13",
             "2026-10-14"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 1,
+          "observed_entry_days_last_7_completed_utc_days": 2,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 14,
@@ -1056,7 +1057,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 6,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -1073,11 +1074,10 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 1,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-12"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 4,
+          "observed_entry_days_last_7_completed_utc_days": 5,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 34,
@@ -1166,7 +1166,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 9,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 3,
@@ -1314,8 +1314,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1608,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 1557,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 7,
@@ -1332,7 +1332,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 2,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -1349,14 +1349,13 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
             "2026-10-13",
             "2026-10-14"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 1,
+          "observed_entry_days_last_7_completed_utc_days": 2,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 31,
@@ -1413,7 +1412,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 8,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 2,
@@ -1543,8 +1542,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 103,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 100,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 7,
@@ -1561,7 +1560,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 2,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -1578,14 +1577,13 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
             "2026-10-13",
             "2026-10-14"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 1,
+          "observed_entry_days_last_7_completed_utc_days": 2,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 69,
@@ -1641,7 +1639,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 8,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 1,
@@ -1773,8 +1771,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 131,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 126,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 7,
@@ -1791,7 +1789,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 9,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 4,
@@ -1941,8 +1939,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1674,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 1616,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 8,
@@ -1959,7 +1957,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 9,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 1,
@@ -2102,8 +2100,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 169,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 166,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 8,
@@ -2120,7 +2118,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 9,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -2252,8 +2250,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 97,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 96,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 7,
@@ -2270,7 +2268,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 8,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 1,
@@ -2402,8 +2400,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 243,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 240,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 6,
@@ -2420,8 +2418,8 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 1,
-          "completed_utc_day_yesterday": "2026-10-15",
-          "completed_utc_day_yesterday_has_eligible_close": false,
+          "completed_utc_day_yesterday": "2026-10-16",
+          "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
           "days_with_both_up_and_down": 0,
@@ -2437,7 +2435,6 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
@@ -2445,7 +2442,7 @@
             "2026-10-14",
             "2026-10-15"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 0,
+          "observed_entry_days_last_7_completed_utc_days": 1,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 19,
@@ -2489,7 +2486,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 2,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -2506,14 +2503,13 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
             "2026-10-13",
             "2026-10-14"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 1,
+          "observed_entry_days_last_7_completed_utc_days": 2,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 158,
@@ -2571,7 +2567,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 8,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -2699,8 +2695,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 88,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 85,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 4,
@@ -2717,7 +2713,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 2,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -2734,14 +2730,13 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
             "2026-10-13",
             "2026-10-14"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 1,
+          "observed_entry_days_last_7_completed_utc_days": 2,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 20,
@@ -2795,7 +2790,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 8,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 1,
@@ -2925,8 +2920,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 75,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 72,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 6,
@@ -2943,7 +2938,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 7,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
@@ -2959,10 +2954,8 @@
           "largest_single_day_trade_share": 0.3077,
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
-          "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09"
-          ],
-          "observed_entry_days_last_7_completed_utc_days": 6,
+          "missing_eligible_entry_days_last_7_completed_utc_days": [],
+          "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 39,
@@ -3058,8 +3051,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 39,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 37,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 4,
@@ -3076,8 +3069,8 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 1,
-          "completed_utc_day_yesterday": "2026-10-15",
-          "completed_utc_day_yesterday_has_eligible_close": false,
+          "completed_utc_day_yesterday": "2026-10-16",
+          "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 0,
           "days_with_both_up_and_down": 0,
@@ -3093,7 +3086,6 @@
           "latest_entry_utc_day": "2026-10-16",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [
-            "2026-10-09",
             "2026-10-10",
             "2026-10-11",
             "2026-10-12",
@@ -3101,7 +3093,7 @@
             "2026-10-14",
             "2026-10-15"
           ],
-          "observed_entry_days_last_7_completed_utc_days": 0,
+          "observed_entry_days_last_7_completed_utc_days": 1,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
             "eligible_closes": 5,
@@ -3145,7 +3137,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 9,
-          "completed_utc_day_yesterday": "2026-10-15",
+          "completed_utc_day_yesterday": "2026-10-16",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 1,
@@ -3286,8 +3278,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 149,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 147,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 7,
@@ -3313,7 +3305,7 @@
         "bidirectional_regime_breadth_ready": false,
         "bidirectional_regime_breadth_target_days": 10,
         "calendar_span_days": 9,
-        "completed_utc_day_yesterday": "2026-10-15",
+        "completed_utc_day_yesterday": "2026-10-16",
         "completed_utc_day_yesterday_has_eligible_close": true,
         "data_maturity_ready": false,
         "days_covering_all_four_six_hour_bins": 4,
@@ -3465,8 +3457,8 @@
         ],
         "recent_7_calendar_days": {
           "calendar_window_days": 7,
-          "eligible_closes": 6663,
-          "observed_entry_utc_days": 7
+          "eligible_closes": 6471,
+          "observed_entry_utc_days": 6
         },
         "six_hour_bin_day_coverage": {
           "00-05_UTC": 9,
@@ -3485,7 +3477,7 @@
     "eligible_timely_perpetual_closures": 6881,
     "entry_regime": {
       "24h_down": {
-        "active": 5,
+        "active": 33,
         "breakeven": 0,
         "closed": 4479,
         "closed_expectancy_R": -0.06633,
@@ -3505,13 +3497,13 @@
         "late_closes": 686,
         "late_share_of_closed": 0.1532,
         "losses": 2315,
-        "opened": 4484,
+        "opened": 4512,
         "timely_closes": 3793,
         "win_rate": 0.4831,
         "wins": 2164
       },
       "24h_up": {
-        "active": 153,
+        "active": 162,
         "breakeven": 0,
         "closed": 3749,
         "closed_expectancy_R": -0.02774,
@@ -3531,7 +3523,7 @@
         "late_closes": 661,
         "late_share_of_closed": 0.1763,
         "losses": 2041,
-        "opened": 3902,
+        "opened": 3911,
         "timely_closes": 3088,
         "win_rate": 0.4556,
         "wins": 1708
@@ -3539,7 +3531,7 @@
     },
     "entry_utc_daypart": {
       "00-05 UTC": {
-        "active": 70,
+        "active": 107,
         "breakeven": 0,
         "closed": 2919,
         "closed_expectancy_R": 0.02202,
@@ -3559,7 +3551,7 @@
         "late_closes": 458,
         "late_share_of_closed": 0.1569,
         "losses": 1541,
-        "opened": 2989,
+        "opened": 3026,
         "timely_closes": 2461,
         "win_rate": 0.4721,
         "wins": 1378
@@ -3643,13 +3635,13 @@
         "wins": 320
       }
     },
-    "evaluation_next_24_hours": 158,
-    "evaluation_next_hour": 2,
+    "evaluation_next_24_hours": 192,
+    "evaluation_next_hour": 6,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
       "1": {
-        "active": 0,
+        "active": 10,
         "breakeven": 0,
         "closed": 1923,
         "closed_expectancy_R": -0.05087,
@@ -3669,13 +3661,13 @@
         "late_closes": 257,
         "late_share_of_closed": 0.1336,
         "losses": 1052,
-        "opened": 1923,
+        "opened": 1933,
         "timely_closes": 1666,
         "win_rate": 0.4529,
         "wins": 871
       },
       "12": {
-        "active": 0,
+        "active": 6,
         "breakeven": 0,
         "closed": 1067,
         "closed_expectancy_R": -0.10413,
@@ -3695,13 +3687,13 @@
         "late_closes": 205,
         "late_share_of_closed": 0.1921,
         "losses": 554,
-        "opened": 1067,
+        "opened": 1073,
         "timely_closes": 862,
         "win_rate": 0.4808,
         "wins": 513
       },
       "2": {
-        "active": 0,
+        "active": 6,
         "breakeven": 0,
         "closed": 1879,
         "closed_expectancy_R": -0.06891,
@@ -3721,13 +3713,13 @@
         "late_closes": 337,
         "late_share_of_closed": 0.1794,
         "losses": 1033,
-        "opened": 1879,
+        "opened": 1885,
         "timely_closes": 1542,
         "win_rate": 0.4502,
         "wins": 846
       },
       "24": {
-        "active": 158,
+        "active": 161,
         "breakeven": 0,
         "closed": 753,
         "closed_expectancy_R": -0.00475,
@@ -3747,13 +3739,13 @@
         "late_closes": 88,
         "late_share_of_closed": 0.1169,
         "losses": 377,
-        "opened": 911,
+        "opened": 914,
         "timely_closes": 665,
         "win_rate": 0.4993,
         "wins": 376
       },
       "4": {
-        "active": 0,
+        "active": 6,
         "breakeven": 0,
         "closed": 1405,
         "closed_expectancy_R": -0.04335,
@@ -3773,13 +3765,13 @@
         "late_closes": 263,
         "late_share_of_closed": 0.1872,
         "losses": 724,
-        "opened": 1405,
+        "opened": 1411,
         "timely_closes": 1142,
         "win_rate": 0.4847,
         "wins": 681
       },
       "8": {
-        "active": 0,
+        "active": 6,
         "breakeven": 0,
         "closed": 1201,
         "closed_expectancy_R": 0.00151,
@@ -3799,7 +3791,7 @@
         "late_closes": 197,
         "late_share_of_closed": 0.164,
         "losses": 616,
-        "opened": 1201,
+        "opened": 1207,
         "timely_closes": 1004,
         "win_rate": 0.4871,
         "wins": 585
@@ -3807,7 +3799,7 @@
     },
     "market_type": {
       "perpetual": {
-        "active": 158,
+        "active": 195,
         "breakeven": 0,
         "closed": 8228,
         "closed_expectancy_R": -0.04875,
@@ -3827,7 +3819,7 @@
         "late_closes": 1347,
         "late_share_of_closed": 0.1637,
         "losses": 4356,
-        "opened": 8386,
+        "opened": 8423,
         "timely_closes": 6881,
         "win_rate": 0.4706,
         "wins": 3872
@@ -3838,7 +3830,7 @@
     "selection_note": "Regime/daypart labels frozen at entry, descriptive and correlated. Post-friction scores include frozen stress when present, otherwise a predeclared 0.12% extra-cost legacy haircut. Day-cluster LCB uses clipped day-mean R; positive screening cannot promote an edge.",
     "side": {
       "LONG": {
-        "active": 88,
+        "active": 111,
         "breakeven": 0,
         "closed": 4197,
         "closed_expectancy_R": -0.03998,
@@ -3858,13 +3850,13 @@
         "late_closes": 701,
         "late_share_of_closed": 0.167,
         "losses": 2275,
-        "opened": 4285,
+        "opened": 4308,
         "timely_closes": 3496,
         "win_rate": 0.4579,
         "wins": 1922
       },
       "SHORT": {
-        "active": 70,
+        "active": 84,
         "breakeven": 0,
         "closed": 4031,
         "closed_expectancy_R": -0.05787,
@@ -3884,13 +3876,13 @@
         "late_closes": 646,
         "late_share_of_closed": 0.1603,
         "losses": 2081,
-        "opened": 4101,
+        "opened": 4115,
         "timely_closes": 3385,
         "win_rate": 0.4838,
         "wins": 1950
       }
     },
-    "simultaneous_open_research_notional_usd": 1580000.0,
+    "simultaneous_open_research_notional_usd": 1950000.0,
     "strategy": {
       "ATRCHAN-v1": {
         "active": 6,
@@ -3919,7 +3911,7 @@
         "wins": 32
       },
       "BR-proxy-v1": {
-        "active": 27,
+        "active": 39,
         "breakeven": 0,
         "closed": 2147,
         "closed_expectancy_R": -0.28301,
@@ -3939,7 +3931,7 @@
         "late_closes": 355,
         "late_share_of_closed": 0.1653,
         "losses": 1143,
-        "opened": 2174,
+        "opened": 2186,
         "timely_closes": 1792,
         "win_rate": 0.4676,
         "wins": 1004
@@ -3971,7 +3963,7 @@
         "wins": 76
       },
       "COMPBR-v1": {
-        "active": 0,
+        "active": 1,
         "breakeven": 0,
         "closed": 14,
         "closed_expectancy_R": -0.55969,
@@ -3991,7 +3983,7 @@
         "late_closes": 0,
         "late_share_of_closed": 0.0,
         "losses": 10,
-        "opened": 14,
+        "opened": 15,
         "timely_closes": 14,
         "win_rate": 0.2857,
         "wins": 4
@@ -4023,7 +4015,7 @@
         "wins": 15
       },
       "CTRL-v1": {
-        "active": 30,
+        "active": 36,
         "breakeven": 0,
         "closed": 2024,
         "closed_expectancy_R": 0.03903,
@@ -4043,7 +4035,7 @@
         "late_closes": 345,
         "late_share_of_closed": 0.1705,
         "losses": 1043,
-        "opened": 2054,
+        "opened": 2060,
         "timely_closes": 1679,
         "win_rate": 0.4847,
         "wins": 981
@@ -4153,7 +4145,7 @@
         "wins": 81
       },
       "MR-proxy-v1": {
-        "active": 26,
+        "active": 41,
         "breakeven": 0,
         "closed": 2126,
         "closed_expectancy_R": 0.14527,
@@ -4173,7 +4165,7 @@
         "late_closes": 391,
         "late_share_of_closed": 0.1839,
         "losses": 1142,
-        "opened": 2152,
+        "opened": 2167,
         "timely_closes": 1735,
         "win_rate": 0.4628,
         "wins": 984
@@ -4205,7 +4197,7 @@
         "wins": 95
       },
       "RANGE-v1": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 113,
         "closed_expectancy_R": -0.07495,
@@ -4225,7 +4217,7 @@
         "late_closes": 14,
         "late_share_of_closed": 0.1239,
         "losses": 64,
-        "opened": 116,
+        "opened": 117,
         "timely_closes": 99,
         "win_rate": 0.4336,
         "wins": 49
@@ -4283,7 +4275,7 @@
         "wins": 10
       },
       "RSITREND-v1": {
-        "active": 15,
+        "active": 17,
         "breakeven": 0,
         "closed": 159,
         "closed_expectancy_R": -0.86118,
@@ -4303,7 +4295,7 @@
         "late_closes": 1,
         "late_share_of_closed": 0.0063,
         "losses": 101,
-        "opened": 174,
+        "opened": 176,
         "timely_closes": 158,
         "win_rate": 0.3648,
         "wins": 58
@@ -4467,7 +4459,7 @@
     },
     "symbol": {
       "AAVE": {
-        "active": 7,
+        "active": 8,
         "breakeven": 0,
         "closed": 213,
         "closed_expectancy_R": -0.14869,
@@ -4487,13 +4479,13 @@
         "late_closes": 34,
         "late_share_of_closed": 0.1596,
         "losses": 109,
-        "opened": 220,
+        "opened": 221,
         "timely_closes": 179,
         "win_rate": 0.4883,
         "wins": 104
       },
       "ADA": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 160,
         "closed_expectancy_R": -0.2544,
@@ -4513,13 +4505,13 @@
         "late_closes": 17,
         "late_share_of_closed": 0.1062,
         "losses": 92,
-        "opened": 163,
+        "opened": 164,
         "timely_closes": 143,
         "win_rate": 0.425,
         "wins": 68
       },
       "ALGO": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 192,
         "closed_expectancy_R": -0.05414,
@@ -4539,13 +4531,13 @@
         "late_closes": 34,
         "late_share_of_closed": 0.1771,
         "losses": 102,
-        "opened": 195,
+        "opened": 196,
         "timely_closes": 158,
         "win_rate": 0.4688,
         "wins": 90
       },
       "APT": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 191,
         "closed_expectancy_R": -0.0209,
@@ -4565,13 +4557,13 @@
         "late_closes": 28,
         "late_share_of_closed": 0.1466,
         "losses": 89,
-        "opened": 194,
+        "opened": 195,
         "timely_closes": 163,
         "win_rate": 0.534,
         "wins": 102
       },
       "ARB": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 261,
         "closed_expectancy_R": -0.00223,
@@ -4591,13 +4583,13 @@
         "late_closes": 39,
         "late_share_of_closed": 0.1494,
         "losses": 135,
-        "opened": 265,
+        "opened": 266,
         "timely_closes": 222,
         "win_rate": 0.4828,
         "wins": 126
       },
       "ATOM": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 228,
         "closed_expectancy_R": -0.05729,
@@ -4617,13 +4609,13 @@
         "late_closes": 56,
         "late_share_of_closed": 0.2456,
         "losses": 118,
-        "opened": 232,
+        "opened": 233,
         "timely_closes": 172,
         "win_rate": 0.4825,
         "wins": 110
       },
       "AVAX": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 172,
         "closed_expectancy_R": 0.09498,
@@ -4643,7 +4635,7 @@
         "late_closes": 23,
         "late_share_of_closed": 0.1337,
         "losses": 87,
-        "opened": 175,
+        "opened": 176,
         "timely_closes": 149,
         "win_rate": 0.4942,
         "wins": 85
@@ -4675,7 +4667,7 @@
         "wins": 131
       },
       "BNB": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 179,
         "closed_expectancy_R": -0.05892,
@@ -4695,13 +4687,13 @@
         "late_closes": 16,
         "late_share_of_closed": 0.0894,
         "losses": 105,
-        "opened": 182,
+        "opened": 183,
         "timely_closes": 163,
         "win_rate": 0.4134,
         "wins": 74
       },
       "BTC": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 179,
         "closed_expectancy_R": -0.05801,
@@ -4721,13 +4713,13 @@
         "late_closes": 27,
         "late_share_of_closed": 0.1508,
         "losses": 102,
-        "opened": 182,
+        "opened": 183,
         "timely_closes": 152,
         "win_rate": 0.4302,
         "wins": 77
       },
       "CRV": {
-        "active": 2,
+        "active": 3,
         "breakeven": 0,
         "closed": 256,
         "closed_expectancy_R": -0.05501,
@@ -4747,7 +4739,7 @@
         "late_closes": 38,
         "late_share_of_closed": 0.1484,
         "losses": 126,
-        "opened": 258,
+        "opened": 259,
         "timely_closes": 218,
         "win_rate": 0.5078,
         "wins": 130
@@ -4779,7 +4771,7 @@
         "wins": 116
       },
       "DOT": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 180,
         "closed_expectancy_R": -0.18314,
@@ -4799,13 +4791,13 @@
         "late_closes": 27,
         "late_share_of_closed": 0.15,
         "losses": 95,
-        "opened": 183,
+        "opened": 184,
         "timely_closes": 153,
         "win_rate": 0.4722,
         "wins": 85
       },
       "ENA": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 34,
         "closed_expectancy_R": 0.1584,
@@ -4825,7 +4817,7 @@
         "late_closes": 1,
         "late_share_of_closed": 0.0294,
         "losses": 16,
-        "opened": 37,
+        "opened": 38,
         "timely_closes": 33,
         "win_rate": 0.5294,
         "wins": 18
@@ -4857,7 +4849,7 @@
         "wins": 73
       },
       "ETH": {
-        "active": 6,
+        "active": 7,
         "breakeven": 0,
         "closed": 243,
         "closed_expectancy_R": 0.00882,
@@ -4877,7 +4869,7 @@
         "late_closes": 45,
         "late_share_of_closed": 0.1852,
         "losses": 122,
-        "opened": 249,
+        "opened": 250,
         "timely_closes": 198,
         "win_rate": 0.4979,
         "wins": 121
@@ -4909,7 +4901,7 @@
         "wins": 147
       },
       "HBAR": {
-        "active": 2,
+        "active": 3,
         "breakeven": 0,
         "closed": 169,
         "closed_expectancy_R": 0.03244,
@@ -4929,13 +4921,13 @@
         "late_closes": 28,
         "late_share_of_closed": 0.1657,
         "losses": 83,
-        "opened": 171,
+        "opened": 172,
         "timely_closes": 141,
         "win_rate": 0.5089,
         "wins": 86
       },
       "ICP": {
-        "active": 2,
+        "active": 3,
         "breakeven": 0,
         "closed": 294,
         "closed_expectancy_R": -0.22995,
@@ -4955,13 +4947,13 @@
         "late_closes": 58,
         "late_share_of_closed": 0.1973,
         "losses": 164,
-        "opened": 296,
+        "opened": 297,
         "timely_closes": 236,
         "win_rate": 0.4422,
         "wins": 130
       },
       "INJ": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 275,
         "closed_expectancy_R": 0.04403,
@@ -4981,13 +4973,13 @@
         "late_closes": 54,
         "late_share_of_closed": 0.1964,
         "losses": 142,
-        "opened": 278,
+        "opened": 279,
         "timely_closes": 221,
         "win_rate": 0.4836,
         "wins": 133
       },
       "JTO": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 33,
         "closed_expectancy_R": -0.19243,
@@ -5007,13 +4999,13 @@
         "late_closes": 2,
         "late_share_of_closed": 0.0606,
         "losses": 18,
-        "opened": 37,
+        "opened": 38,
         "timely_closes": 31,
         "win_rate": 0.4545,
         "wins": 15
       },
       "JUP": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 246,
         "closed_expectancy_R": -0.16848,
@@ -5033,7 +5025,7 @@
         "late_closes": 46,
         "late_share_of_closed": 0.187,
         "losses": 130,
-        "opened": 251,
+        "opened": 252,
         "timely_closes": 200,
         "win_rate": 0.4715,
         "wins": 116
@@ -5065,7 +5057,7 @@
         "wins": 17
       },
       "LINK": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 335,
         "closed_expectancy_R": 0.00768,
@@ -5085,13 +5077,13 @@
         "late_closes": 82,
         "late_share_of_closed": 0.2448,
         "losses": 175,
-        "opened": 339,
+        "opened": 340,
         "timely_closes": 253,
         "win_rate": 0.4776,
         "wins": 160
       },
       "LTC": {
-        "active": 2,
+        "active": 3,
         "breakeven": 0,
         "closed": 207,
         "closed_expectancy_R": 0.09001,
@@ -5111,13 +5103,13 @@
         "late_closes": 31,
         "late_share_of_closed": 0.1498,
         "losses": 116,
-        "opened": 209,
+        "opened": 210,
         "timely_closes": 176,
         "win_rate": 0.4396,
         "wins": 91
       },
       "NEAR": {
-        "active": 2,
+        "active": 3,
         "breakeven": 0,
         "closed": 174,
         "closed_expectancy_R": -0.23097,
@@ -5137,7 +5129,7 @@
         "late_closes": 20,
         "late_share_of_closed": 0.1149,
         "losses": 99,
-        "opened": 176,
+        "opened": 177,
         "timely_closes": 154,
         "win_rate": 0.431,
         "wins": 75
@@ -5169,7 +5161,7 @@
         "wins": 144
       },
       "PEPE": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 264,
         "closed_expectancy_R": -0.05769,
@@ -5189,13 +5181,13 @@
         "late_closes": 36,
         "late_share_of_closed": 0.1364,
         "losses": 149,
-        "opened": 268,
+        "opened": 269,
         "timely_closes": 228,
         "win_rate": 0.4356,
         "wins": 115
       },
       "POL": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 302,
         "closed_expectancy_R": -0.08801,
@@ -5215,13 +5207,13 @@
         "late_closes": 66,
         "late_share_of_closed": 0.2185,
         "losses": 158,
-        "opened": 306,
+        "opened": 307,
         "timely_closes": 236,
         "win_rate": 0.4768,
         "wins": 144
       },
       "PYTH": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 34,
         "closed_expectancy_R": 1.07208,
@@ -5241,13 +5233,13 @@
         "late_closes": 0,
         "late_share_of_closed": 0.0,
         "losses": 14,
-        "opened": 39,
+        "opened": 40,
         "timely_closes": 34,
         "win_rate": 0.5882,
         "wins": 20
       },
       "RENDER": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 34,
         "closed_expectancy_R": -0.25539,
@@ -5267,13 +5259,13 @@
         "late_closes": 0,
         "late_share_of_closed": 0.0,
         "losses": 18,
-        "opened": 38,
+        "opened": 39,
         "timely_closes": 34,
         "win_rate": 0.4706,
         "wins": 16
       },
       "SEI": {
-        "active": 6,
+        "active": 7,
         "breakeven": 0,
         "closed": 184,
         "closed_expectancy_R": -0.0338,
@@ -5293,13 +5285,13 @@
         "late_closes": 23,
         "late_share_of_closed": 0.125,
         "losses": 94,
-        "opened": 190,
+        "opened": 191,
         "timely_closes": 161,
         "win_rate": 0.4891,
         "wins": 90
       },
       "SHIB": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 248,
         "closed_expectancy_R": -0.12504,
@@ -5319,13 +5311,13 @@
         "late_closes": 41,
         "late_share_of_closed": 0.1653,
         "losses": 147,
-        "opened": 252,
+        "opened": 253,
         "timely_closes": 207,
         "win_rate": 0.4073,
         "wins": 101
       },
       "SOL": {
-        "active": 2,
+        "active": 3,
         "breakeven": 0,
         "closed": 268,
         "closed_expectancy_R": -0.19463,
@@ -5345,13 +5337,13 @@
         "late_closes": 42,
         "late_share_of_closed": 0.1567,
         "losses": 153,
-        "opened": 270,
+        "opened": 271,
         "timely_closes": 226,
         "win_rate": 0.4291,
         "wins": 115
       },
       "STX": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 32,
         "closed_expectancy_R": 0.43763,
@@ -5371,13 +5363,13 @@
         "late_closes": 0,
         "late_share_of_closed": 0.0,
         "losses": 13,
-        "opened": 37,
+        "opened": 38,
         "timely_closes": 32,
         "win_rate": 0.5938,
         "wins": 19
       },
       "SUI": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 163,
         "closed_expectancy_R": -0.01695,
@@ -5397,13 +5389,13 @@
         "late_closes": 24,
         "late_share_of_closed": 0.1472,
         "losses": 83,
-        "opened": 167,
+        "opened": 168,
         "timely_closes": 139,
         "win_rate": 0.4908,
         "wins": 80
       },
       "TIA": {
-        "active": 6,
+        "active": 7,
         "breakeven": 0,
         "closed": 32,
         "closed_expectancy_R": 0.78711,
@@ -5423,13 +5415,13 @@
         "late_closes": 0,
         "late_share_of_closed": 0.0,
         "losses": 15,
-        "opened": 38,
+        "opened": 39,
         "timely_closes": 32,
         "win_rate": 0.5312,
         "wins": 17
       },
       "TRX": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 170,
         "closed_expectancy_R": -0.08473,
@@ -5449,13 +5441,13 @@
         "late_closes": 23,
         "late_share_of_closed": 0.1353,
         "losses": 102,
-        "opened": 174,
+        "opened": 175,
         "timely_closes": 147,
         "win_rate": 0.4,
         "wins": 68
       },
       "UNI": {
-        "active": 1,
+        "active": 2,
         "breakeven": 0,
         "closed": 239,
         "closed_expectancy_R": -0.19421,
@@ -5475,13 +5467,13 @@
         "late_closes": 50,
         "late_share_of_closed": 0.2092,
         "losses": 134,
-        "opened": 240,
+        "opened": 241,
         "timely_closes": 189,
         "win_rate": 0.4393,
         "wins": 105
       },
       "WIF": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 249,
         "closed_expectancy_R": -0.03999,
@@ -5501,13 +5493,13 @@
         "late_closes": 44,
         "late_share_of_closed": 0.1767,
         "losses": 130,
-        "opened": 252,
+        "opened": 253,
         "timely_closes": 205,
         "win_rate": 0.4779,
         "wins": 119
       },
       "WLD": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 33,
         "closed_expectancy_R": 0.27491,
@@ -5527,13 +5519,13 @@
         "late_closes": 0,
         "late_share_of_closed": 0.0,
         "losses": 13,
-        "opened": 36,
+        "opened": 37,
         "timely_closes": 33,
         "win_rate": 0.6061,
         "wins": 20
       },
       "XLM": {
-        "active": 2,
+        "active": 3,
         "breakeven": 0,
         "closed": 245,
         "closed_expectancy_R": -0.02423,
@@ -5553,13 +5545,13 @@
         "late_closes": 37,
         "late_share_of_closed": 0.151,
         "losses": 133,
-        "opened": 247,
+        "opened": 248,
         "timely_closes": 208,
         "win_rate": 0.4571,
         "wins": 112
       },
       "XRP": {
-        "active": 6,
+        "active": 7,
         "breakeven": 0,
         "closed": 224,
         "closed_expectancy_R": 0.00601,
@@ -5579,13 +5571,13 @@
         "late_closes": 36,
         "late_share_of_closed": 0.1607,
         "losses": 117,
-        "opened": 230,
+        "opened": 231,
         "timely_closes": 188,
         "win_rate": 0.4777,
         "wins": 107
       }
     },
-    "total_research_notional_usd": 83860000.0
+    "total_research_notional_usd": 84230000.0
   },
   "friction_stress_scenario": {
     "additional_assumed_cost_usd": 81825.58,
@@ -5596,7 +5588,7 @@
   },
   "late_closed_this_run": 0,
   "late_closures": 1347,
-  "ledger_tip_sha256": "9992739c3ea070b93aa6400e4c7ee5e7d9cb1f7d8b83c19bc4fd843674580d8e",
+  "ledger_tip_sha256": "e235e54bae720806671d304301798f486e74c6b1c5b600a0c9a7d389f990879a",
   "limitations": [
     "Correlated trades are not independent evidence of edge",
     "Fixed-horizon only; NO stop-loss, take-profit or interim exit; delayed observations excluded from eligible sample",
@@ -5608,12 +5600,13 @@
     "note": "Fresh validated public snapshots only. Spot proxies do not count toward perpetual strategy evidence.",
     "real_perpetual_quote_available_this_tick": true,
     "successful_sources": [
+      "kraken-spot-proxy",
       "okx-swap"
     ],
-    "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 1,
-    "validated_real_public_quotes": 1,
-    "validated_spot_proxy_quotes": 0
+    "unavailable_symbol_source_requests": 4,
+    "validated_perpetual_quotes": 46,
+    "validated_real_public_quotes": 48,
+    "validated_spot_proxy_quotes": 2
   },
   "losses": 4356,
   "max_closed_equity_drawdown_usd": 70903.52,
@@ -5622,19 +5615,17 @@
   "net_expectancy_R": -0.04875,
   "net_pnl_usd": -60162.62,
   "observation_heartbeat": {
-    "attempted_symbols": [
-      "BTC"
-    ],
-    "attested_by_real_quote": true,
-    "instrument": "BTC-USDT-SWAP",
+    "attempted_symbols": [],
+    "attested_by_real_quote": false,
+    "instrument": null,
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": "2026-10-16T23:50:00.567000Z",
-    "provider": "okx-swap"
+    "observed_at": null,
+    "provider": null
   },
-  "open": 158,
+  "open": 195,
   "pending": 0,
   "profit_factor": 0.9235,
-  "provider_observations": 1,
+  "provider_observations": 48,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -5661,9 +5652,8 @@
     "near_duplicate_fast_intervals": 3,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.007,
+    "prior_observation_gap_minutes": 10.008,
     "recent_observation_gaps_minutes": [
-      10.007,
       10.007,
       10.007,
       10.006,
@@ -5734,7 +5724,8 @@
       10.005,
       16.02,
       10.007,
-      10.007
+      10.007,
+      10.008
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -5743,9 +5734,16 @@
     "throttle_applies_to": "new OPEN only; existing due exits still attempted"
   },
   "schema_version": 8,
-  "source_errors": {},
+  "source_errors": {
+    "PROVIDER_BLOCKED:binance-futures": "HTTP 451",
+    "PROVIDER_BLOCKED:bybit-linear": "HTTP 403",
+    "RUNE:okx-swap": "OKX missing ticker",
+    "TON:binance-futures": "HTTP 451",
+    "TON:bybit-linear": "HTTP 403",
+    "TON:okx-swap": "OKX missing ticker"
+  },
   "spot_proxy_closures": 0,
-  "status": "NO_NEW_SIGNALS",
+  "status": "OK",
   "strategy_horizon": {
     "ATRCHAN-v1 / 12h": {
       "evidence": "hypothesis",
@@ -6516,11 +6514,11 @@
       "net_R": 10.32824
     }
   },
-  "timestamp": "2026-10-16T23:49:59.939866Z",
+  "timestamp": "2026-10-17T00:00:00.390747Z",
   "total_round_trip_fees_usd": 82280.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
-  "verified_events": 16614,
+  "verified_events": 16651,
   "win_rate": 0.4706,
   "wins": 3872,
   "workflow_interval_note": "GitHub scheduled triggers are best-effort"
