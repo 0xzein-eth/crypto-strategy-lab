@@ -5,6 +5,7 @@ Never use a forming candle or a future candle. Venue: OKX USDT swap only.
 """
 import datetime as dt
 import math
+import regime_hypotheses
 
 BAR_MINUTES = 15
 MIN_BARS = 60
@@ -243,4 +244,6 @@ def from_okx(symbol, market_snapshot, requester, clock):
     data=requester("https://www.okx.com/api/v5/market/candles?instId="+
                    symbol+"-USDT-SWAP&bar=15m&limit=120")
     bars=parse_okx_candles(data,now)
-    return classify(bars)
+    confirmed=classify(bars)
+    # Independent NEW, versioned paper hypotheses; old detection rules remain unchanged.
+    return confirmed + regime_hypotheses.candidates(confirmed, market_snapshot, symbol)
