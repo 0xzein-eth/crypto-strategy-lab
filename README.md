@@ -4,22 +4,22 @@
 
 **Lab eksperimen strategi kripto otomatis, berjalan lewat GitHub Actions, tanpa transaksi riil.**
 
-✅ [Hasil simulasi terakhir](data/report.json) · 📚 [Event ledger permanen](data/events/) · 📊 [Dashboard source](dashboard/index.html) · ⚙️ [Workflow otomatis](.github/workflows/lab.yml) · 🧪 [Pengujian](tests/)
+**Prioritas kebenaran:** `data/events/` = ledger asli; `data/report.json` = metrik terbaru; `engine.py`, `learner.py` dan `signals.py` = aturan berjalan. Bagian kronologi upgrade di bawah memuat angka versi lama yang tidak lagi menjadi kuota aktif. [Program riset jangka panjang](docs/LONG_TERM_RESEARCH_PROGRAM.md) · [Pemetaan validasi](docs/RESEARCH_DEVELOPMENT_MAP.md).\n\n✅ [Hasil simulasi terakhir](data/report.json) · 📚 [Event ledger permanen](data/events/) · 📊 [Dashboard source](dashboard/index.html) · ⚙️ [Workflow otomatis](.github/workflows/lab.yml) · 🧪 [Pengujian](tests/)
 
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
 
-**Jadwal otomatis internal GitHub:** paper lab menit **04, 14, 24, 34, 44, dan 54 UTC** (setiap 10 menit), dengan **dua clock pemulihan terpisah** pada menit **02/12/22/32/42/52** dan **09/19/29/39/49/59**. Keduanya menggunakan `GITHUB_TOKEN` bawaan, memeriksa laporan resmi terbaru serta workflow yang sedang berjalan, dan baru meminta `workflow_dispatch` jika laporan berusia lebih dari 14 menit. Pemicu cadangan saling dikunci untuk membatasi duplikasi; jadwal GitHub tetap *best effort* dan tidak dijamin tepat waktu. [Dokumentasi dan keterbatasan](OPS_RELIABILITY.md). Laptop pengguna tidak perlu menyala. Pada kondisi normal engine mengupayakan hingga 14 eksperimen baru per run (hard cap 24), dengan batas **850 OPEN bersamaan**, **50 OPEN per aset** dan **1.400 OPEN baru per hari UTC**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
+**Jadwal otomatis internal GitHub:** paper lab menit **04, 14, 24, 34, 44, dan 54 UTC** (setiap 10 menit), dengan **dua clock pemulihan terpisah** pada menit **02/12/22/32/42/52** dan **09/19/29/39/49/59**. Keduanya menggunakan `GITHUB_TOKEN` bawaan, memeriksa laporan resmi terbaru serta workflow yang sedang berjalan, dan baru meminta `workflow_dispatch` jika laporan berusia lebih dari 14 menit. Pemicu cadangan saling dikunci untuk membatasi duplikasi; jadwal GitHub tetap *best effort* dan tidak dijamin tepat waktu. [Dokumentasi dan keterbatasan](OPS_RELIABILITY.md). Laptop pengguna tidak perlu menyala. Pada kondisi normal mesin memiliki batas **hingga 44 eksperimen baru per run** (tetap bergantung pada kuota aktual, sinyal, sumber publik dan kualitas jadwal), batas **1.050 posisi OPEN bersamaan**, **50 OPEN per aset** dan **1.750 OPEN baru per hari UTC**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
 
 ## Struktur repository
 
 | File | Fungsi |
 |---|---|
 | `engine.py` | Mesin prospektif event-sourcing v8; harga publik, buka/tutup simulasi, audit |
-| `signals.py` | 11 aturan berbasis OHLCV 15 menit yang telah dikonfirmasi, termasuk RSI/SMA/VWAP |
+| `signals.py` dan `regime_hypotheses.py` | Katalog sinyal 15m terkonfirmasi dan varian BRREG-v1/TPREG-v1 khusus paper entry baru |
 | `learner.py` | Alokasi eksperimen dan kelompok kontrol, pemantauan berbasis hari |
-| `universe.py` | Katalog 38 aset dengan strata sektor/arah/volatilitas; aset tanpa kontrak terverifikasi dilewati |
+| `universe.py` | Katalog kandidat aset dengan strata sektor/arah/volatilitas; instrumen tanpa kontrak terverifikasi dilewati |
 | `friction.py` | Skenario spread/impact hipotesis yang disimpan pada eksperimen baru |
 | `data/events/YYYY-MM.jsonl or YYYY-MM_daily_DD.jsonl` | **Sumber kebenaran tunggal**: OPEN & CLOSE record **lengkap**, baris append-only, rantai SHA-256 |
 | `data/report.json` | Seluruh statistik hasil observasi dan peringatan kualitas |
@@ -46,7 +46,7 @@ Prioritas data untuk eksperimen baru: OKX USDT swap → Bybit linear → Binance
 
 ## Adaptive continuous research (v1)
 
-The lab now scores a frozen set of **14 auditable paper-only strategy hypotheses** and continuously reallocates *future* experiments. The learner excludes late closes and spot proxies, retains precommitted controls, evaluates day-cluster lower bounds, and maintains a reproducible date-partitioned monitoring sample. Until strict training/monitoring/control thresholds are met, **no strategy is provisionally preferred**. A provisional leader is not proof of profitability. New signal families are versioned rather than generated through unreviewed arbitrary code.
+The lab evaluates a **versioned, pre-registered catalogue of paper-only hypotheses**. Current allocation is **performance-neutral**, maintaining CTRL and exploration; descriptive research rankings do not preferentially select future trades. The learner excludes late closes and spot proxies, retains precommitted controls, evaluates day-cluster lower bounds, and maintains a reproducible date-partitioned monitoring sample. Until strict training/monitoring/control thresholds are met, **no strategy is provisionally preferred**. A provisional leader is not proof of profitability. New signal families are versioned rather than generated through unreviewed arbitrary code.
 
 - [Read the learning design](LEARNING.md)
 - Dashboard now displays adaptive arm evidence, monitoring samples and provisional status.
@@ -56,16 +56,16 @@ The lab now scores a frozen set of **14 auditable paper-only strategy hypotheses
 ## Peningkatan kapasitas dan kualitas sampel (Oktober 2026)
 
 - **48 pasar kandidat** lintas kelompok aset; sistem hanya menerima harga dari instrumen yang sungguh tersedia, tidak menciptakan harga atau memaksa aset tidak terdaftar.
-- **4 pemindaian per jam** secara best-effort (sebelumnya dua), target **maksimal 44 eksperimen baru per observasi** pada kondisi sehat. Batas 1.750 entri baru per hari UTC mencegah lonjakan tidak sengaja.
+- **Observasi terjadwal sekitar setiap 10 menit** secara best-effort; kapasitas mesin maksimal **44 eksperimen baru per observasi** ketika kondisi sehat, dengan satu OPEN per aset/slot sinyal 15 menit. Batas 1.750 entri baru per hari UTC mencegah lonjakan tidak sengaja.
 - **Stratifikasi** berdasarkan sektor, arah pasar dan band volatilitas agar tidak seluruh eksperimen mengejar aset paling volatil; hasil tetap saling berkorelasi dan tidak otomatis independen.
 - **Kapasitas 1.050 posisi simulasi OPEN**, 50 OPEN per simbol. Berbagai horizon 1/2/4/8/12/24h tetap digunakan; duplikat aktif strategi×horizon pada venue yang sama dihindari.
 - **Skenario friction-stress** memakai bid/ask entry jika ada dan estimasi dampak pasar; dilaporkan terpisah dari P&L lama berbasis fee sehingga rekam historis tidak diubah.
-- **14 hipotesis terdaftar**, meliputi tiga baseline serta 11 sinyal berbasis candle. Metode terbaik baru dapat memperoleh alokasi tambahan setelah hasil prospektif memadai.
+- **Katalog strategi berversi** mencakup tiga baseline, kelompok sinyal berbasis candle, dan BRREG-v1/TPREG-v1 khusus eksperimen masa depan. Daftar otoritatif berada di `learner.py`, bukan angka statis README; tidak ada strategi yang dinyatakan terbukti unggul.
 - **Biaya Git storage** bisa bertambah besar pada throughput tinggi. Ini rancangan riset gratis selama masih dalam batas layanan; tidak dijamin tanpa batas waktu atau kapasitas.
 
 [Lihat rancangan learner](LEARNING.md) · [Lihat workflow kesehatan](.github/workflows/health.yml)
 
-## Model evaluasi yang dipertahankan: fixed-horizon TANPA SL/TP
+## Strategi baru dan validasi prospektif\n\nDua hipotesis v1 hanya berlaku untuk **OPEN baru**: BRREG-v1 (breakout terkonfirmasi dengan rezim 24 jam searah) dan TPREG-v1 (pullback terkonfirmasi dengan rezim searah). Mereka memerlukan candle OKX USDT perpetual yang telah selesai, SMA20/SMA50 yang mendukung arah posisi, serta perubahan 24 jam >=1% searah dari ticker publik instrumen yang sama. Bukti asal, versi dan timestamp observasi dibekukan pada OPEN. Data hilang/salah instrumen/tidak segar => tidak ada sinyal tambahan. **Ini bukan strategi unggulan yang telah terbukti.** Lihat [preregistration dan milestone penelitian](docs/LONG_TERM_RESEARCH_PROGRAM.md).\n\nResearch quality gates, [matched-control dashboard](.github/workflows/matched-controls.yml), [negative expectancy diagnostics](.github/workflows/negative-edge.yml), dan [frozen regime evidence](.github/workflows/regime-evidence.yml) adalah jalur baca-saja: tidak otomatis mempromosikan strategi dan tidak mengubah ledger. Keunggulan memerlukan pekan prospektif mendatang dan validasi kontrol independen.\n\n## Model evaluasi yang dipertahankan: fixed-horizon TANPA SL/TP
 
 Setiap paper-trade `OPEN` mempunyai harga/timestamp masuk, arah LONG/SHORT, serta `evaluate_at` di horizon 1, 2, 4, 8, 12, atau 24 jam. **Tidak ada stop-loss, take-profit, trailing-stop, atau exit intrahorizon.** Ketika waktu evaluasi telah lewat, workflow memakai **harga segar yang benar-benar teramati dari venue dan kontrak yang sama, pada atau setelah `evaluate_at`**. Jika terhambat, posisi tetap `OPEN` dan ditandai `DUE/PENDING`; saat harga tersedia, keterlambatan tercatat dan hasil yang terlalu terlambat dipisahkan dari kelompok penilaian tepat waktu.
 
@@ -82,7 +82,7 @@ Untuk menjalankan secara lokal tanpa dependensi pihak ketiga:
 ```sh
 python -m unittest discover -s tests -v
 python engine.py --verify-only
-python engine.py --count 14
+python audit.py
 ```
 
 Dashboard disimpan di `dashboard/index.html` dan dapat diperoleh sebagai artifact workflow `Validate dashboard`. **GitHub Pages belum dianggap aktif** sampai Pages dikonfigurasi/berhasil diterbitkan.
