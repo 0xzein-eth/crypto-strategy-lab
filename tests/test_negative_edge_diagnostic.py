@@ -37,9 +37,9 @@ class NegativeEdgeTests(unittest.TestCase):
         self.assertTrue(arm["negative_expectancy_warning"])
         self.assertGreater(arm["monitoring_closed_not_used_for_diagnosis"], 0)
 
-    def test_invalid_nonfinite_training_rejected(self):
-        with self.assertRaises(ValueError):
-            diag.evaluate([record(1, "2026-10-01", float("nan"))])
+    def test_invalid_nonfinite_record_excluded_by_eligibility(self):
+        arm = diag.evaluate([record(1, "2026-10-01", float("nan"))])["arms"]["BR-v3"]
+        self.assertEqual(arm["eligible_closed"], 0)
 
 if __name__ == "__main__":
     unittest.main()
