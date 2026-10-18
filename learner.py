@@ -211,6 +211,27 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
         return available["CTRL-v1"],"control_exploration"
     advanced=[s for s in ADVANCED if s in available]
     baselines=[s for s in BASELINES[:2] if s in available]
+    # A bounded subset of advanced-only exploration samples REAL, available
+    # confirmed signals with the fewest actual trailing OPEN exposures.
+    # This is sampling equity (not performance selection): counts are frozen
+    # original ENTRY metadata for ALL outcomes, never learned reward labels.
+    # The original >=20% CTRL branch above remains untouched.
+    exposure = (profile.get("entry_exposure_counts_v1")
+                if isinstance(profile, dict) else None)
+    if 20 <= bucket < 45 and advanced and isinstance(exposure, dict):
+        try:
+            counts = {name: exposure[name] for name in advanced}
+            if (all(isinstance(n, int) and not isinstance(n, bool)
+                    and 0 <= n for n in counts.values())):
+                least = min(counts.values())
+                underobserved = [name for name in advanced
+                                 if counts[name] == least]
+                pick = weighted_exploration(
+                    underobserved, set(),
+                    "entry-coverage-v1:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
+                return available[pick], "confirmed_entry_coverage_neutral_exploration"
+        except (KeyError, TypeError):
+            pass
     # Performance-neutral prospective experimentation: neither preliminary
     # training rankings nor repeated-look monitoring, provisional leaders, or
     # underperformer tags change arm weights before strict qualification.
