@@ -42,6 +42,7 @@ def evaluate(records, report, matched_comparison=None):
     per_arm = {}
     groups = defaultdict(list)
     seen = set()
+    observed_arms = set()
     provider_closes = defaultdict(int)
     for row in rows:
         rid = row.get("id")
@@ -49,8 +50,11 @@ def evaluate(records, report, matched_comparison=None):
             raise ValueError("INTEGRITY_FAILURE: duplicate or missing unique paper id")
         seen.add(rid)
         arm = row["strategy"]
-        if arm not in learner.BASELINES+learner.ADVANCED:
-            raise ValueError("INTEGRITY_FAILURE: unregistered research strategy")
+        if not isinstance(arm,str) or not arm:
+            raise ValueError("INTEGRITY_FAILURE: empty historical research strategy")
+        # All historical versions remain in the immutable ledger even if an
+        # arm is later retired from the current experimental catalogue.
+        observed_arms.add(arm)
         if row["horizon_hours"] not in HORIZONS:
             raise ValueError("INTEGRITY_FAILURE: unsupported fixed horizon")
         when = parse_utc(row["created_at"])
@@ -63,7 +67,9 @@ def evaluate(records, report, matched_comparison=None):
         if row["status"] == "CLOSED":
             provider_closes[str(row["provider"])] += 1
     matched_arms = ((matched_comparison or {}).get("arms") or {})
-    for arm in learner.BASELINES+learner.ADVANCED:
+    current_catalog = tuple(dict.fromkeys(learner.BASELINES+learner.ADVANCED))
+    legacy_arms = sorted(observed_arms - set(current_catalog))
+    for arm in current_catalog + tuple(legacy_arms):
         horizons = {}
         arm_days = set()
         for horizon in HORIZONS:
@@ -144,6 +150,7 @@ def evaluate(records, report, matched_comparison=None):
         "latest_tick_entry_opportunities": report.get("entry_opportunity_audit"),
         "latest_tick_quote_errors": report.get("source_errors") or {},
         "totals": totals,
+        "legacy_arms_not_in_current_catalog": legacy_arms,
         "arms": per_arm,
         "notes": [
             "Only the actual source ledger and entry-frozen timestamps were counted; missing 15m observations are NOT reconstructed.",
