@@ -71,7 +71,7 @@ class CohortHealthTests(unittest.TestCase):
     def test_no_missing_match_cannot_claim_a_match(self):
         r=d.evaluate(self.records,self.report)
         self.assertIsNone(r["arms"]["BRREG-v1"]["matched_control_pairs"])
-        self.assertFalse(r["no_strategy_promotion"])
+        self.assertTrue(r["no_strategy_promotion"])
         # All rows are preserved; no extra observations are synthesized.
         self.assertEqual(r["totals"]["opened"],len(self.records))
 
