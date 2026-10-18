@@ -15,6 +15,7 @@ import urllib.error
 import urllib.request
 import signals
 import learner
+import entry_sampling
 import universe
 import friction
 import outcome_stats
@@ -499,12 +500,18 @@ def diversified_quotes(quotes, slot, prior_daily_strata=None, prior_weekly_strat
 
 
 def new_candidates(records, read_quote, moment, next_id, requested, advanced=None, reobserve=None, clock=None,
-                   horizons=None):
+                   horizons=None, opportunity_audit=None):
     """Validated candle hypotheses when observable; deterministic proxy controls otherwise."""
     horizons=HORIZONS if horizons is None else tuple(horizons)
     if (not horizons or len(set(horizons))!=len(horizons) or
             any(h not in HORIZONS for h in horizons)):
         raise ValueError("invalid allowed prospective research horizons")
+    # Original OPEN metadata only, regardless of later CLOSE outcomes.
+    exposure_counts = entry_sampling.recent_confirmed_open_counts(records, moment)
+    if opportunity_audit is not None:
+        opportunity_audit.update(entry_sampling.make_opportunity_audit(requested))
+        opportunity_audit["recent_7d_confirmed_open_counts"] = exposure_counts
+    selection_profile = {"entry_exposure_counts_v1": exposure_counts}
     # UTC-day budgets bound public CI/storage use and avoid accidental flood
     # from repeated manual dispatches. Existing full event history remains intact.
     utc_day = moment.date()
@@ -563,6 +570,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             prior_weekly_strata[tuple(frozen)]+=1
     quotes = diversified_quotes(quotes, slot, prior_daily_strata,
                                 prior_weekly_strata)
+    if opportunity_audit is not None:
+        opportunity_audit["eligible_quote_symbols"] = len(quotes)
     # Allocation is deliberately performance-neutral until independent research
     # requirements permit an explicit future policy version. No training-result
     # profile may reweight an experiment's probability during collection.
@@ -575,7 +584,11 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             (symbol, slot) in sampled_symbol_slots or
             daily_by_symbol[symbol] >= MAX_NEW_PER_SYMBOL_PER_DAY or
             active_by_symbol[symbol] >= MAX_PER_SYMBOL):
+            if opportunity_audit is not None:
+                opportunity_audit["skipped_by_symbol_slot_or_capacity"] += 1
             continue
+        if opportunity_audit is not None:
+            opportunity_audit["screened_symbol_slots"] += 1
         # The online allocator only selects among pre-registered, observable
         # hypotheses. Controls remain available regardless of apparent results.
         move=q["pct24h"]
@@ -586,6 +599,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
              "side":"LONG" if hashlib.sha256((symbol+":"+str(slot)).encode()).digest()[0]%2==0 else "SHORT"}]
         detections=[]
         if advanced is not None and q["provider"]=="okx-swap":
+            if opportunity_audit is not None:
+                opportunity_audit["advanced_source_checks"] += 1
             detections=advanced(symbol,q) or []
         # Indicator-based candidates can never be synthesized from a missing,
         # stale, unconfirmed or wrong-instrument candle.
@@ -596,6 +611,16 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         ]
         # Deduplicate arm labels without rewriting evidence.
         options=list({x["strategy"]:x for x in options}.values())
+        if opportunity_audit is not None:
+            confirmed_options = [item for item in options
+                                 if item["strategy"] in learner.ADVANCED]
+            if confirmed_options:
+                opportunity_audit["slots_with_any_confirmed_signal"] += 1
+            else:
+                opportunity_audit["slots_with_no_confirmed_signal"] += 1
+            for item in confirmed_options:
+                entry_sampling.increment(opportunity_audit["confirmed_arm_opportunities"],
+                                         item["strategy"])
         # Rotate across pre-registered horizons when a symbol/arm/horizon is
         # already OPEN. This prevents artificial throughput loss from repeated
         # identical signatures; no future outcome participates in selection.
@@ -605,7 +630,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         for offset in range(len(horizons)):
             candidate_h=horizons[(slot+rank+offset)%len(horizons)]
             picked,mode=learner.choose(options, records, symbol, candidate_h, slot, rank+offset,
-                                       profile=None)
+                                       profile=selection_profile)
             if picked is None:
                 continue
             if ((symbol, q["provider"], picked["strategy"], candidate_h)
@@ -623,7 +648,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "price_change_reference":q.get("price_change_reference","provider-24h-window"),
                   "signal_rule":"pre-registered confirmed-candle or 24h baseline",
                   "research_only":True,
-                  "allocation_policy":"learner-v5-neutral-exploration-no-promotion",
+                  "allocation_policy":"learner-v6-entry-coverage-neutral-no-outcome-promotion",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
                   "performance_neutral_allocation":True,
@@ -646,11 +671,17 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         try:
             entry = reobserve(symbol, q["provider"]) if reobserve else q
         except Exception:
+            if opportunity_audit is not None:
+                opportunity_audit["fresh_entry_quote_rejections"] += 1
             continue
         if (entry["provider"], entry["market_type"], entry["instrument"]) != (
                 q["provider"], q["market_type"], q["instrument"]):
+            if opportunity_audit is not None:
+                opportunity_audit["fresh_entry_quote_rejections"] += 1
             continue
         if (clock()-parse(entry["observed_at"])).total_seconds() > MAX_QUOTE_AGE_SECONDS:
+            if opportunity_audit is not None:
+                opportunity_audit["fresh_entry_quote_rejections"] += 1
             continue
         rid = "LAB-" + str(next_id + len(output))
         entered_at = max(moment, clock(), parse(entry["observed_at"]))
@@ -670,6 +701,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                     entry.get("spread_pct_observed"))}
         validate_open(rec)
         output.append(rec)
+        if opportunity_audit is not None:
+            entry_sampling.increment(opportunity_audit["new_paper_opens_by_arm"], style)
         one_per_run.add(symbol)
     return output
 
@@ -893,9 +926,10 @@ def run(requested=14, clock=utcnow):
             return []
     def reobserve(symbol, provider):
         return quote(symbol, provider, clock=clock)
+    entry_opportunity_audit = {}
     opens = new_candidates(records, read_quote, current, next_id, requested_this_run,
                            advanced=advanced, reobserve=reobserve, clock=clock,
-                           horizons=allowed_horizons)
+                           horizons=allowed_horizons, opportunity_audit=entry_opportunity_audit)
     for r in opens:
         records[r["id"]] = r
     events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
@@ -934,6 +968,7 @@ def run(requested=14, clock=utcnow):
                   timestamp=stamp(current), added=len(opens), closed_this_run=len(closures),
                   late_closed_this_run=late, missed_due_snapshots=missing,
                   provider_observations=observations, source_errors=errors,
+                  entry_opportunity_audit=entry_opportunity_audit,
                   live_source_quality={
                       "validated_real_public_quotes": observations,
                       "validated_perpetual_quotes": sum(
