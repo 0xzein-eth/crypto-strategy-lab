@@ -430,7 +430,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 11664,
-  "closed_this_run": 1,
+  "closed_this_run": 0,
   "created": 11886,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.0564,
@@ -661,7 +661,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-18T23:07:15.347024+00:00",
+      "as_of_utc": "2026-10-18T23:17:15.644656+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 6,
@@ -6455,12 +6455,14 @@
   "net_expectancy_R": -0.06339,
   "net_pnl_usd": -110911.66,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-10-18T23:17:16.672000Z",
+    "provider": "okx-swap"
   },
   "open": 222,
   "pending": 0,
@@ -6494,7 +6496,6 @@
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
     "prior_observation_gap_minutes": 10.005,
     "recent_observation_gaps_minutes": [
-      10.006,
       10.006,
       10.006,
       0.79,
@@ -6562,6 +6563,7 @@
       10.004,
       10.004,
       21.292,
+      10.005,
       10.005,
       10.005,
       10.005,
@@ -7389,7 +7391,7 @@
       "net_R": 7.08203
     }
   },
-  "timestamp": "2026-10-18T23:07:15.347024Z",
+  "timestamp": "2026-10-18T23:17:15.644656Z",
   "total_round_trip_fees_usd": 116640.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
