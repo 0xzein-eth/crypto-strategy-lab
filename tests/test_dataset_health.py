@@ -93,6 +93,15 @@ class CohortHealthTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"timezone"):
             d.evaluate(self.records,dict(self.report,timestamp="2026-10-18T16:00:00"))
 
+    def test_retired_historical_arm_remains_visible_without_false_eligibility(self):
+        archived=rec("LAB-999",arm="ARCHIVED-v0")
+        out=d.evaluate(self.records+[archived],self.report)
+        self.assertIn("ARCHIVED-v0",out["legacy_arms_not_in_current_catalog"])
+        self.assertEqual(out["arms"]["ARCHIVED-v0"]["opened"],1)
+        self.assertEqual(out["arms"]["ARCHIVED-v0"]["closed_not_eligible"],1)
+        self.assertEqual(out["arms"]["ARCHIVED-v0"]["eligible_timely_perpetual_closed"],0)
+        self.assertEqual(out["totals"]["opened"],7)
+
     def test_all_six_fixed_horizons_published(self):
         out=d.evaluate(self.records,self.report)
         for arm in ("CTRL-v1","BRREG-v1","TPREG-v1"):
