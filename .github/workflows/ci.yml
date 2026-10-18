@@ -5,6 +5,10 @@ on:
       - 'lab.py'
       - 'engine.py'
       - 'signals.py'
+      - 'regime_hypotheses.py'
+      - 'entry_sampling.py'
+      - 'negative_edge_diagnostic.py'
+      - 'matched_controls.py'
       - 'learner.py'
       - 'universe.py'
       - 'friction.py'
@@ -30,6 +34,6 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests -v
-      - run: python -m py_compile lab.py engine.py signals.py learner.py universe.py friction.py outcome_stats.py temporal_evidence.py research_quality.py audit.py health.py scheduler_guard.py recovery_window.py
+      - run: python -m py_compile lab.py engine.py signals.py regime_hypotheses.py entry_sampling.py learner.py matched_controls.py negative_edge_diagnostic.py regime_evidence.py universe.py friction.py outcome_stats.py temporal_evidence.py research_quality.py audit.py health.py scheduler_guard.py recovery_window.py
       - run: python audit.py
       - run: python engine.py --verify-only
