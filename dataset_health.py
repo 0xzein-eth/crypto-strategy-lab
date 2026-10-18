@@ -54,8 +54,11 @@ def evaluate(records, report, matched_comparison=None):
         if row["horizon_hours"] not in HORIZONS:
             raise ValueError("INTEGRITY_FAILURE: unsupported fixed horizon")
         when = parse_utc(row["created_at"])
-        if when > now + dt.timedelta(seconds=60):
-            raise ValueError("INTEGRITY_FAILURE: future paper experiment")
+        # The report is stamped at engine.run start; authentic quotes and
+        # subsequent OPENs can be observed seconds/minutes afterward.
+        # Allow bounded intra-run elapsed time, not retroactive market data.
+        if when > now + dt.timedelta(minutes=10):
+            raise ValueError("INTEGRITY_FAILURE: paper entry too far after report start")
         groups[(arm, row["horizon_hours"])].append(row)
         if row["status"] == "CLOSED":
             provider_closes[str(row["provider"])] += 1
