@@ -1,0 +1,63 @@
+name: Prospective cohort health
+on:
+  push:
+    paths:
+      - 'dataset_health.py'
+      - 'tests/test_dataset_health.py'
+      - 'matched_controls.py'
+      - '.github/workflows/dataset-health.yml'
+  pull_request:
+  workflow_dispatch:
+  # Observes actual persisted events. GitHub cron is best effort.
+  schedule:
+    - cron: '29 08 * * *'
+permissions:
+  contents: read
+jobs:
+  validate-and-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Full regression tests
+        run: python -m unittest discover -s tests -v
+      - name: Audit immutable canonical event chain
+        run: |
+          python engine.py --verify-only
+          python audit.py
+      - name: Publish read-only matched and per-horizon health
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import dataset_health
+          import engine
+          import matched_controls
+          records, seq, tip, _ = engine.replay()
+          report = json.loads(engine.REPORT.read_text(encoding="utf-8"))
+          if report.get("ledger_tip_sha256") != tip or report.get("verified_events") != seq:
+              raise ValueError("INTEGRITY_FAILURE: report and event chain disagree")
+          matched = matched_controls.compare(records)
+          result = dataset_health.evaluate(records, report, matched)
+          result["source_verified_events"] = seq
+          result["source_verified_ledger_tip_sha256"] = tip
+          assert result["totals"]["opened"] == len(records)
+          assert result["no_strategy_promotion"] is True
+          path = Path("prospective-cohort-health.json")
+          path.write_text(json.dumps(result, sort_keys=True, indent=2, allow_nan=False)+"\n", encoding="utf-8")
+          print("Actual paper positions:", result["totals"]["opened"])
+          print("Eligible timely perpetual closes:", result["totals"]["eligible_timely_perpetual_closed"])
+          for arm in ("BRREG-v1", "TPREG-v1"):
+              row = result["arms"][arm]
+              print(arm, "OPEN", row["open_now"], "CLOSED", row["closed"],
+                    "ELIGIBLE", row["eligible_timely_perpetual_closed"],
+                    "MATCHED", row["matched_control_pairs"])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prospective-cohort-health-paper-only
+          path: prospective-cohort-health.json
+          retention-days: 30

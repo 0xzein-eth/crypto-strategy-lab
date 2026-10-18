@@ -56,7 +56,7 @@
 
 **Gate sukses:** laporan menyertakan kontrol pasangan benar-benar tercocok, fraction, training days dan sifat deskriptif; tidak pernah mematikan strategi atau mengubah trade CLOSED secara otomatis.
 
-## Fase 3 — sampel independen lintas kalender (4–12 minggu aktual, belum selesai)
+**Implementasi tambahan:** `dataset_health.py` dan workflow `dataset-health.yml` secara read-only menghitung setiap arm dan enam horizon, termasuk posisi OPEN, sudah jatuh tempo, eligible tepat waktu, late excluded, spot proxy, persentase field bid/ask spread yang tersedia, dan match rate terhadap kontrol. Workflow memverifikasi event chain penuh sebelum membuat artifact; tidak menambah, mengedit, atau menutup posisi.\n\n## Fase 3 — sampel independen lintas kalender (4–12 minggu aktual, belum selesai)
 
 Ambang **readiness**, bukan bukti alpha:
 - minimal **20 UTC entry days**, **4 ISO weeks**, setidaknya 5 weekday;
