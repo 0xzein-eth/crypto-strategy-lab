@@ -62,6 +62,30 @@ Other identified gaps:
   authentic market history and real bid/ask/funding completeness are
   still blocked on data acquisition and are NOT claimed delivered.
 
+## P3 implementation: isolated collateral-aware paper wallet
+
+`v2.paper_portfolio.PaperWallet` is an IN-MEMORY no-orders prototype,
+separate from legacy `data/events/`. It enforces a genuine finite
+hypothetical USDT cash balance, initial margin, free collateral, at most
+3x configured leverage, maximum gross entry notional relative to current
+equity, per-asset venue/book freshness, displayed visible quote-side
+liquidity, optional explicitly partial fills, fee charged at entry and
+exit, and settled-only funding with immutable temporal receipts. Cash
+is **not** credited on margin release: reserved collateral is a
+restriction on existing money, not extra wallet money.
+
+The risk state includes executable-opposite-quote marked unrealized P&L,
+estimated maintenance requirement, explicit liquidation flag, forced
+liquidation label, realized simulated fees/funding, and hash-auditable
+in-memory events. Neither top-of-book crossing nor the assumed
+liquidation condition is a real fill; exact exchange liquidation uses
+tiers, intrabar path and other missing data not presently modeled.
+**DO NOT** connect live broker/order execution, run this in place of v8
+append-only ledger or call its estimated P&L real returns. Missing
+historical bid/ask/depth is not imputed. Next work requires durable
+storage/replay, actual source observations, richer multi-level depth,
+latency and a separately approved portfolio research protocol.
+
 ## Non-negotiable design principles
 
 1. **Three physically/logically separated modes:** historical hypothesis exploration, immutable prospective *shadow signal* observation, and realistic simulated portfolio execution. A fourth optional real-broker adapter does **not exist** until reviewed and explicitly approved.
