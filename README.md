@@ -21,6 +21,19 @@ Repository variable `PAPER_CONTINUOUS_HANDOFF=off` dapat menonaktifkan
 penerus otomatis jika ingin membatasi menit runner; jadwal/guardian lain
 tetap aktif. Lihat [catatan operasional](OPS_RELIABILITY.md).
 
+**Peningkatan kebijakan eksperimen 19 Oktober:** `learner-v8` sekarang
+membatasi *24h-only directional proxy* ketika pemeriksaan OKX 15m sungguhan
+tidak memberikan kandidat confirmed: hanya 12% slot simbol unik yang
+dicatat sebagai baseline probe teracak deterministik. Jika sinyal confirmed
+ada, 20% hash band CTRL tetap dipertahankan. Strategi advanced yang
+secara konsisten negatif di **training-only** (>=50 CLOSE; >=7 UTC days,
+day-cluster UCB <-0.05 R dan lebih buruk daripada CTRL) dapat dikurangi
+bobotnya 4:1 **hanya di satu band eksplorasi**, tanpa dihentikan atau
+dipilih berdasarkan monitoring. Ini mengurangi eksperimen baseline
+tanpa sinyal, bukan jaminan keuntungan. Auditor dapat melihat jumlah
+slot yang dilewati dan dampak policy cohort baru melalui
+[protokol dan batas validitas](docs/STRATEGY_QUALITY_SPRINT_20261019.md).
+
 ## Struktur repository
 
 | File | Fungsi |
