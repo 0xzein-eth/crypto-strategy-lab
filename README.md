@@ -17,6 +17,17 @@ riwayat pasar lebih panjang, *backtest-forward parity*, akuntansi portofolio
 yang realistis, model biaya, serta validasi final independen. **Tidak ada
 strategi saat ini yang dibuktikan aman/untung untuk trade riil.**
 
+## Pembangunan v2 — audit biaya dan modal (fase P0)
+
+Modul `v2/legacy_audit.py` sekarang membongkar secara **read-only**
+kontribusi harga sebelum fee, fee round-trip, net P&L, distribusi
+per strategi, dan **eksposur notional/margin hipotetis** dari event
+ledger asli. Ini **bukan saldo modal atau equity akun futures**.
+GitHub CI memverifikasi identitas penjumlahan terhadap laporan resmi.
+Jalankan `python -m v2.legacy_audit --verify-main`.
+Akan ada fase lanjutan untuk model eksekusi dan portofolio baru;
+**belum ada strategi layak trade riil yang dibuktikan**.
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
