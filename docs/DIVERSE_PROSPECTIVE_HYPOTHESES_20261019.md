@@ -13,7 +13,7 @@
 
 All features use only observed, confirmed same-market 15-minute bars and no CLOSE outcome. The per-OPEN feature evidence includes `source_version`, `hypothesis_version`, `signal_rule`, `bar_time`, `bar_span`, and the decisive observation values (e.g. last efficiency / prior z-score). Signal labels are independent of older `BR-v3`, `FB-v3`, `RSI-v1` and `VWAP-v1` even if multiple hypotheses coincide on the same candle.
 
-**What did not change:** existing basic baselines, 20% deterministic control branch if offered, exploration, 15m one-OPEN-per-symbol-slot, strict source freshness/venue/instrument, six fixed horizons, delayed observations classification, UTC-day volume / OPEN caps, no automatic champion. The new families add 4 arms to the previous 21 confirmed arms: **25 confirmed** plus 3 baselines = 28 registered arms. Counts are not independent tests.
+**What did not change:** existing basic baselines, 20% deterministic control branch if offered, positive baseline exploration, 15m one-OPEN-per-symbol-slot, strict source freshness/venue/instrument, six fixed horizons, delayed observations classification, UTC-day volume / OPEN caps, no automatic champion. The new families add 4 arms to the previous 21 confirmed arms: **25 confirmed** plus 3 baselines = 28 registered arms. Counts are not independent tests.
 
 ## Prospectively frozen protocol
 
@@ -26,6 +26,8 @@ All features use only observed, confirmed same-market 15-minute bars and no CLOS
 7. A future allocator that reduces negative arms or promotes a positive strategy must be a separate reviewed prospective policy with controls and positive exploration retained. It is NOT included in this change.
 
 ## No-new-entry diagnosis
+
+The versioned learner-v7 prospectively favors the availability of REAL confirmed signals: 35/100 hash buckets for original-OPEN-count source-balanced arm sampling, 35/100 for uniform confirmed exploration, 20/100 for CTRL when offered, 5/100 for simple directional proxy experiments, 5/100 for neutral mixture. This **changes the allocation distribution** but not any historical OPEN, baseline controls or winning-trade-based selection. It cannot force advanced entries when no confirmed candle exists.
 
 The existing paper status `NO_NEW_SIGNALS` is retained for compatibility, but it previously conflated depleted daily intake quota, full concurrency, occupied 15-minute asset slots, no qualifying real public quotes, and rejected candidate selections.
 
