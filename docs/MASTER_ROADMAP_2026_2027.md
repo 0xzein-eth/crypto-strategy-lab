@@ -69,6 +69,8 @@ Ambang **readiness**, bukan bukti alpha:
 
 Tidak ada cara sah memadatkan **4 pekan kalender** menjadi satu jam atau menggandakan trade simbol berkorelasi untuk menggantikannya.
 
+**Research Factory v9.6 (19 Oktober):** 2.000 varian hipotetis dari 12 instrumen kandidat saat feed dan funding tersedia. Ke-1.600 ID historis lama tetap dipertahankan, 400 eksperimen baru dari empat keluarga dikodekan terpisah, dan calon per-fold dipilih *TRAINING-only* lintas keluarga sebelum parameter duplikat. Laporan tetap `proven_edge=false`, dengan validasi historis yang sudah berulang kali dilihat tidak dapat dianggap final holdout. Waktu GitHub Actions dan banyak pengujian merupakan pembatas eksplisit.
+
 ## Fase 4 — validasi falsifikasi strategi (mulai setelah Fase 3)
 
 1. Bekukan keluarga hipotesis (termasuk horizon 1/2/4/8/12/24 jam), filter, tanggal mulai dan metrik primer **paired net R after fees / stres terpisah**.
