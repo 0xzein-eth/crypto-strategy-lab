@@ -244,9 +244,21 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
     # underperformer tags change arm weights before strict qualification.
     # The separately published analysis remains descriptive/read-only.
     if bucket<90 and advanced:
-        pick=weighted_exploration(advanced,set(),
+        # Bounded adaptive RESEARCH throttle, never a reward-based promotion.
+        # Only canonical TRAINING day-cluster underperformers may receive 1/4
+        # exploratory weight. The 20%-CTRL hash band and 35%-coverage band
+        # remain unchanged; underperforming arms are still sampled.
+        # Monitoring/holdout metrics and provisional leaderboards are ignored.
+        flagged = (profile.get("train_negative_arms_v1")
+                   if isinstance(profile,dict) and
+                   profile.get("training_negative_policy_version") ==
+                   "day-cluster-training-only-v1" else ())
+        negative = (set(flagged).intersection(advanced)
+                    if isinstance(flagged,(tuple,list)) else set())
+        pick=weighted_exploration(advanced,negative,
                                   "advanced:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
-        return available[pick],"confirmed_signal_neutral_exploration"
+        return available[pick],("confirmed_signal_training_negative_downweighted"
+                                if negative else "confirmed_signal_neutral_exploration")
     if bucket<95 and baselines:
         pick=weighted_exploration(baselines,set(),
                                   "baseline:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
