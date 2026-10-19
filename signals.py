@@ -7,6 +7,7 @@ import datetime as dt
 import math
 import regime_hypotheses
 import diverse_confirmed
+import band_hypotheses
 
 BAR_MINUTES = 15
 MIN_BARS = 60
@@ -104,7 +105,7 @@ def features(bars):
             "bar_span":"15m confirmed OKX USDT-SWAP"}
 
 
-def classify(bars):
+def classify(bars, diagnostics=None):
     """Return zero or more independently specifiable hypothesis signals."""
     f=features(bars)
     p=f["last_close"];atr=f["atr14"]
@@ -234,10 +235,13 @@ def classify(bars):
             add("RSIREC-v1","LONG","RSI14 crosses up through 30 on confirmed close")
         if f["rsi14prev"]>70>=f["rsi14"] and p<f["c_prev"]:
             add("RSIREC-v1","SHORT","RSI14 crosses down through 70 on confirmed close")
-    return events + diverse_confirmed.detect(bars, f)
+    band_candidates, band_funnel = band_hypotheses.evaluate(bars, f)
+    if diagnostics is not None:
+        diagnostics.update(band_funnel)
+    return events + diverse_confirmed.detect(bars, f) + band_candidates
 
 
-def from_okx(symbol, market_snapshot, requester, clock):
+def from_okx(symbol, market_snapshot, requester, clock, diagnostics=None):
     """Compute signals only for matching OKX-USDT-SWAP market snapshots."""
     if market_snapshot.get("provider") != "okx-swap":
         return []
@@ -245,6 +249,6 @@ def from_okx(symbol, market_snapshot, requester, clock):
     data=requester("https://www.okx.com/api/v5/market/candles?instId="+
                    symbol+"-USDT-SWAP&bar=15m&limit=120")
     bars=parse_okx_candles(data,now)
-    confirmed=classify(bars)
+    confirmed=classify(bars, diagnostics=diagnostics)
     # Independent NEW, versioned paper hypotheses; old detection rules remain unchanged.
     return confirmed + regime_hypotheses.candidates(confirmed, market_snapshot, symbol)

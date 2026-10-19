@@ -73,6 +73,48 @@ class MatchedControlTests(unittest.TestCase):
         self.assertGreater(result["paired_train_pairs"],0)
         self.assertEqual(result["matched_pairs"]+result["unmatched_arm_closes"],len(days))
 
+    def test_per_horizon_training_relative_losses_vs_true_controls(self):
+        import learner
+        days=[(dt.date(2026, 7, 1)+dt.timedelta(days=i)).isoformat()
+              for i in range(80)]
+        rows=[]
+        for i,day in enumerate(days):
+            h=4 if i%2 else 8
+            arm=dict(row("A"+str(i),"BR-v3",day=day,value=-1.0),
+                     horizon_hours=h)
+            ctrl=dict(row("C"+str(i),"CTRL-v1",day=day,value=0.3),
+                      horizon_hours=h)
+            rows.extend((arm,ctrl))
+        prior=copy.deepcopy(rows)
+        stats=mc.compare(rows)["arms"]["BR-v3"]
+        self.assertEqual(rows,prior)
+        self.assertEqual(stats["matched_pairs"],80)
+        for horizon in ("4","8"):
+            cell=stats["horizon_training_comparisons"][horizon]
+            self.assertEqual(cell["matched_pairs"],40)
+            self.assertTrue(cell["adequate_for_descriptive_warning"])
+            self.assertTrue(cell["relative_negative_training_warning"])
+            self.assertLess(cell["train_day_cluster_descriptive_ucb_R"],0)
+            self.assertEqual(
+                cell["matched_pairs"],
+                cell["paired_train_pairs"]+cell["paired_monitoring_pairs_not_used"])
+            self.assertTrue(cell["not_an_independent_alpha_test"])
+        self.assertEqual(stats["horizon_training_comparisons"]["2"]["matched_pairs"],0)
+        self.assertFalse(stats["horizon_training_comparisons"]["2"]["relative_negative_training_warning"])
+        # Reverse outcomes only on the reserved 20% monitoring entry days.
+        altered=copy.deepcopy(rows)
+        for rec in altered:
+            if learner.stable_bucket("holdout:"+rec["created_at"][:10],5)==0:
+                rec["normalized_R"] *= -20
+        new=mc.compare(altered)["arms"]["BR-v3"]
+        for horizon in ("4","8"):
+            a=stats["horizon_training_comparisons"][horizon]
+            b=new["horizon_training_comparisons"][horizon]
+            self.assertEqual(a["train_day_cluster_descriptive_ucb_R"],
+                             b["train_day_cluster_descriptive_ucb_R"])
+            self.assertEqual(a["relative_negative_training_warning"],
+                             b["relative_negative_training_warning"])
+
     def test_dashboard_is_ranking_only_and_ledger_source_linked(self):
         report={
           "timestamp":"2026-10-15T03:00:00Z",

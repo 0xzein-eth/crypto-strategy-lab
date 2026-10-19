@@ -88,6 +88,24 @@ class GuardianTests(unittest.TestCase):
                 seen.add(observed[index])
         self.assertEqual(len(seen), 18)
 
+    def test_fallback_clock_shares_original_guardian_mutex(self):
+        root=Path(__file__).resolve().parents[1] / ".github" / "workflows"
+        text=(root / "paper-sampling-backstop.yml").read_text(encoding="utf-8")
+        self.assertIn("cron: '07,37 * * * *'",text)
+        self.assertIn("group: schedule-guardian-main",text)
+        self.assertIn("cancel-in-progress: false",text)
+        self.assertIn("python audit.py",text)
+        self.assertIn("scheduler_guard.py --recover --threshold-minutes 14",text)
+        self.assertIn("actions: write",text)
+        self.assertIn("contents: read",text)
+        self.assertNotIn("  pull_request:",text)
+        self.assertNotIn("engine.py --count",text)
+        self.assertNotIn("git push",text)
+        self.assertNotIn("place order",text)
+        for name in ("lab.yml","health.yml","rescue.yml"):
+            source=(root / name).read_text(encoding="utf-8")
+            self.assertNotIn("cron: '07,37 * * * *'",source)
+
     def test_recovery_workflows_share_lease_and_ignore_foreign_pull_requests(self):
         root = Path(__file__).resolve().parents[1] / ".github" / "workflows"
         for filename in ("health.yml", "rescue.yml"):

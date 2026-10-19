@@ -82,6 +82,29 @@ class NegativeEdgeTests(unittest.TestCase):
         self.assertEqual(a["negative_expectancy_warning"],
                          b["negative_expectancy_warning"])
 
+    def test_horizon_by_horizon_matched_review_never_reweights(self):
+        import matched_controls
+        # The read-only result distinguishes real matched horizons from
+        # absent/contradictory horizons, not a reward-driven allocator.
+        rows=[]
+        for i in range(65):
+            day=(dt.date(2026,6,1)+dt.timedelta(days=i)).isoformat()
+            for suffix,arm,pnl in (("C","CTRL-v1",0.1),("A","BR-v3",-0.7)):
+                item=record(str(i)+suffix,day,pnl)
+                item.update(strategy=arm,symbol="BTC",side="LONG",
+                            regime="24h_up",horizon_hours=4)
+                rows.append(item)
+        comparison=matched_controls.compare(rows)
+        diag_result=diag.evaluate(rows,comparison)
+        four=diag_result["arms"]["BR-v3"]["horizon_relative_control_review"]["4"]
+        self.assertEqual(four["review_status"],"DESCRIPTIVE_TRAIN_UNDERPERFORMANCE")
+        self.assertTrue(four["worse_than_matched_control_training_warning"])
+        self.assertTrue(four["no_automatic_suppression"])
+        two=diag_result["arms"]["BR-v3"]["horizon_relative_control_review"]["2"]
+        self.assertEqual(two["review_status"],"INSUFFICIENT_MATCHED_PAIR_DAYS")
+        self.assertFalse(two["worse_than_matched_control_training_warning"])
+        self.assertFalse(diag_result["arms"]["BR-v3"]["edge_proven"])
+
     def test_invalid_nonfinite_record_excluded_by_eligibility(self):
         arm = diag.evaluate([record(1, "2026-10-01", float("nan"))])["arms"]["BR-v3"]
         self.assertEqual(arm["eligible_closed"], 0)
