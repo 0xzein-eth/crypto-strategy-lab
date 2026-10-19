@@ -488,7 +488,7 @@
     "underperformer_policy": ">=50 eligible training closes and >=7 training UTC days, clipped daily upper bound < -0.05R, training mean >0.05R worse than CTRL; only 4:1 exploration reweight, never disable; monitoring outcomes excluded",
     "warning": "No strategy has demonstrated a reliable tradable edge. Training-only allocations never access monitoring results. Historical monitoring was previously used for allocations, so it is not an untouched final holdout. Selection remains observational, multi-tested and correlated."
   },
-  "added": 5,
+  "added": 0,
   "blocked_market_providers": {
     "binance-futures": 451,
     "bybit-linear": 403
@@ -501,7 +501,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 11674,
-  "closed_this_run": 3,
+  "closed_this_run": 0,
   "created": 11947,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.05628,
@@ -509,43 +509,30 @@
     "net_R": -574.39665
   },
   "entry_opportunity_audit": {
-    "advanced_source_checks": 5,
-    "concurrent_open_before_tick": 268,
-    "concurrent_open_remaining_before_tick": 782,
-    "confirmed_arm_opportunities": {
-      "ATRCHAN-v1": 1,
-      "CROSS-v1": 1,
-      "IMPULSE-v1": 1,
-      "LS-v3": 2,
-      "RSI-v1": 4,
-      "RSITREND-v1": 2,
-      "VWAP-v1": 1
-    },
+    "advanced_source_checks": 0,
+    "concurrent_open_before_tick": 273,
+    "concurrent_open_remaining_before_tick": 777,
+    "confirmed_arm_opportunities": {},
     "daily_new_entry_quota": 1750,
     "effective_new_slots_before_signal_checks": 44,
     "eligible_quote_symbols": 30,
     "fresh_entry_quote_rejections": 0,
-    "new_paper_opens_by_arm": {
-      "ATRCHAN-v1": 1,
-      "CROSS-v1": 1,
-      "CTRL-v1": 2,
-      "IMPULSE-v1": 1
-    },
-    "no_new_entry_reason": null,
+    "new_paper_opens_by_arm": {},
+    "no_new_entry_reason": "ALL_AVAILABLE_SYMBOL_SLOTS_OCCUPIED_OR_CAPPED",
     "note": "Counts candidate opportunities only when evaluated, not all market patterns. Sampled arm counts contain NO CLOSE outcomes, and don't establish edge.",
     "paper_only": true,
     "recent_7d_confirmed_open_counts": {
-      "ATRCHAN-v1": 153,
+      "ATRCHAN-v1": 154,
       "BANDREV-v1": 0,
       "BR-v3": 160,
       "BRREG-v1": 4,
       "COMPBR-v1": 32,
-      "CROSS-v1": 59,
+      "CROSS-v1": 60,
       "DC-v1": 59,
       "EFFTREND-v1": 0,
       "FB-v3": 164,
       "IBREAK-v1": 0,
-      "IMPULSE-v1": 108,
+      "IMPULSE-v1": 109,
       "LS-v3": 204,
       "MR-v3": 250,
       "RANGE-v1": 142,
@@ -563,13 +550,13 @@
     },
     "requested_new_slots": 44,
     "scope": "real fresh market quote, distinct unsampled instrument/15m slot, within quota",
-    "screened_symbol_slots": 5,
-    "skipped_by_symbol_slot_or_capacity": 25,
-    "slots_with_any_confirmed_signal": 5,
+    "screened_symbol_slots": 0,
+    "skipped_by_symbol_slot_or_capacity": 30,
+    "slots_with_any_confirmed_signal": 0,
     "slots_with_no_confirmed_signal": 0,
     "training_or_monitoring_returns_used": false,
-    "utc_day_opens_before_tick": 56,
-    "utc_day_quota_remaining_before_tick": 1694,
+    "utc_day_opens_before_tick": 61,
+    "utc_day_quota_remaining_before_tick": 1689,
     "version": "confirmed-entry-opportunity-v1"
   },
   "evidence_quality": {
@@ -756,7 +743,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-19T00:27:17.887871+00:00",
+      "as_of_utc": "2026-10-19T00:28:03.046853+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 6,
@@ -4509,8 +4496,8 @@
         "wins": 320
       }
     },
-    "evaluation_next_24_hours": 271,
-    "evaluation_next_hour": 30,
+    "evaluation_next_24_hours": 273,
+    "evaluation_next_hour": 31,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
@@ -6567,20 +6554,19 @@
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
     "entry_sampling_quality_gate": "healthy_scheduler_coverage",
-    "estimated_10m_slot_coverage": 0.9859,
-    "estimated_distinct_10m_observation_intervals": 70,
+    "estimated_10m_slot_coverage": 0.9857,
+    "estimated_distinct_10m_observation_intervals": 69,
     "estimated_missed_10m_slots": 1,
     "horizon_sampling_quality_gate": "all_horizons_adequate_cadence",
     "jitter_tolerance_minutes": 3,
     "last_12_observed_gap_coverage": 1.0,
-    "last_36_observed_gap_coverage": 0.973,
+    "last_36_observed_gap_coverage": 0.9722,
     "max_observed_gap_minutes": 21.292,
-    "near_duplicate_fast_intervals": 2,
+    "near_duplicate_fast_intervals": 3,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.007,
+    "prior_observation_gap_minutes": 0.753,
     "recent_observation_gaps_minutes": [
-      10.005,
       10.005,
       10.005,
       10.005,
@@ -6651,7 +6637,8 @@
       10.005,
       10.005,
       10.005,
-      10.007
+      10.007,
+      0.753
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -6669,7 +6656,7 @@
     "TON:okx-swap": "OKX missing ticker"
   },
   "spot_proxy_closures": 0,
-  "status": "OK",
+  "status": "NO_NEW_SIGNALS",
   "strategy_horizon": {
     "ATRCHAN-v1 / 12h": {
       "evidence": "hypothesis",
@@ -7482,7 +7469,7 @@
       "net_R": 7.08203
     }
   },
-  "timestamp": "2026-10-19T00:27:17.887871Z",
+  "timestamp": "2026-10-19T00:28:03.046853Z",
   "total_round_trip_fees_usd": 116740.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
