@@ -212,6 +212,12 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
         return available["CTRL-v1"],"control_exploration"
     advanced=[s for s in ADVANCED if s in available]
     baselines=[s for s in BASELINES[:2] if s in available]
+    # After adding new falsifiable families, deliberately allocate >=70%
+    # of hash buckets to ACTUAL confirmed 15m candidate testing when
+    # available (35% source-balanced, 35% uniform), 20% to CTRL if
+    # offered, 5% to direction-only proxy baselines, and 5% to a
+    # general neutral mix. This is allocation by INPUT PROVENANCE, not by
+    # returns or leaderboard rank, and never manufactures a missing signal.
     # A bounded subset of advanced-only exploration samples REAL, available
     # confirmed signals with the fewest actual trailing OPEN exposures.
     # This is sampling equity (not performance selection): counts are frozen
@@ -219,7 +225,7 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
     # The original >=20% CTRL branch above remains untouched.
     exposure = (profile.get("entry_exposure_counts_v1")
                 if isinstance(profile, dict) else None)
-    if 20 <= bucket < 45 and advanced and isinstance(exposure, dict):
+    if 20 <= bucket < 55 and advanced and isinstance(exposure, dict):
         try:
             counts = {name: exposure[name] for name in advanced}
             if (all(isinstance(n, int) and not isinstance(n, bool)
@@ -237,11 +243,11 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
     # training rankings nor repeated-look monitoring, provisional leaders, or
     # underperformer tags change arm weights before strict qualification.
     # The separately published analysis remains descriptive/read-only.
-    if bucket<75 and advanced:
+    if bucket<90 and advanced:
         pick=weighted_exploration(advanced,set(),
                                   "advanced:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
         return available[pick],"confirmed_signal_neutral_exploration"
-    if bucket<90 and baselines:
+    if bucket<95 and baselines:
         pick=weighted_exploration(baselines,set(),
                                   "baseline:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
         return available[pick],"baseline_neutral_exploration"
