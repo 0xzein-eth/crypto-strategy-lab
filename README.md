@@ -12,6 +12,15 @@ Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 
 
 **Jadwal otomatis internal GitHub:** paper lab menit **04, 14, 24, 34, 44, dan 54 UTC** (setiap 10 menit), dengan **dua clock pemulihan terpisah** pada menit **02/12/22/32/42/52** dan **09/19/29/39/49/59**. Keduanya menggunakan `GITHUB_TOKEN` bawaan, memeriksa laporan resmi terbaru serta workflow yang sedang berjalan, dan baru meminta `workflow_dispatch` jika laporan berusia lebih dari 14 menit. Pemicu cadangan saling dikunci untuk membatasi duplikasi; jadwal GitHub tetap *best effort* dan tidak dijamin tepat waktu. [Dokumentasi dan keterbatasan](OPS_RELIABILITY.md). Laptop pengguna tidak perlu menyala. Pada kondisi normal mesin memiliki batas **hingga 44 eksperimen baru per run** (tetap bergantung pada kuota aktual, sinyal, sumber publik dan kualitas jadwal), batas **1.050 posisi OPEN bersamaan**, **50 OPEN per aset** dan **1.750 OPEN baru per hari UTC**, tetapi **tanpa batas seumur hidup 80 record**. Ketika posisi jatuh tempo, penyelesaian dilakukan terlebih dahulu memakai snapshot segar; harga historis tidak dicari untuk menyamarkan keterlambatan.
 
+**Penyempurnaan reliabilitas 19 Oktober:** setelah run `lab.yml` sukses,
+`health.yml` kini melakukan handoff ke sesi observer baru yang tetap berbatas,
+meskipun cakupan sebelumnya telah pulih. Guard mengecek antrean dua kali
+untuk mencegah penulis ledger paralel. Ini mengurangi ketergantungan
+pada cron GitHub yang bisa terlambat, tetapi tidak menjadi SLA.
+Repository variable `PAPER_CONTINUOUS_HANDOFF=off` dapat menonaktifkan
+penerus otomatis jika ingin membatasi menit runner; jadwal/guardian lain
+tetap aktif. Lihat [catatan operasional](OPS_RELIABILITY.md).
+
 ## Struktur repository
 
 | File | Fungsi |
