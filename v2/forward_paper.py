@@ -132,6 +132,7 @@ def replay(events):
     seen = set()
     curve = []
     opened = closed = late = liquidated = attempted = 0
+    closed_records = []
     vetoes = {}
     last_slot = -1
     previous = HASH_ZERO
@@ -167,8 +168,24 @@ def replay(events):
                 closed += 1
                 if forced:
                     liquidated += 1
-                if (now - ts(position["evaluate_at"])).total_seconds() > 1800:
+                delayed = (now - ts(position["evaluate_at"])).total_seconds() > 1800
+                if delayed:
                     late += 1
+                closed_records.append({
+                    "id":ident, "symbol":position["symbol"],
+                    "strategy":position["strategy"],
+                    "side":position["side"],
+                    "opened_at":position["opened_at"],
+                    "fixed_evaluate_at":position["evaluate_at"],
+                    "actually_closed_at":iso(now),
+                    "late_excluded_from_timely_study":delayed,
+                    "forced_liquidation_or_account_emergency":bool(forced),
+                    "price_pnl_usdt":outcome["price_pnl_usdt"],
+                    "entry_fee_usdt":outcome["entry_fee_usdt"],
+                    "exit_fee_usdt":outcome["exit_fee_usdt"],
+                    "net_after_bidask_and_fee_before_unverified_funding_usdt":
+                        outcome["net_pnl_usdt"],
+                })
                 del active[ident]
         # No new entries are opened during a tick that encountered a margin
         # breach; otherwise the investor could instantly re-leverage after
@@ -254,6 +271,18 @@ def replay(events):
             "observed_max_drawdown_usdt":"0.00","real_order_submissions":0,
             "journal":wallet.audit_events(),
         }
+    wins = sum(D(r["net_after_bidask_and_fee_before_unverified_funding_usdt"]) > 0
+               for r in closed_records)
+    losses = sum(D(r["net_after_bidask_and_fee_before_unverified_funding_usdt"]) < 0
+                 for r in closed_records)
+    gross_gain = sum((D(r["net_after_bidask_and_fee_before_unverified_funding_usdt"])
+                      for r in closed_records
+                      if D(r["net_after_bidask_and_fee_before_unverified_funding_usdt"]) > 0),
+                     Decimal(0))
+    gross_loss = -sum((D(r["net_after_bidask_and_fee_before_unverified_funding_usdt"])
+                       for r in closed_records
+                       if D(r["net_after_bidask_and_fee_before_unverified_funding_usdt"]) < 0),
+                      Decimal(0))
     report = {
         "version": VERSION, "paper_only": True, "real_order_submissions":0,
         "research_status":"EXPLORATORY_FORWARD_PLUMBING_NOT_VALIDATED_ALPHA",
@@ -266,6 +295,13 @@ def replay(events):
         "simulated_fee_total_usdt":final["total_fees_usdt"],
         "open_positions":len(active), "closed_positions":closed,
         "prospective_paper_opens":opened,
+        "closed_paper_win_count":wins, "closed_paper_loss_count":losses,
+        "observed_closed_win_rate":round(wins/closed,4) if closed else None,
+        "observed_closed_profit_factor_fee_bidask_only":(
+            round(float(gross_gain/gross_loss),4) if gross_loss>0 else None),
+        "net_equity_change_from_initial_pct_before_unverified_funding":round(
+            float((D(final["equity_usdt"])/INITIAL_WALLET-1)*100),5),
+        "recorded_closed_outcomes":closed_records,
         "fixed_4h_exits_observed_late_over_30min":late,
         "estimated_margin_liquidations":liquidated,
         "signal_opportunities_inspected":attempted,
