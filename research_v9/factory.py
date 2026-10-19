@@ -475,7 +475,7 @@ def family_diverse_top(ranked, variants_by_id, limit):
     Avoid spending all 4 descriptive validation slots on almost identical
     parameter settings from one family. Never consult validation outcomes.
     """
-    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 0:
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
         raise ValueError("invalid historical selection limit")
     result, selected, families = [], set(), set()
     for ident in ranked:
