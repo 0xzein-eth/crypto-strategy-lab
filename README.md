@@ -58,6 +58,23 @@ credential atau konektor order di modul ini; penggunaan harga best-bid/ask
 bukan bukti order riil akan terisi. Modul ini masih **in-memory
 prototype**, bukan portofolio live atau sistem produksi persisten.
 
+## Crypto Lab v2 — economic edge dan review strategi (fase P4 awal)
+
+`v2/cost_gate.py` menghitung kebutuhan pergerakan harga minimum
+untuk membayar fee, selisih bid/ask, asumsi funding, impact/latency,
+dan buffer. Tanpa model perkiraan harga yang memang sudah dibekukan
+sebelum sinyal, keputusannya adalah **NO FORECAST / NO TRADE**.
+Sinyal yang melebihi biaya pun hanya bisa masuk *shadow research*,
+BUKAN strategi pemenang atau order riil.
+
+`v2/research_review.py` menelaah seluruh data CLOSED perpetual
+tepat waktu, statistik **hari training**, kelompok kontrol
+exact-stratum, dan hambatan kesiapan. Hasil monitoring dilarang
+mengubah status triase training; tidak ada auto-promotion.
+[Workflow laporan harian v2](.github/workflows/v2-research-review.yml)
+menerbitkan artifact read-only. Seluruh evaluasi masih belum lolos
+validasi independen jangka panjang.
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.

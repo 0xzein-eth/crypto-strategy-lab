@@ -86,6 +86,31 @@ historical bid/ask/depth is not imputed. Next work requires durable
 storage/replay, actual source observations, richer multi-level depth,
 latency and a separately approved portfolio research protocol.
 
+## Implementasi P4 awal: cost-aware shadow abstention + real controls
+
+- `v2.cost_gate.break_even` derives LONG/SHORT minimum favorable
+  future midprice movement from ACTUAL observed (fresh, authentic)
+  bid/ask spread, both taker fees, predeclared hypothetical funding
+  adversity, latency/market impact and buffer. Quote and expected
+  future spread are different assumptions: this is an **economic
+  feasibility hurdle, not a real fill or forecast**.
+- `shadow_decision` returns **NO_FORECAST/NO_TRADE** by default;
+  unfrozen or future-trained predictions are not accepted. Passing
+  the cost hurdle only qualifies for exploratory SHADOW attention,
+  never portfolio or real orders, as historical predictor calibration,
+  live spreads and true fills are still unavailable.
+- `v2.research_review` composes matched actual prospective CTRL
+  stratification, existing learner's TRAINING-only negative evidence
+  and quality gates. It discloses UTC-day/ISO-week counts, too-few
+  matched controls and the monitored holdout sample separately.
+  Its status classification does **not** use monitoring CLOSE
+  outcomes and does not change any v8 allocation.
+- Daily optional/automatic GitHub workflow runs a read-only
+  report+tests and uploads an artifact; it is a diagnostic, not an
+  unattended learner or a winner selector.
+- There is still NO new strategy deployed from this module, and no
+  independent multi-month OOS sample or statistically adjusted alpha.
+
 ## Non-negotiable design principles
 
 1. **Three physically/logically separated modes:** historical hypothesis exploration, immutable prospective *shadow signal* observation, and realistic simulated portfolio execution. A fourth optional real-broker adapter does **not exist** until reviewed and explicitly approved.
