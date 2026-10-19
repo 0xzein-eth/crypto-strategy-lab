@@ -13,7 +13,7 @@ Version 9 adds:
 - Public OKX USDT swap 15-minute confirmed OHLCV history with bounded paging,
   exact derivative instrument identity, no silent gaps, and strict cross-run
   overlap checks. Compressed symbol-specific caches are capped at 6,000 bars.
-- A deterministic, predeclared factory of up to 250 parameterized variants
+- A deterministic, predeclared factory of up to 2,000 parameterized variants
   across trend, momentum, mean-reversion, breakout, RSI, plus long and
   deterministic directional controls. Example production setting: 250.
 - Fixed-horizon 1, 2, 4, 8, 24-hour **historical** simulation. Signal at the
@@ -185,3 +185,5 @@ Mulai versi 6, katalog backtest historis menambah tepat **400 kombinasi varian**
 Penilaian tetap menggunakan 12 instrumen terverifikasi bila tersedia, 90 hari data pendanaan terukur, chronological expanding walk-forward 3 fold dengan purge/embargo 96 candle, kontrol, fee, extra-friction dan skenario funding. Hasil historis sama sekali **tidak mengaktifkan otomatis strategi paper-trading**; varian yang tampak terbaik tetap memerlukan validasi prospektif, pembanding kontrol dan koreksi multiple-testing.
 
 Menaikkan 1.600 ke 2.000 menambah sekitar 25% ruang eksplorasi, tetapi bukan 25% peningkatan akurasi maupun profitabilitas. Kombinasi strategi dan aset sangat berkorelasi; bertambahnya hipotesis memperbesar risiko kebetulan menemukan pemenang. Karena beban bertambah, timeout GitHub Actions research runner menjadi 55 menit. Periksa penggunaan Actions minutes, beban penyimpanan dan durasi aktual; jika kapasitas gratis habis, optimasi compute tanpa memalsukan observasi atau menyembunyikan varian yang gagal.
+
+Fold training selection is now **family diverse**: select the best qualified TRAINING-only candidate of each independent pre-registered family before filling remaining slots with repeat parameterizations. This improves coverage of methods but does not provide independent alpha proof; fold validation has been looked at repeatedly and remains exploratory.
