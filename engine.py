@@ -511,7 +511,20 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     if opportunity_audit is not None:
         opportunity_audit.update(entry_sampling.make_opportunity_audit(requested))
         opportunity_audit["recent_7d_confirmed_open_counts"] = exposure_counts
-    selection_profile = {"entry_exposure_counts_v1": exposure_counts}
+    # Only a strict multi-day TRAINING signal can attenuate an arm. The
+    # frozen monitoring/holdout portion is never used to select next OPENs.
+    # Do not call this on pure offline proxy fixtures without candle signals.
+    underperformers = (learner.analysis(records)["training_only_underperformers"]
+                       if advanced is not None else [])
+    selection_profile = {
+        "entry_exposure_counts_v1": exposure_counts,
+        "train_negative_arms_v1": [name for name in underperformers
+                                   if name in learner.ADVANCED],
+        "training_negative_policy_version": "day-cluster-training-only-v1",
+    }
+    if opportunity_audit is not None:
+        opportunity_audit["training_only_negative_arms_v1"] = (
+            selection_profile["train_negative_arms_v1"])
     # UTC-day budgets bound public CI/storage use and avoid accidental flood
     # from repeated manual dispatches. Existing full event history remains intact.
     utc_day = moment.date()
@@ -590,9 +603,11 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         opportunity_audit["eligible_quote_symbols"] = len(quotes)
         if not quotes:
             opportunity_audit["no_new_entry_reason"] = "NO_ELIGIBLE_REAL_PUBLIC_QUOTES"
-    # Allocation is deliberately performance-neutral until independent research
-    # requirements permit an explicit future policy version. No training-result
-    # profile may reweight an experiment's probability during collection.
+    # Sampling is predominantly performance-neutral. A narrow, predeclared
+    # 4:1 reduction for sufficiently persistent negative TRAINING-only arms
+    # applies only in the ordinary confirmed exploration band; CTRL and
+    # underobserved confirmed coverage retain their previous quotas. No
+    # monitoring result or positive leaderboard is used for promotion.
     output, one_per_run = [], set()
     for rank, q in enumerate(quotes):
         if len(output) >= slots:
@@ -629,9 +644,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         ]
         # Deduplicate arm labels without rewriting evidence.
         options=list({x["strategy"]:x for x in options}.values())
+        confirmed_options = [item for item in options
+                             if item["strategy"] in learner.ADVANCED]
         if opportunity_audit is not None:
-            confirmed_options = [item for item in options
-                                 if item["strategy"] in learner.ADVANCED]
             if confirmed_options:
                 opportunity_audit["slots_with_any_confirmed_signal"] += 1
             else:
@@ -639,6 +654,19 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             for item in confirmed_options:
                 entry_sampling.increment(opportunity_audit["confirmed_arm_opportunities"],
                                          item["strategy"])
+        # The old 24h-only direction proxies dominated earlier losses despite
+        # having no confirmed 15m setup. When we really checked OKX 15m for
+        # this slot and found NO advanced candidate, keep a deterministic 12%
+        # sentinel cohort so negative regimes remain observable. In all other
+        # symbol slots, actual confirmed arms plus 20% CTRL are sampled.
+        # Preserve legacy offline (advanced=None) and spot-proxy study tests.
+        if advanced is not None and q["provider"] == "okx-swap" and not confirmed_options:
+            if not entry_sampling.no_confirmed_baseline_probe(symbol, slot):
+                if opportunity_audit is not None:
+                    opportunity_audit["no_confirmed_signal_proxy_slots_skipped"] += 1
+                continue
+            if opportunity_audit is not None:
+                opportunity_audit["no_confirmed_signal_baseline_probes_allowed"] += 1
         # Rotate across pre-registered horizons when a symbol/arm/horizon is
         # already OPEN. This prevents artificial throughput loss from repeated
         # identical signatures; no future outcome participates in selection.
@@ -666,10 +694,15 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "price_change_reference":q.get("price_change_reference","provider-24h-window"),
                   "signal_rule":"pre-registered confirmed-candle or 24h baseline",
                   "research_only":True,
-                  "allocation_policy":"learner-v7-confirmed-input-diversity-neutral-no-outcome-promotion",
+                  "allocation_policy":"learner-v8-confirmed-quality-first-training-loss-guard",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
-                  "performance_neutral_allocation":True,
+                  "performance_neutral_allocation":(
+                      allocation != "confirmed_signal_training_negative_downweighted"),
+                  "training_loss_research_guard":(
+                      "bounded_train_only_4to1_exploration_no_holdout_v1"
+                      if allocation == "confirmed_signal_training_negative_downweighted"
+                      else "inactive"),
                   "signal_catalog_version":"2026-10-19-confirmed-diversity-v6",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
@@ -726,7 +759,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         opportunity_audit["no_new_entry_reason"] = (
             "ALL_AVAILABLE_SYMBOL_SLOTS_OCCUPIED_OR_CAPPED"
             if opportunity_audit["screened_symbol_slots"] == 0 else
-            "NO_ELIGIBLE_FRESH_OPEN_AFTER_SELECTION")
+            "NO_CONFIRMED_SIGNAL_AND_SPARSE_PROBES_GATED"
+            if (opportunity_audit["slots_with_any_confirmed_signal"] == 0
+                and opportunity_audit["no_confirmed_signal_proxy_slots_skipped"] > 0)
+            else "NO_ELIGIBLE_FRESH_OPEN_AFTER_SELECTION")
     return output
 
 
