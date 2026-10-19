@@ -13,7 +13,7 @@ Version 9 adds:
 - Public OKX USDT swap 15-minute confirmed OHLCV history with bounded paging,
   exact derivative instrument identity, no silent gaps, and strict cross-run
   overlap checks. Compressed symbol-specific caches are capped at 6,000 bars.
-- A deterministic, predeclared factory of up to 250 parameterized variants
+- A deterministic, predeclared factory of up to 2,000 parameterized variants
   across trend, momentum, mean-reversion, breakout, RSI, plus long and
   deterministic directional controls. Example production setting: 250.
 - Fixed-horizon 1, 2, 4, 8, 24-hour **historical** simulation. Signal at the
@@ -177,3 +177,13 @@ live trading. To inspect a longer frozen historic window manually, run
 `python run_research_v9.py --offline --funding-window-days 120` and expect
 incomplete funding for missing early settlements. Historical screening
 still requires independent prospective validation.
+
+## V9.6 — 2.000 varian dari empat keluarga baru (19 Oktober 2026)
+
+Mulai versi 6, katalog backtest historis menambah tepat **400 kombinasi varian** (100 masing-masing keluarga) dalam inside-bar release, two-confirmed-bar band reentry, VWAP trend/RSI reclaim, dan directional-efficiency trend. Semua memakai OHLCV perpetual OKX 15m yang dikonfirmasi, tidak memakai candle masa depan, dan asumsi hipotetis entry OPEN pada candle berikutnya. Prior 1.600 ID dan urutan varian tetap, agar hasil run lama dapat direproduksi.
+
+Penilaian tetap menggunakan 12 instrumen terverifikasi bila tersedia, 90 hari data pendanaan terukur, chronological expanding walk-forward 3 fold dengan purge/embargo 96 candle, kontrol, fee, extra-friction dan skenario funding. Hasil historis sama sekali **tidak mengaktifkan otomatis strategi paper-trading**; varian yang tampak terbaik tetap memerlukan validasi prospektif, pembanding kontrol dan koreksi multiple-testing.
+
+Menaikkan 1.600 ke 2.000 menambah sekitar 25% ruang eksplorasi, tetapi bukan 25% peningkatan akurasi maupun profitabilitas. Kombinasi strategi dan aset sangat berkorelasi; bertambahnya hipotesis memperbesar risiko kebetulan menemukan pemenang. Karena beban bertambah, timeout GitHub Actions research runner menjadi 55 menit. Periksa penggunaan Actions minutes, beban penyimpanan dan durasi aktual; jika kapasitas gratis habis, optimasi compute tanpa memalsukan observasi atau menyembunyikan varian yang gagal.
+
+Fold training selection is now **family diverse**: select the best qualified TRAINING-only candidate of each independent pre-registered family before filling remaining slots with repeat parameterizations. This improves coverage of methods but does not provide independent alpha proof; fold validation has been looked at repeatedly and remains exploratory.

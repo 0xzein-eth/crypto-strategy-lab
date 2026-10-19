@@ -42,14 +42,14 @@ class Variant:
 
 
 def variant_catalog(max_variants=300):
-    """Versioned deterministic catalogue; first 1200 IDs remain stable.
+    """Versioned deterministic catalogue; first 1600 IDs remain stable.
 
     The original 1200-variant order is never silently shuffled: adding new
     families must not rewrite prior experimental hypotheses or introduce
     retrospective selection changes. Expansion is historical/backtest-only.
     """
-    if not 1 <= max_variants <= 1600:
-        raise ValueError("max_variants must be within 1..1600")
+    if not 1 <= max_variants <= 2000:
+        raise ValueError("max_variants must be within 1..2000")
 
     def drain(by_family, limit):
         output = []
@@ -128,7 +128,29 @@ def variant_catalog(max_variants=300):
                 (7, 10, 14, 18, 21, 28, 35), (25, 30, 35, 40, 45, 50), HORIZONS):
             novel["rsi_recovery"].append(
                 Variant("rsi_recovery",period,threshold,0,h))
-        selected.extend(drain(novel,max_variants-len(selected)))
+        selected.extend(drain(novel,min(max_variants,1600)-len(selected)))
+    if max_variants > 1600:
+        # Four logically different family types; NEVER reorder any of the
+        # first 1600 reviewed parameter identities. 400 extra historical
+        # hypotheses are exploratory, not automatic paper allocation.
+        diverse = defaultdict(list)
+        for n, vol, h in product(
+                (8, 12, 20, 32, 48), (1.0, 1.15, 1.3, 1.5), HORIZONS):
+            diverse["inside_bar_release"].append(
+                Variant("inside_bar_release",n,vol,50,h))
+        for n, threshold, h in product(
+                (12, 16, 20, 32, 48), (1.5, 1.8, 2.1, 2.4), HORIZONS):
+            diverse["band_reentry"].append(
+                Variant("band_reentry",n,threshold,0,h))
+        for n, vol, h in product(
+                (12, 16, 20, 32, 48), (0.8, 1.0, 1.2, 1.5), HORIZONS):
+            diverse["vwap_trend_reclaim"].append(
+                Variant("vwap_trend_reclaim",n,vol,50,h))
+        for n, efficiency, h in product(
+                (4, 6, 8, 10, 12), (0.65, 0.75, 0.82, 0.90), HORIZONS):
+            diverse["efficient_trend"].append(
+                Variant("efficient_trend",n,efficiency,50,h))
+        selected.extend(drain(diverse,max_variants-len(selected)))
     if len(selected) != max_variants or len({v.id for v in selected}) != len(selected):
         raise AssertionError("insufficient unique predeclared research hypotheses")
     return selected
@@ -147,12 +169,15 @@ class Features:
         self.cumsum = [0.0]
         self.sumsq = [0.0]
         self.vsum = [0.0]
+        self.pvsum = [0.0]
         self.gain = [0.0]
         self.loss = [0.0]
         for i, c in enumerate(self.close):
             self.cumsum.append(self.cumsum[-1] + c)
             self.sumsq.append(self.sumsq[-1] + c*c)
             self.vsum.append(self.vsum[-1] + self.vol[i])
+            typical = (self.high[i] + self.low[i] + c)/3
+            self.pvsum.append(self.pvsum[-1] + typical*self.vol[i])
             change = c-self.close[i-1] if i else 0.0
             self.gain.append(self.gain[-1] + max(0.0, change))
             self.loss.append(self.loss[-1] + max(0.0, -change))
@@ -163,6 +188,12 @@ class Features:
 
     def mean(self, j, n):
         return self.window(self.cumsum, j, n)
+
+    def vwap(self, j, n):
+        volume = self.vsum[j+1] - self.vsum[j+1-n]
+        if volume <= 0:
+            return None
+        return (self.pvsum[j+1] - self.pvsum[j+1-n])/volume
 
     def std(self, j, n):
         mean = self.mean(j, n)
@@ -266,6 +297,67 @@ def signal(f, v, closed):
         return (1 if previous<v.threshold<=current and close>f.close[j-1]
                 else -1 if previous>100-v.threshold>=current and
                 close<f.close[j-1] else 0)
+    if v.family == "inside_bar_release":
+        mother_hi, mother_lo = f.high[j-2], f.low[j-2]
+        child_hi, child_lo = f.high[j-1], f.low[j-1]
+        width=mother_hi-mother_lo
+        if (width<=0 or child_hi>mother_hi or child_lo<mother_lo
+                or child_hi-child_lo>0.75*width):
+            return 0
+        prior_vol=f.window(f.vsum,j-1,20)
+        if prior_vol<=0 or f.vol[j]<v.threshold*prior_vol:
+            return 0
+        return (1 if close>mother_hi and f.mean(j,v.lookback)>f.mean(j,v.second)
+                else -1 if close<mother_lo and f.mean(j,v.lookback)<f.mean(j,v.second)
+                else 0)
+    if v.family == "band_reentry":
+        n=v.lookback
+        prior_sd=f.std(j-1,n)
+        current_sd=f.std(j,n)
+        if prior_sd<=0 or current_sd<=0:
+            return 0
+        fast=f.mean(j,20)
+        slow=f.mean(j,50)
+        if slow<=0 or abs(fast/slow-1)>0.03:
+            return 0
+        previous_z=(f.close[j-1]-f.mean(j-1,n))/prior_sd
+        current_z=(close-f.mean(j,n))/current_sd
+        return (1 if previous_z<=-v.threshold and current_z>-(v.threshold-0.65)
+                and close>f.close[j-1]
+                else -1 if previous_z>=v.threshold and current_z<(v.threshold-0.65)
+                and close<f.close[j-1] else 0)
+    if v.family == "vwap_trend_reclaim":
+        n=v.lookback
+        prior=f.vwap(j-1,n)
+        current=f.vwap(j,n)
+        volume=f.window(f.vsum,j-1,n)
+        if prior is None or current is None or volume<=0 or f.vol[j]<v.threshold*volume:
+            return 0
+        fast=f.mean(j,20)
+        slow=f.mean(j,v.second)
+        rsi=f.rsi(j,14)
+        return (1 if f.close[j-1]<=prior and close>current and close>fast>slow
+                and rsi>=52 and close>f.open[j]
+                else -1 if f.close[j-1]>=prior and close<current and close<fast<slow
+                and rsi<=48 and close<f.open[j] else 0)
+    if v.family == "efficient_trend":
+        n=v.lookback
+        changes=[f.close[k]-f.close[k-1] for k in range(j-n+1,j+1)]
+        path=sum(abs(x) for x in changes)
+        if path<=0:
+            return 0
+        displacement=f.close[j]-f.close[j-n]
+        if abs(displacement)/path<v.threshold or abs(displacement)/f.close[j-n]<0.002:
+            return 0
+        prior_vol=f.window(f.vsum,j-1,20)
+        if prior_vol<=0 or not 0.8*prior_vol<=f.vol[j]<=3.0*prior_vol:
+            return 0
+        fast=f.mean(j,20)
+        slow=f.mean(j,v.second)
+        fast_prev=f.mean(j-1,20)
+        return (1 if displacement>0 and close>fast>slow and fast>fast_prev
+                else -1 if displacement<0 and close<fast<slow and fast<fast_prev
+                else 0)
     if v.family == "long_control":
         return 1
     if v.family == "control":
@@ -377,6 +469,31 @@ def statistics_for(rows):
     }
 
 
+def family_diverse_top(ranked, variants_by_id, limit):
+    """Select from training scores ONLY; first representative per family.
+
+    Avoid spending all 4 descriptive validation slots on almost identical
+    parameter settings from one family. Never consult validation outcomes.
+    """
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
+        raise ValueError("invalid historical selection limit")
+    result, selected, families = [], set(), set()
+    for ident in ranked:
+        family=variants_by_id[ident].family
+        if family not in families:
+            result.append(ident)
+            selected.add(ident)
+            families.add(family)
+        if len(result) == limit:
+            return result
+    for ident in ranked:
+        if ident not in selected:
+            result.append(ident)
+        if len(result) == limit:
+            break
+    return result
+
+
 def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                  funding_by_symbol=None):
     """Three chronological expanding-window trials with 96-bar purging.
@@ -485,7 +602,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         ranked = sorted(eligible_train, key=lambda ident: (
             -eligible_train[ident]["day_lcb_R"],
             -eligible_train[ident]["avg_R"], ident))
-        selected_ids = ranked[:selections_per_fold]
+        selected_ids = family_diverse_top(ranked, variants_by_id, selections_per_fold)
         validated = []
         for ident in selected_ids:
             selected = validation_rows_for(ident,val_start,val_end)
@@ -550,6 +667,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                 dt.datetime.fromtimestamp(val_end/1000, dt.timezone.utc).isoformat(),
             "purge_bars": EMBARGO_BARS,
             "train_qualified": len(ranked),
+            "train_selected_family_diversity": len({variants_by_id[x].family for x in selected_ids}),
             "training_screen_rejection_counts":dict(sorted(disqualified.items())),
             "highest_scoring_unqualified_training_only":train_screen[:10],
             "training_screen_note":(
@@ -575,7 +693,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
     family_counts = {name:sum(v.family==name for v in variants)
                      for name in sorted({v.family for v in variants})}
     return {
-        "schema_version": 1, "factory_version": "v9-param-grid-5-1600-streaming-stress25bp",
+        "schema_version": 1, "factory_version": "v9-param-grid-6-2000-diverse-streaming-stress25bp",
         "validation_method": "expanding_train_three_chronological_folds_purged_96bars",
         "historical_only": True, "proven_edge": False, "champion": None,
         "measured_funding_symbols": sorted(funding_by_symbol),
@@ -591,9 +709,11 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "variants are NOT independent observations, forward paper fills, "
             "or evidence of a profitable trading strategy."),
         "memory_policy": "aggregate_training_then_recompute_only_selected_validation",
+        "training_selection_policy": "first-best-per-family from TRAIN rankings, then fill; no validation feedback",
         "predeclared_variants_by_family": family_counts,
         "hypothesis_selection_policy": (
-            "First 1200 IDs unchanged; new deterministic families historical-only;"
+            "First 1600 IDs unchanged; four new deterministic family types historical-only;"
+            " family-diverse training-only fold nominations;"
             " shadow evaluations of failed training variants NEVER promoted;"
             " not an independent alpha test"),
         "datasets_evaluated": len(datasets),
@@ -610,7 +730,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "Shadow evaluations for training-rejected hypotheses are exploratory, not formal candidate selection.",
             "Both ordinary and shadow walk-forward validation are REPEATEDLY inspected, not an untouched final holdout.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
-            "1600 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
+            "2000 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
             "A frozen untouched future dataset and prospective paper trials are REQUIRED."
         ],

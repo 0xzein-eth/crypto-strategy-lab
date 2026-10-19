@@ -99,11 +99,15 @@ Dashboard disimpan di `dashboard/index.html` dan dapat diperoleh sebagai artifac
 
 New writes use `data/events/YYYY-MM_daily_DD.jsonl` per UTC day. Prior `YYYY-MM.jsonl` is preserved verbatim, and the hash chain is continuous across both formats; the loader verifies files in deterministic chronological order. Daily sharding mitigates growth of each individual Git blob but is not unlimited storage.
 
+## Historical Factory v9.6 — 2.000 varied strategies
+
+V9.6 menguji **2.000 varian backtest deterministik** termasuk 400 tambahan dari empat keluarga yang berbeda (inside-bar release, band re-entry, VWAP-trend reclaim, efficient trend). Validasi per-fold tidak lagi memilih empat kombinasi terbaik yang bisa saja dari satu keluarga: *training-only family diversity* diutamakan, dengan chronological purge/embargo, kontrol, funding teramati, fee/stress sensitivitas dan tanpa auto-deploy ke paper v8. Ke-1.600 identitas varian sebelumnya tetap sama. Bertambahnya strategi meningkatkan **beban multiple testing**, bukan jaminan kenaikan profit. <Link to? no>Rincian: [Historical factory](RESEARCH_V9.md).
+
 ## v9 — Historical Research Factory (terpisah dari paper ledger v8)
 
 **Aktif:** [workflow riset v9](.github/workflows/research.yml) · [laporan hasil backtest terbaru](research_results/latest.json) · [metodologi dan cara menjalankan](RESEARCH_V9.md).
 
-Research Factory otomatis mengumpulkan confirmed 15m OHLCV OKX perpetual dengan cache historis berintegritas, menguji sekitar **250 varian** aturan dan parameter terhadap **8 aset kandidat** (jika feed tersedia), dan menggunakan tiga validasi walk-forward terpisah secara kronologis dengan purge/embargo. Laporan dibuat setiap hari sekitar **10:19 WIB** oleh GitHub Actions (best effort). Siklus tambahan bisa dijalankan manual melalui tab Actions.
+Research Factory otomatis mengumpulkan confirmed 15m OHLCV OKX perpetual dengan cache historis berintegritas, menguji hingga **2.000 varian** aturan dan parameter terhadap **8 aset kandidat** (jika feed tersedia), dan menggunakan tiga validasi walk-forward terpisah secara kronologis dengan purge/embargo. Laporan dibuat setiap hari sekitar **10:19 WIB** oleh GitHub Actions (best effort). Siklus tambahan bisa dijalankan manual melalui tab Actions.
 
 **Penting:** ini adalah backtest historis, bukan trading sungguhan atau hasil paper trade prospektif; asumsi biaya dan likuiditas tetap terbatas. **Tidak ada strategi yang otomatis dianggap terbukti profitable.** File v9 di `research_cache/` dan `research_results/` tidak dimasukkan ke `data/events/` atau statistik paper-trading v8. Mesin v8 berjalan terpisah sesuai jadwal dan aturan integritasnya.
 

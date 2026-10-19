@@ -28,7 +28,7 @@ concurrency:
 jobs:
   research:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v5
         with:
@@ -41,7 +41,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_research_v9.py' -v
       - name: Capture only confirmed same-venue perpetual historical candles
         if: github.event_name != 'pull_request'
-        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE DOT NEAR LTC SUI --cold-pages 45 --update-pages 10 --backfill-pages 60 --funding-pages 8 --funding-window-days 90 --max-variants 1600
+        run: python run_research_v9.py --symbols BTC ETH SOL LINK XRP ADA AVAX DOGE DOT NEAR LTC SUI --cold-pages 45 --update-pages 10 --backfill-pages 60 --funding-pages 8 --funding-window-days 90 --max-variants 2000
       - name: Verify cached history and derived research report offline
         if: github.event_name != 'pull_request'
         run: |
@@ -59,13 +59,16 @@ jobs:
           assert queue["paper_v8_auto_activation"] is False
           assert queue["live_trading_enabled"] is False
           assert report["measured_funding_symbols"] == sorted(report["measured_funding_symbols"])
-          assert report["candidates_evaluated"] == 1600
-          assert report["factory_version"] == "v9-param-grid-5-1600-streaming-stress25bp"
-          assert sum(report["predeclared_variants_by_family"].values()) == 1600
+          assert report["candidates_evaluated"] == 2000
+          assert report["factory_version"] == "v9-param-grid-6-2000-diverse-streaming-stress25bp"
+          assert sum(report["predeclared_variants_by_family"].values()) == 2000
           assert report["hypothetical_historical_trades_tested"] == sum(
               report["hypothetical_trades_by_family"].values())
           assert report["hypothetical_historical_trades_tested"] == sum(
               report["hypothetical_trades_by_symbol"].values())
+          assert all(report["predeclared_variants_by_family"].get(name) == 100
+                     for name in ("inside_bar_release", "band_reentry",
+                                  "vwap_trend_reclaim", "efficient_trend"))
           assert report["forward_paper_trades_created"] == 0
           assert all(len(f["shadow_evaluations"]) <= 4 and
                      not any(s["eligible_for_promotion"] for s in f["shadow_evaluations"])
