@@ -652,7 +652,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
                   "performance_neutral_allocation":True,
-                  "signal_catalog_version":"2026-10-17-confirmed-regime-v5",
+                  "signal_catalog_version":"2026-10-19-confirmed-diversity-v6",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
