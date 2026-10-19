@@ -110,7 +110,7 @@ class V2CandidateResearchTests(unittest.TestCase):
                          learner.stable_bucket("holdout:2026-10-19",5)==0 else 1)
         self.assertEqual(stats["triage"],"INSUFFICIENT_INDEPENDENT_TRAINING_DAYS")
         self.assertFalse(stats["after_fee_and_real_fill_edge_proven"])
-        self.assertFalse(result["existing_allocation_untouched"])
+        self.assertTrue(result["existing_allocation_untouched"])
 
 if __name__=="__main__":
     unittest.main()
