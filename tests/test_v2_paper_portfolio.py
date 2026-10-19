@@ -147,7 +147,7 @@ class PaperAccountTests(unittest.TestCase):
         self.assertTrue(settled["forced_liquidation"])
         self.assertTrue(settled["assumed_top_book_not_real_fill"])
         self.assertEqual(w.snapshot(later)["open_positions"],0)
-        self.assertEqual(w.audit_events()["verified_events"],2)
+        self.assertEqual(w.audit_events()["verified_events"],3)
 
     def test_journal_is_hash_audited_deepcopied_and_does_not_change_v8(self):
         w=PaperWallet()
