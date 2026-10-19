@@ -75,6 +75,41 @@ mengubah status triase training; tidak ada auto-promotion.
 menerbitkan artifact read-only. Seluruh evaluasi masih belum lolos
 validasi independen jangka panjang.
 
+## Crypto Lab v2 — observer dan equity curve persisten (fase P5 awal)
+
+**Mulai 20 Oktober 2026, v2 memiliki prototipe pengamat PAPER otomatis
+yang dapat menyimpan simulasi satu akun dari observasi asli secara
+prospektif.** Skrip `v2/okx_observer_source.py` mengambil data publik
+OKX USDT-SWAP BTC/ETH/SOL: bid/ask, ukuran kedalaman book
+yang **dikonversi dari kontrak ke unit aset** memakai metadata
+`ctVal`, serta sinyal candle 15 menit yang sudah confirmed melalui
+aturan persis `signals.from_okx`.
+
+`v2/forward_paper.py` memverifikasi dan me-replay
+`v2_state/observations.jsonl` dengan hash SHA256, lalu memakai satu
+`PaperWallet` berawal 1.000 USDT **simulasi** (maksimum 2 posisi
+200 USDT, batas gross exposure 1,25× equity, leverage maksimum 2×),
+pilihan riset FB-v3/VWAP-v1, penilaian biaya/spread, dan exit
+fixed-horizon 4 jam pada observasi asli berikutnya. File
+`v2_state/report.json` dan `v2_state/equity_curve.json` berasal
+dari replay yang bisa diuji, bukan angka rekayasa. Jurnal v8
+`data/events/` tidak diubah. Penerusan observasi menggunakan
+[GitHub workflow v2](.github/workflows/v2-forward-paper.yml)
+nominal setiap 30 menit; keterlambatan cron tetap mungkin. Setiap
+`--verify-only` memeriksa input historis dan hasil turunan.
+
+**Peringatan penting:** strategi pilihan sebelumnya telah diperiksa,
+jadi ini **uji plumbing eksploratoris, bukan final untouched
+out-of-sample**. Price crossing bid/ask adalah hipotesis eksekusi,
+tidak ada bukti fill, funding belum lengkap, dan slippage/impact
+belum terselesaikan. Equity curve sementara hanya setelah
+**bid/ask dan fee simulasi**, belum layak diterjemahkan sebagai
+hasil akun riil ataupun strategi menguntungkan. Workflow tidak
+memiliki endpoint order dan tidak memakai kunci akun trading.
+Ketiga pasar harus punya quote segar agar sebuah equity mark baru
+dicatat; source gagal berarti run berhenti, tidak memalsukan
+harga atau waktu.
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
