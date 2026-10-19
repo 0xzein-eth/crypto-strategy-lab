@@ -102,7 +102,7 @@ class EntryExposureTests(unittest.TestCase):
         self.assertEqual(audit["recent_7d_confirmed_open_counts"]["BR-v3"],1)
         self.assertEqual(audit["recent_7d_confirmed_open_counts"]["BRREG-v1"],0)
         self.assertTrue(all(r["evidence"]["performance_neutral_allocation"] for r in opens))
-        self.assertTrue(all(r["evidence"]["allocation_policy"].startswith("learner-v6-") for r in opens))
+        self.assertTrue(all(r["evidence"]["allocation_policy"].startswith("learner-v7-") for r in opens))
         for position in opens:
             engine.validate_open(position)
 
