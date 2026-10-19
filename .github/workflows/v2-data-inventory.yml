@@ -1,0 +1,30 @@
+name: Crypto Lab v2 read-only data quality inventory
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 6 * * *'
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify legacy ledger before research inventory
+        run: python engine.py --verify-only
+      - name: Verify v2 dataset provenance and missingness
+        run: |
+          python -m unittest discover -s tests -p 'test_v2_data_parity.py' -v
+          python -m v2.data_contract > /tmp/crypto-lab-v2-data-inventory.json
+      - name: Upload independent read-only artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-lab-v2-verified-source-inventory
+          path: /tmp/crypto-lab-v2-data-inventory.json
+          retention-days: 30
