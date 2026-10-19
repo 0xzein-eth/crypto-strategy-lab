@@ -469,6 +469,31 @@ def statistics_for(rows):
     }
 
 
+def family_diverse_top(ranked, variants_by_id, limit):
+    """Select from training scores ONLY; first representative per family.
+
+    Avoid spending all 4 descriptive validation slots on almost identical
+    parameter settings from one family. Never consult validation outcomes.
+    """
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 0:
+        raise ValueError("invalid historical selection limit")
+    result, selected, families = [], set(), set()
+    for ident in ranked:
+        family=variants_by_id[ident].family
+        if family not in families:
+            result.append(ident)
+            selected.add(ident)
+            families.add(family)
+        if len(result) == limit:
+            return result
+    for ident in ranked:
+        if ident not in selected:
+            result.append(ident)
+        if len(result) == limit:
+            break
+    return result
+
+
 def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                  funding_by_symbol=None):
     """Three chronological expanding-window trials with 96-bar purging.
@@ -577,7 +602,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         ranked = sorted(eligible_train, key=lambda ident: (
             -eligible_train[ident]["day_lcb_R"],
             -eligible_train[ident]["avg_R"], ident))
-        selected_ids = ranked[:selections_per_fold]
+        selected_ids = family_diverse_top(ranked, variants_by_id, selections_per_fold)
         validated = []
         for ident in selected_ids:
             selected = validation_rows_for(ident,val_start,val_end)
@@ -642,6 +667,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
                 dt.datetime.fromtimestamp(val_end/1000, dt.timezone.utc).isoformat(),
             "purge_bars": EMBARGO_BARS,
             "train_qualified": len(ranked),
+            "train_selected_family_diversity": len({variants_by_id[x].family for x in selected_ids}),
             "training_screen_rejection_counts":dict(sorted(disqualified.items())),
             "highest_scoring_unqualified_training_only":train_screen[:10],
             "training_screen_note":(
@@ -683,9 +709,11 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "variants are NOT independent observations, forward paper fills, "
             "or evidence of a profitable trading strategy."),
         "memory_policy": "aggregate_training_then_recompute_only_selected_validation",
+        "training_selection_policy": "first-best-per-family from TRAIN rankings, then fill; no validation feedback",
         "predeclared_variants_by_family": family_counts,
         "hypothesis_selection_policy": (
             "First 1600 IDs unchanged; four new deterministic family types historical-only;"
+            " family-diverse training-only fold nominations;"
             " shadow evaluations of failed training variants NEVER promoted;"
             " not an independent alpha test"),
         "datasets_evaluated": len(datasets),
