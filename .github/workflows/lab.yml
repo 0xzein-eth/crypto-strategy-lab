@@ -7,6 +7,7 @@ on:
       - 'recovery_window.py'
       - 'signals.py'
       - 'regime_hypotheses.py'
+      - 'diverse_confirmed.py'
       - 'entry_sampling.py'
       - 'learner.py'
       - 'universe.py'
@@ -49,6 +50,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_scale_and_friction.py' -v
           python -m unittest discover -s tests -p 'test_entry_sampling.py' -v
           python -m unittest discover -s tests -p 'test_regime_hypotheses.py' -v
+          python -m unittest discover -s tests -p 'test_diverse_confirmed.py' -v
           python -m unittest discover -s tests -p 'test_recovery_window.py' -v
           python -m unittest discover -s tests -p 'test_schedule_coverage.py' -v
       - name: Capture public market observations and run paper experiments

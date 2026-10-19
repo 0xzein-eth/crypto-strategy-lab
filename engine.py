@@ -518,9 +518,25 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     opened_today = [r for r in records.values()
                     if parse(r["created_at"]).date() == utc_day]
     daily_capacity = MAX_NEW_PER_UTC_DAY - len(opened_today)
-    slots = max(0, min(requested, MAX_NEW_PER_RUN, daily_capacity, MAX_OPEN -
-                       sum(r["status"] == "OPEN" for r in records.values())))
+    concurrent_open = sum(r["status"] == "OPEN" for r in records.values())
+    open_capacity = MAX_OPEN - concurrent_open
+    slots = max(0, min(requested, MAX_NEW_PER_RUN, daily_capacity, open_capacity))
+    if opportunity_audit is not None:
+        opportunity_audit.update({
+            "daily_new_entry_quota": MAX_NEW_PER_UTC_DAY,
+            "utc_day_opens_before_tick": len(opened_today),
+            "utc_day_quota_remaining_before_tick": max(0,daily_capacity),
+            "concurrent_open_before_tick": concurrent_open,
+            "concurrent_open_remaining_before_tick": max(0,open_capacity),
+            "effective_new_slots_before_signal_checks": slots,
+            "no_new_entry_reason": None,
+        })
     if not slots:
+        if opportunity_audit is not None:
+            opportunity_audit["no_new_entry_reason"] = (
+                "DAILY_OPEN_QUOTA_REACHED" if daily_capacity<=0 else
+                "MAX_CONCURRENT_OPEN_REACHED" if open_capacity<=0 else
+                "REQUEST_OR_PER_RUN_BUDGET_ZERO")
         return []
     slot = int(moment.timestamp() // SIGNAL_SLOT_SECONDS)
     clock = clock or (lambda:moment)
@@ -572,6 +588,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                                 prior_weekly_strata)
     if opportunity_audit is not None:
         opportunity_audit["eligible_quote_symbols"] = len(quotes)
+        if not quotes:
+            opportunity_audit["no_new_entry_reason"] = "NO_ELIGIBLE_REAL_PUBLIC_QUOTES"
     # Allocation is deliberately performance-neutral until independent research
     # requirements permit an explicit future policy version. No training-result
     # profile may reweight an experiment's probability during collection.
@@ -648,11 +666,11 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "price_change_reference":q.get("price_change_reference","provider-24h-window"),
                   "signal_rule":"pre-registered confirmed-candle or 24h baseline",
                   "research_only":True,
-                  "allocation_policy":"learner-v6-entry-coverage-neutral-no-outcome-promotion",
+                  "allocation_policy":"learner-v7-confirmed-input-diversity-neutral-no-outcome-promotion",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
                   "performance_neutral_allocation":True,
-                  "signal_catalog_version":"2026-10-17-confirmed-regime-v5",
+                  "signal_catalog_version":"2026-10-19-confirmed-diversity-v6",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
@@ -704,6 +722,11 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         if opportunity_audit is not None:
             entry_sampling.increment(opportunity_audit["new_paper_opens_by_arm"], style)
         one_per_run.add(symbol)
+    if opportunity_audit is not None and not output and quotes:
+        opportunity_audit["no_new_entry_reason"] = (
+            "ALL_AVAILABLE_SYMBOL_SLOTS_OCCUPIED_OR_CAPPED"
+            if opportunity_audit["screened_symbol_slots"] == 0 else
+            "NO_ELIGIBLE_FRESH_OPEN_AFTER_SELECTION")
     return output
 
 

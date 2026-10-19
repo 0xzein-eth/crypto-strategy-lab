@@ -102,7 +102,7 @@ class EntryExposureTests(unittest.TestCase):
         self.assertEqual(audit["recent_7d_confirmed_open_counts"]["BR-v3"],1)
         self.assertEqual(audit["recent_7d_confirmed_open_counts"]["BRREG-v1"],0)
         self.assertTrue(all(r["evidence"]["performance_neutral_allocation"] for r in opens))
-        self.assertTrue(all(r["evidence"]["allocation_policy"].startswith("learner-v6-") for r in opens))
+        self.assertTrue(all(r["evidence"]["allocation_policy"].startswith("learner-v7-") for r in opens))
         for position in opens:
             engine.validate_open(position)
 
@@ -129,6 +129,49 @@ class EntryExposureTests(unittest.TestCase):
         self.assertEqual(audit["fresh_entry_quote_rejections"],1)
         self.assertEqual(audit["new_paper_opens_by_arm"],{})
 
+    def test_daily_quota_and_concurrent_limit_reasons_are_explicit(self):
+        # Including already CLOSED entries: quota is about real OPENs made
+        # today, not about how many remained open or won.
+        history={"LAB-1":old("BR-v3", WHEN-dt.timedelta(minutes=5))}
+        preserved=copy.deepcopy(history)
+        audit={}
+        with patch.object(engine,"MAX_NEW_PER_UTC_DAY",1):
+            new=engine.new_candidates(history,lambda s,p:quote(),WHEN,600,10,
+                                      opportunity_audit=audit)
+        self.assertEqual(new,[])
+        self.assertEqual(history,preserved)
+        self.assertEqual(audit["utc_day_quota_remaining_before_tick"],0)
+        self.assertEqual(audit["no_new_entry_reason"],"DAILY_OPEN_QUOTA_REACHED")
+
+        audit={}
+        with patch.object(engine,"MAX_OPEN",0):
+            new=engine.new_candidates({},lambda s,p:quote(),WHEN,600,10,
+                                      opportunity_audit=audit)
+        self.assertEqual(new,[])
+        self.assertEqual(audit["no_new_entry_reason"],"MAX_CONCURRENT_OPEN_REACHED")
+
+    def test_no_public_quotes_is_not_claimed_to_be_no_market_signals(self):
+        audit={}
+        with patch.object(engine,"SYMBOLS",("BTC",)):
+            result=engine.new_candidates(
+                {},lambda s,p:quote() if False else (_ for _ in ()).throw(
+                    RuntimeError("PUBLIC_PRICE_MISSING")),
+                WHEN,700,1,opportunity_audit=audit)
+        self.assertEqual(result,[])
+        self.assertEqual(audit["eligible_quote_symbols"],0)
+        self.assertEqual(audit["no_new_entry_reason"],"NO_ELIGIBLE_REAL_PUBLIC_QUOTES")
+
+    def test_symbol_slot_capacity_rejection_is_recorded_without_new_trades(self):
+        audit={}
+        with patch.object(engine,"SYMBOLS",("BTC",)), patch.object(engine,"MAX_PER_SYMBOL",0):
+            result=engine.new_candidates({},lambda s,p:quote(),WHEN,700,1,
+                                         opportunity_audit=audit)
+        self.assertEqual(result,[])
+        self.assertEqual(audit["eligible_quote_symbols"],1)
+        self.assertEqual(audit["screened_symbol_slots"],0)
+        self.assertEqual(audit["no_new_entry_reason"],
+                         "ALL_AVAILABLE_SYMBOL_SLOTS_OCCUPIED_OR_CAPPED")
+
     def test_no_remaining_capacity_does_not_invent_observations(self):
         audit={}
         with patch.object(engine,"MAX_NEW_PER_RUN",0):
@@ -138,6 +181,7 @@ class EntryExposureTests(unittest.TestCase):
         self.assertEqual(audit["screened_symbol_slots"],0)
         self.assertEqual(audit["confirmed_arm_opportunities"],{})
         self.assertEqual(audit["requested_new_slots"],10)
+        self.assertEqual(audit["no_new_entry_reason"],"REQUEST_OR_PER_RUN_BUDGET_ZERO")
 
 
 if __name__=="__main__":

@@ -24,6 +24,12 @@ Current hypotheses:
 
 New variants are **versioned, predeclared rules** added to `signals.py`; the learner cannot hallucinate an indicator when its market inputs are missing. A new rule affects *new* prospective experiments only.
 
+### New registered, forward-only paper hypotheses (2026-10-19)
+
+`IBREAK-v1` inside-bar compression release, `BANDREV-v1` two-bar z-band re-entry, `VWAPTR-v1` trend/RSI-confirmed VWAP reclaim, and `EFFTREND-v1` six-step efficient trend. Their original OPEN history starts only after code deployment; no old outcome is relabelled as a new-arm result. See [frozen signal protocol](docs/DIVERSE_PROSPECTIVE_HYPOTHESES_20261019.md).
+
+In the learner-v7 neutral-input collection policy, 20/100 deterministic buckets are for CTRL when offered, 35/100 for least sampled genuinely offered confirmed arm, 35/100 for ordinary confirmed signal exploration, 5/100 proxy baselines and 5/100 neutral mixture **when confirmed observations exist**. Monitoring returns do not affect selection. Without authenticated completed OKX 15m candles, baselines and controls remain the only allowed choices. None is a proven profitable strategy; no exits change.
+
 ## Continuous allocation, with safeguards
 Each run begins by replaying and verifying the complete SHA-256 event chain. Due positions are resolved at the first available fresh same-venue observation **after their evaluation time**. Only then does the system consider bounded new paper experiments per observation, with a healthy hard cap of 44, one OPEN per symbol/15-minute signal slot, and schedule-dependent intake throttles. All decisions are frozen into each complete OPEN event as `allocation_policy`, `selection_mode`, and versioned signal evidence.
 
