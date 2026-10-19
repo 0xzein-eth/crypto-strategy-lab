@@ -41,6 +41,27 @@ Other identified gaps:
 - `scheduler_guard`, `recovery_window` and GitHub Actions best-effort clocks cannot guarantee timely 10-minute or shorter execution. Recent continuous-handoff fixes mitigate gaps, but uptime improvement needs *future evidence*, not a passed unit test.
 - The v8 `learner-v8` sparse-proxy/throttled-loss policy changes *how often/which* experiments are sampled. A lower negative total after a change must **never** be called higher edge without conditional performance and matched controls. Monitor data have repeatedly been inspected.
 
+## Implementasi awal P1/P2: data integrity & signal parity
+
+- `v2.data_contract` produces SHA256 per exact OKX instrument series,
+  truthful UTC/15m/contiguous window length and separately NULL/UNKNOWN
+  settled funding coverage; it rejects duplicate/missing/invalid
+  historical bars rather than filling them. A read-only daily Actions
+  artifact documents the current cached data; it does not extend
+  history beyond authentic upstream observations.
+- `v2.signal_parity` uses deployed `signals.classify` both on
+  **as-of** replayed cached candles and a reconstructed public OKX
+  `signals.from_okx` adapter. Future/unfinished candles are excluded
+  and exact frozen signal fingerprints are compared. This validates
+  parsing/feature parity for **currently deployed 15m hypotheses**,
+  *not* the separate v9 2,000-parameter factory or historical next-bar
+  fill simulation.
+- `proposed_entry_drift` makes next-open vs later ticker price/time
+  divergence inspectable, never treating either as real executed fill.
+- All tests are synthetic deterministic regressions. >=365 days of
+  authentic market history and real bid/ask/funding completeness are
+  still blocked on data acquisition and are NOT claimed delivered.
+
 ## Non-negotiable design principles
 
 1. **Three physically/logically separated modes:** historical hypothesis exploration, immutable prospective *shadow signal* observation, and realistic simulated portfolio execution. A fourth optional real-broker adapter does **not exist** until reviewed and explicitly approved.
