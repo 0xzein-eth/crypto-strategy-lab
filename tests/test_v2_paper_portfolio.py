@@ -76,14 +76,14 @@ class PaperAccountTests(unittest.TestCase):
             "settled_funding_cash_usdt"]),0)
         self.assertGreater(Decimal(b.snapshot(t2,quotes={"BTC":quote(t=t2)})[
             "settled_funding_cash_usdt"]),0)
+        with self.assertRaisesRegex(OrderRejected,"duplicate"):
+            a.settle_funding("a","0.01",100.05,
+                             WHEN+dt.timedelta(minutes=15),t2,settled=True)
         a.close("a",quote(t=t2),t2)
         b.close("b",quote(t=t2),t2)
         self.assertLess(Decimal(a.snapshot(t2)["cash_usdt"]),
                         Decimal(b.snapshot(t2)["cash_usdt"]))
         self.assertEqual(a.audit_events()["verified_events"],3)
-        with self.assertRaisesRegex(OrderRejected,"duplicate"):
-            a.settle_funding("a","0.01",100.05,
-                             WHEN+dt.timedelta(minutes=15),t2,settled=True)
 
     def test_funding_unsettled_and_future_are_never_invented(self):
         w=PaperWallet()
