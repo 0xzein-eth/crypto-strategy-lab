@@ -28,6 +28,22 @@ Jalankan `python -m v2.legacy_audit --verify-main`.
 Akan ada fase lanjutan untuk model eksekusi dan portofolio baru;
 **belum ada strategi layak trade riil yang dibuktikan**.
 
+## Crypto Lab v2 — data & sinyal tanpa kebocoran (fase P1/P2)
+
+- `v2/data_contract.py` membuat manifest **read-only** untuk cache
+  candle OKX perpetual 15m: hash, tanggal asli, panjang jendela,
+  kontinuitas bar, dan status funding **belum terbukti lengkap**.
+  Cache 90–125 hari **tidak** diubah menjadi klaim data dua tahun.
+- `v2/signal_parity.py` memanggil aturan `signals.classify`
+  yang benar-benar sedang berjalan dari satu sumber fitur, lalu
+  membandingkannya dengan jalur parsing sinyal `signals.from_okx`
+  pada *as-of* sama. Candle masa depan tidak boleh memengaruhi sinyal.
+  **Ini belum membuktikan kesetaraan fill** dengan v9 historical
+  next-bar open; perbedaannya dilaporkan secara eksplisit.
+- Workflow [inventaris v2](.github/workflows/v2-data-inventory.yml)
+  menyimpan laporan kualitas sumber tanpa mengirim order atau
+  mengisi bagian data yang hilang dengan angka perkiraan.
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
