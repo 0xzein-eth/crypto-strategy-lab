@@ -64,5 +64,24 @@ def make_opportunity_audit(requested):
     }
 
 
+NO_CONFIRMED_BASELINE_PROBE_PERCENT = 12
+
+
+def no_confirmed_baseline_probe(symbol, signal_slot, pct=NO_CONFIRMED_BASELINE_PROBE_PERCENT):
+    """Only sparse no-candle-signal control probes; never SELECT winners.
+
+    Hash the original *15-minute* frozen symbol slot, not a later outcome,
+    scheduler wall-clock date, or historical backtest score. A control
+    sample remains possible in every real market regime without flooding
+    the ledger with directional 24h-only baseline hypotheses.
+    """
+    if (not isinstance(symbol,str) or not symbol or
+            isinstance(signal_slot,bool) or not isinstance(signal_slot,int) or
+            isinstance(pct,bool) or not isinstance(pct,int) or not 0<=pct<=100):
+        raise ValueError("invalid no-signal baseline sampling policy")
+    return learner.stable_bucket(
+        "no-confirmed-control-probe-v1:%s:%s"%(symbol,signal_slot),100) < pct
+
+
 def increment(counter, arm):
     counter[arm] = counter.get(arm, 0) + 1
