@@ -159,6 +159,46 @@ class LearningTests(unittest.TestCase):
         self.assertEqual(p["training_only_underperformers"],[])
         self.assertFalse(p["arms"]["BR-proxy-v1"]["underperformer_train_only"])
 
+    def test_source_quality_sampling_preserves_ctrl_and_proxy_exploration(self):
+        # This is a preregistered input-quality split, not a policy that
+        # silently reallocates toward recent lucky or winning strategies.
+        options=[{"strategy":"CTRL-v1","side":"LONG"},
+                 {"strategy":"BR-proxy-v1","side":"LONG"},
+                 {"strategy":"MR-proxy-v1","side":"SHORT"},
+                 {"strategy":"IBREAK-v1","side":"LONG"},
+                 {"strategy":"BANDREV-v1","side":"SHORT"},
+                 {"strategy":"EFFTREND-v1","side":"LONG"},
+                 {"strategy":"VWAPTR-v1","side":"SHORT"}]
+        counts={"IBREAK-v1":1,"BANDREV-v1":4,
+                "EFFTREND-v1":8,"VWAPTR-v1":3}
+        profile={"entry_exposure_counts_v1":counts}
+        candidates=[learner.choose(options,[],"BTC",4,k,0,profile)
+                    for k in range(5000)]
+        ctrl=sum(x["strategy"]=="CTRL-v1" for x,_ in candidates)
+        advanced=sum(x["strategy"] in learner.ADVANCED for x,_ in candidates)
+        proxy=sum(x["strategy"] in learner.BASELINES[:2] for x,_ in candidates)
+        srcbalanced=sum(mode=="confirmed_entry_coverage_neutral_exploration"
+                        for _,mode in candidates)
+        self.assertGreaterEqual(ctrl,850)
+        self.assertLess(ctrl,1450)
+        self.assertGreaterEqual(advanced,3000)
+        self.assertLess(proxy,700)
+        self.assertGreater(proxy,75)
+        self.assertGreater(srcbalanced,1400)
+        self.assertEqual(candidates,[learner.choose(options,[],"BTC",4,k,0,profile)
+                                      for k in range(5000)])
+        # Outcomes/monitoring don't enter choices. Newer candidates appear
+        # only if the REAL confirmed signals pipeline offered them.
+        pretend_winner=dict(profile,allocation_leaders=["VWAPTR-v1"],
+                             provisional_leaders=["BR-proxy-v1"],
+                             champion="BANDREV-v1")
+        self.assertEqual(candidates,
+                         [learner.choose(options,[],"BTC",4,k,0,pretend_winner)
+                          for k in range(5000)])
+        baselines=[x for x in options if x["strategy"] in learner.BASELINES]
+        self.assertTrue(all(learner.choose(baselines,[],"BTC",4,k,0,profile)[0]
+                            in baselines for k in range(50)))
+
     def test_unconfirmed_advanced_never_selected(self):
         options=[{"strategy":"BR-proxy-v1","side":"SHORT"},
                  {"strategy":"MR-proxy-v1","side":"LONG"},
