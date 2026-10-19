@@ -52,12 +52,15 @@ def make_opportunity_audit(requested):
         "advanced_source_checks": 0,
         "slots_with_any_confirmed_signal": 0,
         "slots_with_no_confirmed_signal": 0,
+        "no_confirmed_signal_proxy_slots_skipped": 0,
+        "no_confirmed_signal_baseline_probes_allowed": 0,
+        "no_signal_baseline_probe_percent": 12,
         "confirmed_arm_opportunities": {},
         "new_paper_opens_by_arm": {},
         "skipped_by_symbol_slot_or_capacity": 0,
         "fresh_entry_quote_rejections": 0,
         "recent_7d_confirmed_open_counts": {},
-        "note": "Counts candidate opportunities only when evaluated, not all market patterns. Sampled arm counts contain NO CLOSE outcomes, and don't establish edge.",
+        "note": "Counts ONLY inspected real opportunities. A 12%-of-unique-symbol-slot deterministic fallback probe is permitted with NO confirmed OKX signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
     }
 
 
