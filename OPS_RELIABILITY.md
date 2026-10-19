@@ -500,3 +500,37 @@ The report includes `clean_future_10m_intervals_to_reach_90pct` and
 samples exist. These are modeled counts of **future valid observations**
 if every new gap equals exactly 10 minutes; zero intervals are backfilled.
 A scheduled job may start late; the projections are not a guarantee.
+
+## Reliability patch: verified bounded-successor handoff (2026-10-19)
+
+**Observed failure mode:** a 72-gap coverage snapshot improved beyond 95%,
+causing the previous `scheduler_guard.handoff_decision` to return `None`
+immediately after a healthy `lab.yml` job completed. The workflow then
+depended entirely on the next best-effort GitHub cron, and real gaps of
+87 and 117 minutes later reappeared. A good *past* 72-gap estimate is not
+proof of an *upcoming* scheduled event.
+
+**New rule:** on **verified successful** `main` lab `workflow_run` completion,
+if its canonical report is at most 14 minutes old, at least 12 actual
+intervals were recorded, and **NO OTHER `lab.yml` job is queued/running**,
+the guardian checks the authoritative report+workflow queue twice and
+requests **one** bounded successor with `workflow_dispatch` irrespective
+of whether prior coverage was 85% or 100%. Every successor still runs
+`--pulses 18 --adaptive --continuous`, max 12/18 actual fresh 10-minute
+observations depending on real coverage. The shared ledger concurrency
+lock remains unchanged, stale/malformed/failing jobs never trigger
+handoff, provider outages cannot create imaginary market observations,
+and every event hash is re-audited.
+
+**Resource safeguard:** `PAPER_CONTINUOUS_HANDOFF=off` in repository Actions
+variables disables *completion handoff* while retaining the three native
+scheduled clocks and stale-run guardian. Enabled by default for the public
+repository. For a private repository, check GitHub runner minutes and costs
+before keeping chained successors enabled for long periods. Every completed
+job is bounded; this setting may cause many successive jobs (not a daemon).
+If GitHub Actions itself stops dispatching queued runners, this will **not**
+guarantee 10-minute uptime—an independent clock would still be needed.
+
+**Evidence of improvement** must be demonstrated by several future measured
+72-gap coverage windows, timely same-venue CLOSE proportions per horizon,
+and no recurrence of 60m+ gaps; old delayed CLOSE results remain excluded.
