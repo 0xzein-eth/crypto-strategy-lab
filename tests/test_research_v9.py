@@ -165,6 +165,26 @@ class FactoryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             factory.variant_catalog(2001)
 
+    def test_training_only_selection_covers_families_before_correlated_parameters(self):
+        variants={
+            "a1":factory.Variant("trend",8,0.01,50,4),
+            "a2":factory.Variant("trend",12,0.01,50,4),
+            "a3":factory.Variant("trend",20,0.01,50,4),
+            "b1":factory.Variant("band_reentry",20,1.8,0,4),
+            "c1":factory.Variant("efficient_trend",6,0.82,50,4),
+            "d1":factory.Variant("vwap_trend_reclaim",20,1.0,50,4)}
+        training_sorted=["a1","a2","a3","b1","c1","d1"]
+        selected=factory.family_diverse_top(training_sorted,variants,4)
+        self.assertEqual(selected,["a1","b1","c1","d1"])
+        self.assertEqual(factory.family_diverse_top(training_sorted[:3],variants,4),
+                         ["a1","a2","a3"])
+        self.assertEqual(factory.family_diverse_top(training_sorted,variants,2),
+                         ["a1","b1"])
+        with self.assertRaises(ValueError):
+            factory.family_diverse_top(training_sorted,variants,0)
+        with self.assertRaises(ValueError):
+            factory.family_diverse_top(training_sorted,variants,True)
+
     def test_new_four_v9_signals_use_only_current_or_earlier_confirmed_bars(self):
         j=350
         variants=[
@@ -346,6 +366,8 @@ class FactoryTests(unittest.TestCase):
             self.assertIn("training_screen_rejection_counts",fold)
             self.assertIn("highest_scoring_unqualified_training_only",fold)
             self.assertIn("shadow_evaluations",fold)
+            self.assertIn("train_selected_family_diversity",fold)
+            self.assertLessEqual(fold["train_selected_family_diversity"],4)
             self.assertLessEqual(len(fold["shadow_evaluations"]),4)
             self.assertEqual(len({p["family"] for p in fold["shadow_evaluations"]}),
                              len(fold["shadow_evaluations"]))
