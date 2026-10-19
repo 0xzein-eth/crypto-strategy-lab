@@ -130,11 +130,11 @@ class GuardianTests(unittest.TestCase):
         self.assertEqual(len(api.calls),5)
         self.assertEqual(api.calls[-1][1],{"ref":"main"})
 
-    def test_handoff_uses_ninety_five_safety_margin(self):
+    def test_handoff_continues_after_good_coverage_to_avoid_cron_restart_gap(self):
         base=report(8)
         base["scheduling_diagnostics"]={
             "recent_observed_intervals":72,
-            "estimated_10m_slot_coverage":0.925}
+            "estimated_10m_slot_coverage":0.995}
         last=run(195)
         last.update(id=321,conclusion="success",updated_at=timestamp(3))
         api=FakeApi(base,[last])
@@ -153,8 +153,11 @@ class GuardianTests(unittest.TestCase):
         situations=[
             (base,[recent],999),
             (dict(base,scheduling_diagnostics={
+                "recent_observed_intervals":3,
+                "estimated_10m_slot_coverage":0.995}),[recent],123),
+            (dict(base,scheduling_diagnostics={
                 "recent_observed_intervals":72,
-                "estimated_10m_slot_coverage":0.96}),[recent],123),
+                "estimated_10m_slot_coverage":None}),[recent],123),
             (report(8),[recent],123),
             (base,[dict(recent,conclusion="failure")],123),
             (base,[dict(recent,updated_at=timestamp(30))],123),

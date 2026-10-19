@@ -45,9 +45,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           COMPLETED_LAB_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}
+          ENABLE_SUCCESS_HANDOFF: ${{ vars.PAPER_CONTINUOUS_HANDOFF != 'off' }}
         run: |
           set -euo pipefail
-          if [[ -n "$COMPLETED_LAB_RUN_ID" ]]; then
+          # Repo admins can set PAPER_CONTINUOUS_HANDOFF=off to conserve
+          # runner minutes on private/metered repos; default on for this
+          # public paper-data research project. Never bypass queue checks.
+          if [[ -n "$COMPLETED_LAB_RUN_ID" && "$ENABLE_SUCCESS_HANDOFF" == "true" ]]; then
             python scheduler_guard.py --recover --threshold-minutes 14 --handoff-run-id "$COMPLETED_LAB_RUN_ID" --status-file /tmp/lab-guardian.json
           else
             python scheduler_guard.py --recover --threshold-minutes 14 --status-file /tmp/lab-guardian.json
