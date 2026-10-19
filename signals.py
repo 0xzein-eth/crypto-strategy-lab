@@ -6,6 +6,7 @@ Never use a forming candle or a future candle. Venue: OKX USDT swap only.
 import datetime as dt
 import math
 import regime_hypotheses
+import diverse_confirmed
 
 BAR_MINUTES = 15
 MIN_BARS = 60
@@ -233,7 +234,7 @@ def classify(bars):
             add("RSIREC-v1","LONG","RSI14 crosses up through 30 on confirmed close")
         if f["rsi14prev"]>70>=f["rsi14"] and p<f["c_prev"]:
             add("RSIREC-v1","SHORT","RSI14 crosses down through 70 on confirmed close")
-    return events
+    return events + diverse_confirmed.detect(bars, f)
 
 
 def from_okx(symbol, market_snapshot, requester, clock):
