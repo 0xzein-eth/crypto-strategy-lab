@@ -79,6 +79,19 @@ def verify_quote(quote, *, symbol, now, max_age_seconds=180):
             "instrument": quote["instrument"]}
 
 
+def frozen_quote(raw, symbol, when):
+    """Only verified, reproducible book fields; extra source metadata ignored."""
+    q = verify_quote(raw, symbol=symbol, now=when)
+    return {
+        "provider": "okx-swap", "market_type": "perpetual",
+        "symbol": symbol, "instrument": q["instrument"],
+        "observed_at": q["observed_at"],
+        "bid": str(q["bid"]), "ask": str(q["ask"]),
+        "bid_size_base": str(q["bid_size_base"]),
+        "ask_size_base": str(q["ask_size_base"]),
+    }
+
+
 class PaperWallet:
     """Deterministic cross-margin PAPER ledger; no broker/order API adapter.
 
@@ -179,6 +192,12 @@ class PaperWallet:
         for symbol, quote in quotes.items():
             verify_quote(quote, symbol=symbol, now=now)
         self._last_quotes.update(deepcopy(quotes))
+        # The last known book would otherwise disappear on restart. Freeze
+        # each externally observed book as a MARK journal event and replay it
+        # before later OPEN or CLOSE actions.
+        self._write("PAPER_MARK", now, {"books": {
+            symbol: frozen_quote(book, symbol, now)
+            for symbol, book in sorted(quotes.items())}})
         self._peak_observed_equity = max(self._peak_observed_equity, risk["equity"])
         self._max_observed_drawdown = max(
             self._max_observed_drawdown,
@@ -240,7 +259,8 @@ class PaperWallet:
             "unfilled_usdt": str(requested-filled), "quantity_base": str(qty),
             "assumed_top_book_price": str(fill_px), "entry_fee_usdt": str(entry_fee),
             "margin_reserved_usdt": str(margin),
-            "visible_book_not_a_real_fill": True})
+            "visible_book_not_a_real_fill": True,
+            "source_book": frozen_quote(quote, symbol, when)})
         return {"position_id": position_id, "filled_notional_usdt": usd(filled),
                 "unfilled_notional_usdt": usd(requested-filled),
                 "partial": qty < wanted_qty, "paper_only": True}
@@ -322,7 +342,8 @@ class PaperWallet:
                            "gross_pnl_usdt": str(gross),
                            "exit_fee_usdt": str(exit_fee),
                            "funding_cash_usdt": str(p["funding_cash_usdt"]),
-                           "net_trade_pnl_usdt": str(pnl)})
+                           "net_trade_pnl_usdt": str(pnl),
+                           "source_book": frozen_quote(quote, p["symbol"], when)})
         return deepcopy(result)
 
     def snapshot(self, now, *, quotes=None):
@@ -348,3 +369,117 @@ class PaperWallet:
                 "real_order_submissions": 0,
                 "fill_model": "hypothetical top-of-book crossing, no queue/latency guarantees",
                 "journal": self.audit_events()}
+
+    def document(self):
+        """Serializable AUDITED journal and one funded-account configuration.
+
+        A portfolio's cash is recomputed from event definitions on restore.
+        Never trust user-supplied stored cash or an unchecked hash head.
+        """
+        audit = self.audit_events()
+        return {
+            "schema": SCHEMA,
+            "paper_only": True,
+            "config": {
+                "balance_usdt": str(self.initial_usdt),
+                "max_leverage": str(self.leverage),
+                "taker_fee_rate": str(self.fee_rate),
+                "maintenance_rate": str(self.maintenance_rate),
+                "max_gross_equity_multiple": str(self.max_gross_multiple),
+            },
+            "events": self.journal(),
+            "expected_head": audit["hash_head"],
+            "expected_cash_balance_usdt": str(self.balance),
+            "expected_total_fees_usdt": str(self._total_fees),
+            "expected_total_funding_usdt": str(self._total_funding_cash),
+            "expected_positions": sorted(self._positions),
+            "expected_closed_positions": len(self._closed),
+            "expected_max_observed_drawdown_usdt": str(self._max_observed_drawdown),
+            "real_orders": 0,
+            "ledger_is_not_v8_events": True,
+        }
+
+    @classmethod
+    def from_document(cls, obj):
+        """Deterministically replay EVERYTHING, including bid/ask and book ages.
+
+        Hashes alone do not prove genuine exchange data. Replay also detects
+        forged exit fee, funding or margin states even if a hash was rebuilt.
+        """
+        if (not isinstance(obj, dict) or obj.get("schema") != SCHEMA or
+                obj.get("paper_only") is not True or obj.get("real_orders") != 0 or
+                not isinstance(obj.get("config"),dict) or
+                not isinstance(obj.get("events"),list)):
+            raise ValueError("INTEGRITY_FAILURE: malformed portfolio document")
+        try:
+            wallet = cls(**obj["config"])
+            prev = HASH_ZERO
+            for index, event in enumerate(obj["events"],1):
+                body={k:v for k,v in event.items() if k != "hash"}
+                seal=hashlib.sha256(json.dumps(
+                    body,sort_keys=True,separators=(",",":"),
+                    allow_nan=False).encode()).hexdigest()
+                if (event.get("seq") != index or event.get("prev_hash") != prev
+                        or event.get("hash") != seal):
+                    raise ValueError("INTEGRITY_FAILURE: stored event chain")
+                when = ts(event["observed_at"])
+                payload=event["payload"]
+                kind=event["kind"]
+                if kind == "PAPER_OPEN":
+                    filled=D(payload["filled_usdt"])
+                    wanted=D(payload["requested_usdt"])
+                    wallet.open(
+                        payload["id"],
+                        payload["source_book"]["symbol"],
+                        payload["side"], wanted,
+                        payload["source_book"], when,
+                        allow_partial=(filled < wanted))
+                elif kind == "PAPER_MARK":
+                    wallet.mark(payload["books"],when)
+                elif kind == "SETTLED_FUNDING":
+                    wallet.settle_funding(
+                        payload["id"],payload["realized_rate"],
+                        payload["reference_mark_usdt"],
+                        payload["funding_settlement_at"],when,
+                        settled=True)
+                elif kind in ("PAPER_CLOSE","PAPER_LIQUIDATE"):
+                    wallet.close(
+                        payload["id"],payload["source_book"],when,
+                        forced_liquidation=(kind=="PAPER_LIQUIDATE"))
+                else:
+                    raise ValueError("INTEGRITY_FAILURE: unknown v2 journal operation")
+                if wallet._events[-1] != event:
+                    raise ValueError("INTEGRITY_FAILURE: recomputed economics not equal stored event")
+                prev=seal
+            if wallet.document() != obj:
+                raise ValueError("INTEGRITY_FAILURE: paper cash/collateral state mismatch")
+            return wallet
+        except (KeyError, TypeError, IndexError, OrderRejected, ArithmeticError,
+                OverflowError) as exc:
+            raise ValueError("INTEGRITY_FAILURE: cannot replay portfolio") from exc
+
+    def save_atomic(self, filepath):
+        """Durable local PAPER research copy; no Git/cloud upload by default."""
+        import os
+        from pathlib import Path
+        import tempfile
+        target=Path(filepath)
+        target.parent.mkdir(parents=True,exist_ok=True)
+        text=json.dumps(self.document(),sort_keys=True,indent=2,
+                        allow_nan=False)+"\\n"
+        fd,name=tempfile.mkstemp(prefix=".paper-v2-",dir=target.parent)
+        try:
+            with os.fdopen(fd,"w",encoding="utf-8") as stream:
+                stream.write(text)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(name,target)
+        finally:
+            if os.path.exists(name):
+                os.unlink(name)
+
+    @classmethod
+    def load_verified(cls, filepath):
+        from pathlib import Path
+        obj=json.loads(Path(filepath).read_text(encoding="utf-8"))
+        return cls.from_document(obj)
