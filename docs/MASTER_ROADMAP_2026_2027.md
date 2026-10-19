@@ -41,11 +41,13 @@
 - jumlah deteksi masing-masing strategi berdasarkan candle OKX 15m konfirmasi dan ticker benar;
 - terpilihnya strategi ke OPEN nyata dan reject karena fresh reobservation;
 - jumlah entry strategi selama 7 hari terakhir, termasuk yang kalah atau terlambat, berdasarkan metadata OPEN saja.
-- *Coverage-first sampling*: maksimal 25 dari 100 bucket deterministik khusus kandidat ADVANCED yang benar-benar tersedia dapat memilih arm yang paling kurang terwakili; hak CTRL minimal 20% bucket dipertahankan. Tidak ada strategi palsu, bypass 1 OPEN per simbol per 15m, atau reward-based promotion.
+- *Coverage-first sampling*: maksimal 35 dari 100 bucket deterministik khusus kandidat ADVANCED yang benar-benar tersedia dapat memilih arm yang paling kurang terwakili; hak CTRL minimal 20% bucket dipertahankan. Tidak ada strategi palsu, bypass 1 OPEN per simbol per 15m, atau reward-based promotion.
 
 **Gate sukses:** CI & hash-chain audit lulus; pada tick yang belum ada confirmed signal, audit menampilkan nol peluang dan tidak menciptakan advanced arm; ubah P&L historis secara arbitrer tidak mengubah entry counts / probabilitas pilihan.
 
 **Peringatan:** pilihan coverage-first meningkatkan kesempatan *mengukur* arm langka, **tidak membuktikan arm itu menguntungkan** dan dapat mengubah distribusi sampel (wajib dibedakan sebelum/ sesudah versi).
+
+**Diversifikasi strategi prospektif (19 Oktober):** empat family masuk ke [preregistrasi 2026-10-19](DIVERSE_PROSPECTIVE_HYPOTHESES_20261019.md): IBREAK, BANDREV, VWAPTR, EFFTREND, masing-masing memakai data entry-only dan enam horizon. Kebijakan source-quality v7 mengalokasikan 35% bucket sampling coverage confirmed, 35% eksplorasi confirmed, 20% CTRL, 5% proxy dan 5% netral; ini bukan reward-based champion. Horizon, per-symbol slot, dan ledger tidak berubah. Semua masih perlu bukti independen.
 
 ## Fase 2 — transparansi underperformers & biaya (sekarang, read-only)
 
