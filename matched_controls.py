@@ -101,6 +101,7 @@ def compare(records):
                 raise ValueError("INTEGRITY_FAILURE: nonfinite paired outcome")
             pairs.append({
                 "entry_day": opened.date().isoformat(),
+                "horizon_hours": trade["horizon_hours"],
                 "entry_gap_minutes": gap,
                 "strategy_R": float(trade["normalized_R"]),
                 "control_R": float(control["normalized_R"]),
@@ -119,7 +120,36 @@ def compare(records):
                  learner.stable_bucket("holdout:"+p["entry_day"],5)!=0]
         train_lcb, train_ucb = _daily_interval(train)
         holdout_lcb, holdout_ucb = _daily_interval(holdout)
+        # A negative aggregate can hide positive horizons, while a positive
+        # aggregate can conceal repeatedly negative sub-horizons. Only
+        # actual matched STRATUM pairs belong in these read-only cells.
+        horizon_audit = {}
+        for hours in (1,2,4,8,12,24):
+            matching=[pair for pair in pairs if pair["horizon_hours"]==hours]
+            training=[pair for pair in matching if
+                      learner.stable_bucket("holdout:"+pair["entry_day"],5)!=0]
+            monitoring=[pair for pair in matching if
+                        learner.stable_bucket("holdout:"+pair["entry_day"],5)==0]
+            train_low,train_high=_daily_interval(training)
+            days=len({pair["entry_day"] for pair in training})
+            subset_n=sum(r["horizon_hours"]==hours for r in by_arm[arm])
+            sufficiently_sampled=(len(training)>=20 and days>=7)
+            horizon_audit[str(hours)]={
+                "eligible_arm_closes":subset_n,
+                "matched_pairs":len(matching),
+                "matched_fraction":_round(len(matching)/subset_n) if subset_n else None,
+                "paired_train_pairs":len(training),
+                "paired_train_utc_days":days,
+                "paired_monitoring_pairs_not_used":len(monitoring),
+                "train_mean_delta_stress_scenario_R":_round(mean(p["delta_after_friction_R"] for p in training)) if training else None,
+                "train_day_cluster_descriptive_lcb_R":train_low,
+                "train_day_cluster_descriptive_ucb_R":train_high,
+                "adequate_for_descriptive_warning":sufficiently_sampled,
+                "relative_negative_training_warning":bool(sufficiently_sampled and train_high is not None and train_high<0),
+                "not_an_independent_alpha_test":True,
+            }
         results[arm] = {
+            "horizon_training_comparisons": horizon_audit,
             "paired_train_pairs": len(train),
             "paired_train_utc_days": len({p["entry_day"] for p in train}),
             "paired_train_descriptive_lcb_R": train_lcb,
@@ -163,6 +193,7 @@ def compare(records):
             "Unmatched signals are excluded, so paired estimates can have selection bias.",
             "Controls can be reused across DIFFERENT strategy comparisons, not within one arm.",
             "Matching is retrospective; time-varying confounders and correlated markets remain.",
+            "Horizon-specific negative warnings are descriptive TRAINING-only; multiple testing and historical peeking can cause false alarms.",
             "Seven days and 50 pairs are only a reporting coverage gate, not a statistical edge test.",
             "Multiple strategy comparisons, non-independent days, and previously inspected outcomes prevent any edge claim.",
             "This diagnostic is NEVER fed into the strategy allocator or a promotion decision.",
