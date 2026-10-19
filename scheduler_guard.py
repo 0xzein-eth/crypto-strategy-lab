@@ -134,10 +134,12 @@ def handoff_decision(report, workflow_runs, now, completed_run_id):
     """One guarded next-run request after an observed successful lab completion.
 
     Only workflow_run completions for main may supply an ID. The GitHub
-    workflow-specific API independently confirms it was the most recent
-    successfully completed lab job. This is not a cron SLA or a retry storm:
-    any queued/running job, missing provenance or recovered >=95% cadence
-    prevents dispatch. A second authoritative check is required by execute().
+    workflow-specific API independently confirms the most recent successful
+    lab job. A recent healthy coverage estimate can still precede a missed
+    cron; complete runs therefore request one bounded successor if no other
+    writer exists. No queued/running job, missing provenance, failed job or
+    stale canonical report can trigger a handoff. A second authoritative
+    read is required before requesting any dispatch.
     """
     if (not isinstance(completed_run_id,int) or
             isinstance(completed_run_id,bool) or completed_run_id<=0):
@@ -147,9 +149,16 @@ def handoff_decision(report, workflow_runs, now, completed_run_id):
     metrics=report.get("scheduling_diagnostics") or {}
     ratio=metrics.get("estimated_10m_slot_coverage")
     n=metrics.get("recent_observed_intervals",0)
+    # A once-healthy 72-gap window is NOT a guarantee that the next GitHub
+    # scheduled job will launch on time. The old <95% requirement silently
+    # disabled handoff at exactly the moment coverage recovered, allowing
+    # further 60-120m holes despite still-open paper positions. Continue a
+    # guarded, bounded successor while the lab is collecting genuine data.
+    # One active/queued successor always suppresses dispatch; every new
+    # handoff requires a freshly completed, verified successful main job.
     if (not isinstance(n,int) or isinstance(n,bool) or n<12 or
             isinstance(ratio,bool) or not isinstance(ratio,(int,float)) or
-            not 0<=ratio<0.95):
+            not 0<=ratio<=1):
         return None
     mains=[r for r in workflow_runs if r.get("head_branch")=="main"]
     if not mains or any(r.get("status") in
@@ -165,8 +174,9 @@ def handoff_decision(report, workflow_runs, now, completed_run_id):
         return None
     return {"status":"NEEDS_HANDOFF","reason":(
         "A successful completed main lab run has no queued/running successor; "
-        "measured 10-minute coverage is under 95% (90% target plus safety margin). Request one new bounded "
-        "paper observation run, no historical backfills.") ,
+        "always hand off a new bounded paper observer when real schedule history "
+        "exists, even after recent coverage recovers. Single canonical writer, "
+        "fresh quotes only, no historical backfills.") ,
         "handoff_source_run_id":completed_run_id,
         "handoff_coverage":ratio}
 
