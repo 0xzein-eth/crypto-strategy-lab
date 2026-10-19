@@ -4,7 +4,18 @@
 
 **Lab eksperimen strategi kripto otomatis, berjalan lewat GitHub Actions, tanpa transaksi riil.**
 
-**Prioritas kebenaran:** `data/events/` = ledger asli; `data/report.json` = metrik terbaru; `engine.py`, `learner.py` dan `signals.py` = aturan berjalan. Bagian kronologi upgrade di bawah memuat angka versi lama yang tidak lagi menjadi kuota aktif. [Roadmap induk 2026–2027](docs/MASTER_ROADMAP_2026_2027.md) · [Program riset jangka panjang](docs/LONG_TERM_RESEARCH_PROGRAM.md) · [Pemetaan validasi](docs/RESEARCH_DEVELOPMENT_MAP.md).\n\n✅ [Hasil simulasi terakhir](data/report.json) · 📚 [Event ledger permanen](data/events/) · 📊 [Dashboard source](dashboard/index.html) · ⚙️ [Workflow otomatis](.github/workflows/lab.yml) · 🧪 [Pengujian](tests/)
+**Prioritas kebenaran:** `data/events/` = ledger asli; `data/report.json` = metrik terbaru; `engine.py`, `learner.py` dan `signals.py` = aturan berjalan. Bagian kronologi upgrade di bawah memuat angka versi lama yang tidak lagi menjadi kuota aktif. [**Crypto Lab v2: audit kegagalan dan roadmap pembangunan ulang**](docs/CRYPTO_LAB_V2_REBUILD_PLAN_20261019.md) · [Roadmap induk 2026–2027](docs/MASTER_ROADMAP_2026_2027.md) · [Program riset jangka panjang](docs/LONG_TERM_RESEARCH_PROGRAM.md) · [Pemetaan validasi](docs/RESEARCH_DEVELOPMENT_MAP.md).\n\n✅ [Hasil simulasi terakhir](data/report.json) · 📚 [Event ledger permanen](data/events/) · 📊 [Dashboard source](dashboard/index.html) · ⚙️ [Workflow otomatis](.github/workflows/lab.yml) · 🧪 [Pengujian](tests/)
+
+**Peringatan metodologi (19 Oktober 2026):** ledger v8 adalah eksperimen
+PAPER dengan notional $10.000 berulang, **bukan rekening portofolio yang
+mencukupi modal/margin**. Total fee round-trip pada laporan canonical
+12.231 CLOSED adalah $122.310 vs P&L net -$117.333,40, sehingga
+keunggulan harga sebelum fee hanya +$4.976,60 (+0,00407% rata-rata
+notional). v9 memiliki 2.000 backtest varian tetapi jendela bersama hanya
+90 hari; tidak ada champion terverifikasi. Rencana v2 memprioritaskan
+riwayat pasar lebih panjang, *backtest-forward parity*, akuntansi portofolio
+yang realistis, model biaya, serta validasi final independen. **Tidak ada
+strategi saat ini yang dibuktikan aman/untung untuk trade riil.**
 
 ## Status operasional
 
