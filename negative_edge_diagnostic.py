@@ -51,7 +51,27 @@ def evaluate(records, matched_comparison=None):
                           and isinstance(paired_ucb, (int, float))
                           and not isinstance(paired_ucb, bool)
                           and math.isfinite(paired_ucb))
+        raw_horizons = matched.get("horizon_training_comparisons") or {}
+        # Read-only matched cells; never change paper allocation based on an
+        # aggregate of incompatible holding horizons or re-used monitoring.
+        horizon_alerts = {}
+        for h in (1, 2, 4, 8, 12, 24):
+            cell = raw_horizons.get(str(h), {})
+            warned = bool(cell.get("relative_negative_training_warning"))
+            ready = bool(cell.get("adequate_for_descriptive_warning"))
+            horizon_alerts[str(h)] = {
+                "matched_train_pairs":cell.get("paired_train_pairs",0),
+                "matched_train_days":cell.get("paired_train_utc_days",0),
+                "matched_fraction":cell.get("matched_fraction"),
+                "train_day_cluster_ucb_delta_R":cell.get("train_day_cluster_descriptive_ucb_R"),
+                "worse_than_matched_control_training_warning":warned and ready,
+                "review_status":("DESCRIPTIVE_TRAIN_UNDERPERFORMANCE" if warned and ready
+                                 else "DESCRIPTIVE_NOT_UNDERPERFORMING" if ready
+                                 else "INSUFFICIENT_MATCHED_PAIR_DAYS"),
+                "no_automatic_suppression":True,
+            }
         arms[name] = {
+            "horizon_relative_control_review":horizon_alerts,
             "eligible_closed": len(rows),
             "training_closed": len(training),
             "monitoring_closed_not_used_for_diagnosis": len(monitoring),
@@ -73,12 +93,12 @@ def evaluate(records, matched_comparison=None):
             "edge_proven": False,
         }
     return {
-        "method": "negative-edge-diagnostic-v2-matched-training-only",
+        "method": "negative-edge-diagnostic-v3-matched-horizon-training-only",
         "paper_only": True,
         "read_only": True,
         "minimum_training_closes": MIN_CLOSES,
         "minimum_training_days": MIN_DAYS,
         "holdout_used_for_selection": False,
-        "warning": "Both absolute and exact-stratum matched-control TRAINING warnings are descriptive, correlated and not multiple-test-adjusted. Missing matches cannot establish relative underperformance; monitoring is excluded. No automatic strategy suppression or promotion.",
+        "warning": "Absolute, matched control and per-fixed-horizon TRAINING warnings are descriptive (not familywise adjusted). Sparse pairs cannot establish relative losses; monitoring is excluded. No automatic strategy suppression or promotion.",
         "arms": arms,
     }
