@@ -201,6 +201,45 @@ Evaluate separate LONG/SHORT, symbol, horizon and regime. Set no-trade region an
 - Daily dashboard separated into **data quality / hypothesis opportunity / paper portfolio net metrics / selected final forward validation**. Show research experiments, sample size, negative results and "not enough evidence"; never show only highest win rate.
 - Acceptance: >=99% in-scope **fresh shadow observations** over a continuous 30-day prospective window *only if a suitable observer exists*, no synthetic gapfills or out-of-order ledger events, no credentials in Git or CI logs; fail closed when status cannot be verified.
 
+## Delivered on 2026-10-20: persistent exploratory forward account
+
+Implemented a **new isolated** public-only
+`v2/forward_paper.py` + `v2/okx_observer_source.py` pipeline and
+`.github/workflows/v2-forward-paper.yml` (best-effort 30m scheduled
+runner; independent single-writer concurrency). No real-exchange orders.
+
+- Verified OKX SWAP book bid/ask, contract value conversion
+  (depth in CONTRACTS, convert to BASE via authenticated instrument
+  `ctVal` + `ctValCcy`), confirmed 15m source signals from
+  currently deployed rules; missing or stale market input fails closed
+  for the entire mark.
+- Immutable-by-policy SHA256 append-only `v2_state/observations.jsonl`
+  and complete deterministic replay of a single PAPER 1,000 USDT
+  bankroll; NOT an aggregate of the reused $10k v8 notionals.
+- Restricts exploratory candidates to two **already repeatedly seen**
+  arms FB-v3 and VWAP-v1, one open per symbol, two total, 200 USDT
+  notional per accepted paper OPEN, 2× maximum leverage and 1.25×
+  equity gross exposure; rejection spread/ATR feasibility tests
+  do NOT constitute a directional forecast or calibrated alpha model.
+- Fixed **4h** paper exit observed at the next genuinely collected
+  quote. Late (>30min) exits are separately counted, as are estimated
+  margin liquidations; no fabricated evaluation-time fills.
+- Deterministic hash chain and full replay-derived cash/equity curve,
+  observed max drawdown, after-BIDASK+fee win rate/PF and closed
+  strategy attribution; no v8 ledger mutation, no secret trading API.
+
+**Important unsolved limitations:** There is no verified historical/
+prospective account-level perpetual settled funding reconciliation;
+v2 equity currently excludes unknown funding, impact beyond top
+book, exchange-specific liquidation or partial fills. It is
+*not* final after-all-costs profit. The 30-minute GitHub clock is
+best effort and can miss intervals; there is no execution SLA,
+no broker adapter, no finalized independent OOS. The new durable
+pipeline cannot be credited with improved returns until fresh
+real-source observations are accumulated *after code merge*.
+The previously seen FB-v3/VWAP-v1 were selected from repeatedly
+inspected v8 outcomes, hence new v2 performance is exploratory.
+
 ## Concrete phased build plan, prerequisites and definition of done
 
 | Phase | Suggested effort* | Owner artifact / implementation | Exit condition |
