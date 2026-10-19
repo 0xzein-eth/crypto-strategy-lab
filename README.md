@@ -44,6 +44,20 @@ Akan ada fase lanjutan untuk model eksekusi dan portofolio baru;
   menyimpan laporan kualitas sumber tanpa mengirim order atau
   mengisi bagian data yang hilang dengan angka perkiraan.
 
+## Crypto Lab v2 — rekening PAPER bermodal terbatas (P3 awal)
+
+`v2/paper_portfolio.py` sekarang menyediakan prototipe saldo USDT
+**PAPER** (default 1.000 USDT), *free collateral*, jaminan margin,
+batas gross notional terhadap equity, harga bid/ask dan ukuran book
+yang **benar-benar disuplai** untuk entry/exit hipotetis. Sistem
+menolak quote stale, venue salah, kedalaman kurang, dan kekurangan margin;
+jika disetujui, partial fill diberi label eksplisit. Fee, funding settled
+dan likuidasi (berdasarkan asumsi) dicatat melalui jurnal kejadian ber-hash.
+Semua data masuk ke simulasi **terpisah** dari ledger v8. Tidak ada
+credential atau konektor order di modul ini; penggunaan harga best-bid/ask
+bukan bukti order riil akan terisi. Modul ini masih **in-memory
+prototype**, bukan portofolio live atau sistem produksi persisten.
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
