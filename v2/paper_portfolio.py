@@ -466,7 +466,7 @@ class PaperWallet:
         target=Path(filepath)
         target.parent.mkdir(parents=True,exist_ok=True)
         text=json.dumps(self.document(),sort_keys=True,indent=2,
-                        allow_nan=False)+"\\n"
+                        allow_nan=False)+"\n"
         fd,name=tempfile.mkstemp(prefix=".paper-v2-",dir=target.parent)
         try:
             with os.fdopen(fd,"w",encoding="utf-8") as stream:
