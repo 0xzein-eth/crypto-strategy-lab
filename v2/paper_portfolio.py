@@ -70,6 +70,10 @@ def verify_quote(quote, *, symbol, now, max_age_seconds=180):
     ask_size = D(quote.get("ask_size_base"))
     if bid <= 0 or ask < bid or bid_size <= 0 or ask_size <= 0:
         raise OrderRejected("SOURCE_INVALID: crossed/empty book")
+    # In absence of full multi-level book depth, very wide quotes cannot be
+    # used as plausible top-book executable entry prices.
+    if (ask - bid) / ((ask + bid) / 2) > Decimal("0.005"):
+        raise OrderRejected("SOURCE_INVALID: spread exceeds 0.50pct research cap")
     return {"symbol": symbol, "bid": bid, "ask": ask, "bid_size_base": bid_size,
             "ask_size_base": ask_size, "observed_at": iso(observed),
             "instrument": quote["instrument"]}
@@ -252,6 +256,9 @@ class PaperWallet:
         key = (position_id, iso(settlement))
         if key in self._funding_receipts:
             raise OrderRejected("FUNDING_INVALID: duplicate settlement")
+        if any(old_id == position_id and ts(old_time) >= settlement
+               for old_id, old_time in self._funding_receipts):
+            raise OrderRejected("FUNDING_INVALID: out-of-order settlement")
         rate = D(rate)
         price = D(reference_mark_price)
         if not -Decimal("0.1") <= rate <= Decimal("0.1") or price <= 0:
@@ -263,8 +270,12 @@ class PaperWallet:
         p["funding_cash_usdt"] += cash
         self._total_funding_cash += cash
         self._funding_receipts.add(key)
-        self._write("SETTLED_FUNDING", settlement, {
-            "id": position_id, "realized_rate": str(rate),
+        # Journal RECEIPT time, not a fake market observation at the
+        # historical funding settlement; separate the exchange's settlement
+        # timestamp from when the simulator was actually informed.
+        self._write("SETTLED_FUNDING", when, {
+            "id": position_id, "funding_settlement_at": iso(settlement),
+            "realized_rate": str(rate),
             "reference_mark_usdt": str(price),
             "cash_delta_usdt": str(cash),
             "settled_provenance_required": True})
@@ -278,10 +289,11 @@ class PaperWallet:
         q = verify_quote(quote, symbol=p["symbol"], now=when)
         if when <= ts(p["opened_at"]):
             raise OrderRejected("CLOCK_INVALID: exit not after entry")
-        if forced_liquidation:
-            risk = self._view(when, {p["symbol"]: quote})
-            if not risk["liquidation_required"]:
-                raise OrderRejected("LIQUIDATION_INVALID: margin condition not met")
+        risk = self._view(when, {p["symbol"]: quote})
+        if risk["liquidation_required"] and not forced_liquidation:
+            raise OrderRejected("RISK_GUARD: liquidation must be recorded explicitly")
+        if forced_liquidation and not risk["liquidation_required"]:
+            raise OrderRejected("LIQUIDATION_INVALID: margin condition not met")
         px = q["bid"] if p["side"] == "LONG" else q["ask"]
         gross = (px - p["entry_price"]) * p["quantity"] * (
             Decimal(1) if p["side"] == "LONG" else Decimal(-1))
