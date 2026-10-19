@@ -125,7 +125,7 @@ class FactoryTests(unittest.TestCase):
         for family in ("donchian","ztrend","rsi_trend"):
             self.assertIn(family,{x.family for x in expanded})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(1601)
+            factory.variant_catalog(2001)
 
     def test_twelve_hundred_variants_preserve_all_previous_750_ids(self):
         old = factory.variant_catalog(750)
@@ -136,7 +136,7 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue({"compression_breakout", "volatility_impulse",
                          "trend_reclaim"} <= {v.family for v in extended})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(1601)
+            factory.variant_catalog(2001)
 
     def test_one_thousand_six_hundred_preserves_every_old_id(self):
         original=factory.variant_catalog(1200)
@@ -146,7 +146,69 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue({"volume_climax_fade","rsi_recovery"} <=
                         {x.family for x in larger})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(1601)
+            factory.variant_catalog(2001)
+
+    def test_two_thousand_distinct_diverse_variants_preserve_all_1600_ids(self):
+        old=factory.variant_catalog(1600)
+        enlarged=factory.variant_catalog(2000)
+        self.assertEqual(len(enlarged),2000)
+        self.assertEqual(len({v.id for v in enlarged}),2000)
+        self.assertEqual([v.id for v in old],[v.id for v in enlarged[:1600]])
+        families=[v.family for v in enlarged[1600:]]
+        self.assertEqual(set(families),
+                         {"inside_bar_release","band_reentry",
+                          "vwap_trend_reclaim","efficient_trend"})
+        self.assertEqual({name:families.count(name) for name in set(families)},
+                         {name:100 for name in set(families)})
+        self.assertEqual(set(v.horizon for v in enlarged[1600:]),
+                         set(factory.HORIZONS))
+        with self.assertRaises(ValueError):
+            factory.variant_catalog(2001)
+
+    def test_new_four_v9_signals_use_only_current_or_earlier_confirmed_bars(self):
+        j=350
+        variants=[
+            factory.Variant("inside_bar_release",20,1.15,50,4),
+            factory.Variant("band_reentry",20,1.8,0,8),
+            factory.Variant("vwap_trend_reclaim",20,1.0,50,16),
+            factory.Variant("efficient_trend",6,0.82,50,32)]
+        for variant in variants:
+            rows=market(600, slope=.035 if variant.family!="band_reentry" else .005)
+            if variant.family=="inside_bar_release":
+                m=rows[j-2][4]
+                rows[j-2][1:5]=[m,m+2,m-2,m]
+                rows[j-1][1:5]=[m,m+1,m-1,m]
+                rows[j][1:5]=[m,m+3.5,m-.5,m+3]
+                rows[j][5]=2400
+            elif variant.family=="band_reentry":
+                rows[j-1][4]-=7
+                rows[j-1][3]=min(rows[j-1][3],rows[j-1][4]-.25)
+                rows[j][5]=1500
+            elif variant.family=="vwap_trend_reclaim":
+                rows[j-1][4]-=3
+                rows[j-1][3]=min(rows[j-1][3],rows[j-1][4]-.2)
+                rows[j][4]+=2
+                rows[j][2]=max(rows[j][2],rows[j][4]+.2)
+                rows[j][5]=2500
+            elif variant.family=="efficient_trend":
+                base=rows[j-7][4]
+                for k in range(j-6,j+1):
+                    p=base+(k-(j-7))*0.8
+                    rows[k][1:5]=[p-.4,p+.3,p-.7,p]
+                    rows[k][5]=1500
+            f=factory.Features(rows)
+            observed=factory.signal(f,variant,j)
+            self.assertEqual(observed,1,variant.family)
+            # Bars created/altered in the future must not change the
+            # historical signal that would actually have been available.
+            future=[r.copy() for r in rows]
+            future[j+15][4]+=20
+            future[j+15][2]=max(future[j+15][2],future[j+15][4]+1)
+            self.assertEqual(factory.signal(factory.Features(future),variant,j),
+                             observed,variant.family)
+            # Missing / invalid future-source proof cannot become a fill.
+            self.assertTrue(all(r["entry_ts"]<r["exit_ts"]
+                                for r in factory.backtest(rows,variant)))
 
     def test_volume_fade_and_rsi_recovery_never_look_ahead(self):
         original=market(400)
