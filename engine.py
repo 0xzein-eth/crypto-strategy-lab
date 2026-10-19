@@ -666,7 +666,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "price_change_reference":q.get("price_change_reference","provider-24h-window"),
                   "signal_rule":"pre-registered confirmed-candle or 24h baseline",
                   "research_only":True,
-                  "allocation_policy":"learner-v6-entry-coverage-neutral-no-outcome-promotion",
+                  "allocation_policy":"learner-v7-confirmed-input-diversity-neutral-no-outcome-promotion",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
                   "performance_neutral_allocation":True,
