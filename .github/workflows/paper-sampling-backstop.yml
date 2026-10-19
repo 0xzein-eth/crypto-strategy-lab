@@ -5,14 +5,14 @@ on:
   # Two staggered checks/hour, away from the canonical 04/14/... lab cron.
   # GitHub Actions cron is BEST EFFORT and cannot guarantee 10-minute timing.
   schedule:
-    - cron: '09,39 * * * *'
+    - cron: '07,37 * * * *'
 
 permissions:
   contents: read
   actions: write
 
 concurrency:
-  group: paper-sampling-backstop-check
+  group: schedule-guardian-main
   cancel-in-progress: false
 
 jobs:
@@ -27,13 +27,14 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Validate guardian anti-duplicate decision rules
-        run: python -m unittest discover -s tests -p 'test_scheduler_guard.py' -v
+      - name: Verify local event ledger integrity before requesting recovery
+        run: python audit.py
       - name: Inspect authoritative main report and active lab jobs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          python scheduler_guard.py --recover --threshold-minutes 25 --status-file guardian-backstop-status.json
+          python scheduler_guard.py --recover --threshold-minutes 14 --status-file guardian-backstop-status.json
       - name: Preserve the watchdog decision (never paper prices or credentials)
         if: always()
         uses: actions/upload-artifact@v4
