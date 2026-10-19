@@ -102,8 +102,12 @@ class BandOpportunityTests(unittest.TestCase):
         self.assertEqual(before["bandsweep_confirmed_long"],1)
         # Source validation must have rejected any malformed historical candle.
         payload["data"][0][-1]="1"
-        with self.assertRaises(ValueError):
-            signals.from_okx("BTC",q,lambda _:payload,lambda:observed)
+        # Even incorrectly marked confirmed, a candle not yet ENDED is
+        # rejected by the canonical parser and cannot contribute.
+        still={}
+        c=signals.from_okx("BTC",q,lambda _:payload,lambda:observed,diagnostics=still)
+        self.assertEqual(a,c)
+        self.assertEqual(before,still)
 
     def test_band_funnel_does_not_mutate_historical_input(self):
         rows=valid_bars()
