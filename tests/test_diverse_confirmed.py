@@ -7,6 +7,9 @@ import unittest
 import learner
 import diverse_confirmed
 import signals
+import engine
+import learner as research_allocator
+from unittest.mock import patch
 
 UTC=dt.timezone.utc
 
@@ -120,6 +123,46 @@ class DistinctForwardHypotheses(unittest.TestCase):
         self.assertEqual(event["evidence"]["bar_time"],z[-1]["time"])
         self.assertEqual(event["evidence"]["bar_span"],"15m confirmed OKX USDT-SWAP")
         self.assertTrue(event["evidence"]["research_only"])
+
+    def test_new_versioned_paper_open_remains_fixed_horizon_and_history_immutable(self):
+        bars_ = bars()
+        bars_[-3].update(high=102,low=98)
+        bars_[-2].update(high=101,low=99)
+        bars_[-1].update(high=105,low=99.5,close=104,volume=250)
+        now=dt.datetime(2026,10,18,18,0,tzinfo=UTC)
+        snapshot={"symbol":"BTC", "price":104.0, "pct24h":2.1,
+                  "quote_volume_24h":10_000_000.0,
+                  "observed_at":engine.stamp(now),
+                  "provider":"okx-swap", "market_type":"perpetual",
+                  "instrument":"BTC-USDT-SWAP"}
+        old={"LAB-999":{"id":"LAB-999","symbol":"ETH","provider":"okx-swap",
+                        "status":"CLOSED","strategy":"BR-v3",
+                        "created_at":engine.stamp(now-dt.timedelta(days=3)),
+                        "horizon_hours":2}}
+        before=copy.deepcopy(old)
+        advanced=lambda sym,q:signals.classify(bars_)
+        def pick(options, records, symbol, horizon, slot, rank, profile=None):
+            item=next((x for x in options if x["strategy"]=="IBREAK-v1"),None)
+            return item, "controlled_test_only"
+        with patch.object(engine,"SYMBOLS",("BTC",)),patch.object(
+                research_allocator,"choose",side_effect=pick):
+            opens=engine.new_candidates(old,lambda s,p:snapshot,now,1500,1,
+                                        advanced=advanced,
+                                        reobserve=lambda s,p:snapshot,
+                                        clock=lambda:now)
+        self.assertEqual(old,before)
+        self.assertEqual(len(opens),1)
+        entry=opens[0]
+        self.assertEqual(entry["strategy"],"IBREAK-v1")
+        self.assertEqual(entry["evidence"]["hypothesis_version"],
+                         diverse_confirmed.VERSION)
+        self.assertIn(entry["horizon_hours"],(1,2,4,8,12,24))
+        self.assertEqual((engine.parse(entry["evaluate_at"])-
+                          engine.parse(entry["created_at"])).total_seconds(),
+                         entry["horizon_hours"]*3600)
+        self.assertEqual(entry["status"],"OPEN")
+        self.assertTrue(entry["evidence"]["research_only"])
+        engine.validate_open(entry)
 
     def test_unconfirmed_future_15m_bar_must_not_change_signal(self):
         rows=bars()
