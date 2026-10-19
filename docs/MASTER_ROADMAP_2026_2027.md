@@ -28,7 +28,7 @@
 ## Fase 0 — utamakan kejujuran dan integritas (selesai; dijaga selamanya)
 
 - Tidak pernah merekayasa harga, mengubah timestamp, menutup posisi sebelum evaluate_at, atau melompat penyedia dari OPEN ke CLOSE.
-- Dataset terbagi jelas: quote sesungguhnya yang diamati, ledger OPEN/CLOSE prospektif, dan 1.600 varian *historical backtest* hipotetis.
+- Dataset terbagi jelas: quote sesungguhnya yang diamati, ledger OPEN/CLOSE prospektif, dan 2.000 varian *historical backtest* hipotetis.
 - Menolak klasifikasi sebagai "champion" hanya karena win rate tertinggi, banyak trade, atau hasil 1–2 minggu.
 - Setiap perubahan terhadap kontrak fixed-horizon atau live trading di luar cakupan roadmap ini, memerlukan persetujuan pengguna tersendiri.
 
@@ -69,7 +69,14 @@ serta kebutuhan audit cohort versi ada di
 
 **Gate sukses:** laporan menyertakan kontrol pasangan benar-benar tercocok, fraction, training days dan sifat deskriptif; tidak pernah mematikan strategi atau mengubah trade CLOSED secara otomatis.
 
-**Implementasi tambahan:** `dataset_health.py` dan workflow `dataset-health.yml` secara read-only menghitung setiap arm dan enam horizon, termasuk posisi OPEN, sudah jatuh tempo, eligible tepat waktu, late excluded, spot proxy, persentase field bid/ask spread yang tersedia, dan match rate terhadap kontrol. Workflow memverifikasi event chain penuh sebelum membuat artifact; tidak menambah, mengedit, atau menutup posisi.\n\n## Fase 3 — sampel independen lintas kalender (4–12 minggu aktual, belum selesai)
+**Implementasi tambahan:** `dataset_health.py` dan workflow `dataset-health.yml` secara read-only menghitung setiap arm dan enam horizon, termasuk posisi OPEN, sudah jatuh tempo, eligible tepat waktu, late excluded, spot proxy, persentase field bid/ask spread yang tersedia, dan match rate terhadap kontrol. Workflow memverifikasi event chain penuh sebelum membuat artifact; tidak menambah, mengedit, atau menutup posisi.\n\n## Sprint 2026-10-19 — tiga prioritas (diimplementasikan lewat PR terpisah)
+
+1. **Scheduler:** jam cek tambahan GitHub di menit UTC :07/:37, *staggered* terhadap lab/health/rescue. Memakai **concurrency guard `schedule-guardian-main` yang sama** dan autentikasi GitHub yang sudah ada, memvalidasi ledger dan mengecek laporan `main` + antrean job sebelum *workflow_dispatch*. Jika job lab aktif/queued, TIDAK dispatch; jika Actions sendiri tidak mengirim cron, tidak ada SLA 100% yang dapat dijanjikan. Pemicu ini hanya pemulihan kondisi *stale*; tidak menjalankan engine sendiri.
+2. **BANDREV-v1:** tetap tidak diubah agar v1 dapat dievaluasi jujur. `band_hypotheses.py` mencatat tahapan: varian sebelumnya berada di luar band 20-close, kembali masuk, arah recovery dan filter tren/volume. `data/report.json.entry_opportunity_audit.band_signal_gate_counts` hanya menghitung **sumber confirmed yang benar-benar lolos parsing**; tidak ada candle atau trade yang dibuat bila tidak teramati. **BANDSWEEP-v1** adalah arm BARU berbeda: sweep intrabar pada candle confirmed terhadap statistik 20 candle sebelumnya dan tutup kembali ke envelope dengan wick penolakan, didaftar terpisah tanpa label ulang historis atau jaminan menghasilkan edge.
+3. **Matched underperformance by horizon:** `matched_controls.py` memecah pasangan real dengan kunci day/symbol/horizon/side/regime per horizon 1,2,4,8,12,24 jam dan mencatat train delta, band ketidakpastian *day clusters*, fraction, jumlah training dan monitoring yang tidak digunakan. `negative_edge_diagnostic.py` membuat kategori *INSUFFICIENT_MATCHED_PAIR_DAYS* bila perbandingan tidak layak. **Tidak mematikan strategi**, tidak melakukan promosi dan tidak mengubah bobot hanya berdasarkan data holdout.
+4. **Penerimaan:** tests dan audit chain di PR harus *success*. Keberhasilan setelah merge **belum** berarti 90% schedule tercapai atau BANDSWEEP sudah punya hasil; keduanya harus dinilai ulang dari laporan prospektif setelah kalender berjalan.
+
+## Fase 3 — sampel independen lintas kalender (4–12 minggu aktual, belum selesai)
 
 Ambang **readiness**, bukan bukti alpha:
 - minimal **20 UTC entry days**, **4 ISO weeks**, setidaknya 5 weekday;
