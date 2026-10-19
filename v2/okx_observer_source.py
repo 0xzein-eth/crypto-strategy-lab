@@ -75,8 +75,9 @@ def instrument_contract_base(symbol, getter=public_json):
     return contract_base
 
 
-def one_book(symbol, now, *, getter=public_json):
-    """Authenticated request address + exchange timestamp + contract geometry."""
+def one_book(symbol, now=None, *, getter=public_json,
+             clock=lambda:dt.datetime.now(UTC)):
+    """Verify book with a wall clock read AFTER the market request completes."""
     # Fetch metadata BEFORE top book so the latter has the newest clock.
     ct_base = instrument_contract_base(symbol,getter)
     raw = getter(endpoint("/market/books",symbol,{"sz":"1"}))
@@ -86,7 +87,8 @@ def one_book(symbol, now, *, getter=public_json):
     row = rows[0]
     stamp_ms = int(row["ts"])
     observed = dt.datetime.fromtimestamp(stamp_ms/1000,UTC)
-    if observed > ts(now) or (ts(now)-observed).total_seconds()>160:
+    check_time = ts(now) if now is not None else ts(clock())
+    if observed > check_time or (check_time-observed).total_seconds()>160:
         raise ValueError("SOURCE_STALE: public book older than 160s")
     bid_price, bid_contracts = D(row["bids"][0][0]),D(row["bids"][0][1])
     ask_price, ask_contracts = D(row["asks"][0][0]),D(row["asks"][0][1])
@@ -157,7 +159,7 @@ def current_tick(*, clock=lambda:dt.datetime.now(UTC),getter=public_json):
     books, candidates = {}, {}
     for symbol in SYMBOLS:
         # Re-read clock after public request(s). Future/old timestamps fail.
-        book = one_book(symbol,clock(),getter=getter)
+        book = one_book(symbol,None,getter=getter,clock=clock)
         books[symbol] = book
         candidates[symbol] = one_signals(symbol,book,getter=getter)
     now = clock()
