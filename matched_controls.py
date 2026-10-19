@@ -131,15 +131,15 @@ def compare(records):
             monitoring=[pair for pair in matching if
                         learner.stable_bucket("holdout:"+pair["entry_day"],5)==0]
             train_low,train_high=_daily_interval(training)
-            days=len({pair["entry_day"] for pair in training})
+            horizon_days=len({pair["entry_day"] for pair in training})
             subset_n=sum(r["horizon_hours"]==hours for r in by_arm[arm])
-            sufficiently_sampled=(len(training)>=20 and days>=7)
+            sufficiently_sampled=(len(training)>=20 and horizon_days>=7)
             horizon_audit[str(hours)]={
                 "eligible_arm_closes":subset_n,
                 "matched_pairs":len(matching),
                 "matched_fraction":_round(len(matching)/subset_n) if subset_n else None,
                 "paired_train_pairs":len(training),
-                "paired_train_utc_days":days,
+                "paired_train_utc_days":horizon_days,
                 "paired_monitoring_pairs_not_used":len(monitoring),
                 "train_mean_delta_stress_scenario_R":_round(mean(p["delta_after_friction_R"] for p in training)) if training else None,
                 "train_day_cluster_descriptive_lcb_R":train_low,
