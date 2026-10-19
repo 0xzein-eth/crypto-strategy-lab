@@ -52,13 +52,35 @@ def make_opportunity_audit(requested):
         "advanced_source_checks": 0,
         "slots_with_any_confirmed_signal": 0,
         "slots_with_no_confirmed_signal": 0,
+        "no_confirmed_signal_proxy_slots_skipped": 0,
+        "no_confirmed_signal_baseline_probes_allowed": 0,
+        "no_signal_baseline_probe_percent": 12,
         "confirmed_arm_opportunities": {},
         "new_paper_opens_by_arm": {},
         "skipped_by_symbol_slot_or_capacity": 0,
         "fresh_entry_quote_rejections": 0,
         "recent_7d_confirmed_open_counts": {},
-        "note": "Counts candidate opportunities only when evaluated, not all market patterns. Sampled arm counts contain NO CLOSE outcomes, and don't establish edge.",
+        "note": "Counts ONLY inspected real opportunities. A 12%-of-unique-symbol-slot deterministic fallback probe is permitted with NO confirmed OKX signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
     }
+
+
+NO_CONFIRMED_BASELINE_PROBE_PERCENT = 12
+
+
+def no_confirmed_baseline_probe(symbol, signal_slot, pct=NO_CONFIRMED_BASELINE_PROBE_PERCENT):
+    """Only sparse no-candle-signal control probes; never SELECT winners.
+
+    Hash the original *15-minute* frozen symbol slot, not a later outcome,
+    scheduler wall-clock date, or historical backtest score. A control
+    sample remains possible in every real market regime without flooding
+    the ledger with directional 24h-only baseline hypotheses.
+    """
+    if (not isinstance(symbol,str) or not symbol or
+            isinstance(signal_slot,bool) or not isinstance(signal_slot,int) or
+            isinstance(pct,bool) or not isinstance(pct,int) or not 0<=pct<=100):
+        raise ValueError("invalid no-signal baseline sampling policy")
+    return learner.stable_bucket(
+        "no-confirmed-control-probe-v1:%s:%s"%(symbol,signal_slot),100) < pct
 
 
 def increment(counter, arm):

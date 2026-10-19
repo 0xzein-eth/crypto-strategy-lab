@@ -49,6 +49,17 @@
 
 **Diversifikasi strategi prospektif (19 Oktober):** empat family masuk ke [preregistrasi 2026-10-19](DIVERSE_PROSPECTIVE_HYPOTHESES_20261019.md): IBREAK, BANDREV, VWAPTR, EFFTREND, masing-masing memakai data entry-only dan enam horizon. Kebijakan source-quality v7 mengalokasikan 35% bucket sampling coverage confirmed, 35% eksplorasi confirmed, 20% CTRL, 5% proxy dan 5% netral; ini bukan reward-based champion. Horizon, per-symbol slot, dan ledger tidak berubah. Semua masih perlu bukti independen.
 
+**Sprint perbaikan 19 Oktober (diimplementasikan, efek prospektif belum
+dibuktikan):** alokasi `learner-v8` menahan 88% kesempatan baseline
+direction-only tanpa sinyal confirmed pada venue OKX, menjaga 12% probe
+teracak deterministik dan 20% band CTRL saat confirmed tersedia.
+Sebagian kecil kesempatan arm dengan kerugian training konsisten dapat
+dikurangi bobotnya 4:1, tidak dimatikan. Monitor dan histori v9 tidak
+mempengaruhi pilihan. Targetnya mengurangi sampel tidak informatif,
+**bukan** mempercantik cumulative P&L atau mengklaim alpha. Rincian
+serta kebutuhan audit cohort versi ada di
+[protokol kualitas strategi](STRATEGY_QUALITY_SPRINT_20261019.md).
+
 ## Fase 2 — transparansi underperformers & biaya (sekarang, read-only)
 
 - Terbitkan dua label training-only secara **terpisah**: (a) expectancy absolut konsisten negatif menurut hari entry, (b) perbedaan *matched* terhadap CTRL-v1 negatif dengan jumlah pasangan dan hari mencukupi.
