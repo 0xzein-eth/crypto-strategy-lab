@@ -71,8 +71,9 @@ class ProxyQualityGateTests(unittest.TestCase):
 
     def test_real_confirmed_candidates_remain_available_at_every_fresh_slot(self):
         def make_advanced(symbol,market):
+            when=engine.parse(market["observed_at"])-dt.timedelta(minutes=15)
             return [{"strategy":"IBREAK-v1","side":"LONG",
-                     "evidence":{"bar_time":"2026-10-19T05:45:00Z",
+                     "evidence":{"bar_time":engine.stamp(when),
                                  "bar_span":"15m confirmed OKX USDT-SWAP"}}]
         for i in range(75):
             moment=BASE+dt.timedelta(minutes=15*i)
