@@ -1,0 +1,44 @@
+name: Paper sampling backstop (independent clock)
+
+on:
+  workflow_dispatch:
+  # Two staggered checks/hour, away from the canonical 04/14/... lab cron.
+  # GitHub Actions cron is BEST EFFORT and cannot guarantee 10-minute timing.
+  schedule:
+    - cron: '09,39 * * * *'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: paper-sampling-backstop-check
+  cancel-in-progress: false
+
+jobs:
+  recover-only-if-truly-overdue:
+    if: github.repository == '0xzein-eth/crypto-strategy-lab'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Validate guardian anti-duplicate decision rules
+        run: python -m unittest discover -s tests -p 'test_scheduler_guard.py' -v
+      - name: Inspect authoritative main report and active lab jobs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scheduler_guard.py --recover --threshold-minutes 25 --status-file guardian-backstop-status.json
+      - name: Preserve the watchdog decision (never paper prices or credentials)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-sampling-backstop-${{ github.run_id }}
+          path: guardian-backstop-status.json
+          if-no-files-found: warn
+          retention-days: 7
