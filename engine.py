@@ -703,7 +703,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                       "bounded_train_only_4to1_exploration_no_holdout_v1"
                       if allocation == "confirmed_signal_training_negative_downweighted"
                       else "inactive"),
-                  "signal_catalog_version":"2026-10-19-confirmed-diversity-v6",
+                  "signal_catalog_version":"2026-10-19-band-sweep-research-v7",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
                   "sampling_rule":"sector-direction-volatility-roundrobin-15m",
@@ -976,9 +976,16 @@ def run(requested=14, clock=utcnow):
     closures, late, missing = close_due(records, read_quote, current, clock=clock)
     for r in closures:
         records[r["id"]] = r
+    band_signal_gate_totals = {}
     def advanced(symbol, snapshot):
         try:
-            return signals.from_okx(symbol, snapshot, request_json, clock)
+            current_band = {}
+            found = signals.from_okx(symbol, snapshot, request_json, clock,
+                                     diagnostics=current_band)
+            for stage, passed in current_band.items():
+                band_signal_gate_totals[stage] = (
+                    band_signal_gate_totals.get(stage,0) + int(passed))
+            return found
         except (urllib.error.URLError, TimeoutError, KeyError, TypeError,
                 ValueError, IndexError, RuntimeError, OSError) as exc:
             errors["15m_OHLCV:" + symbol] = str(exc)[:150]
@@ -989,6 +996,9 @@ def run(requested=14, clock=utcnow):
     opens = new_candidates(records, read_quote, current, next_id, requested_this_run,
                            advanced=advanced, reobserve=reobserve, clock=clock,
                            horizons=allowed_horizons, opportunity_audit=entry_opportunity_audit)
+    # Count ONLY successful confirmed OHLCV evaluations; a missing API
+    # source does not silently count as zero market opportunities.
+    entry_opportunity_audit["band_signal_gate_counts"] = dict(sorted(band_signal_gate_totals.items()))
     for r in opens:
         records[r["id"]] = r
     events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
