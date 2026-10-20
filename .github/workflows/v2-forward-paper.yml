@@ -1,5 +1,14 @@
 name: Crypto Lab v2 durable public-market PAPER wallet
 on:
+  # Kick the first REAL data run immediately after code is merged, instead
+  # of waiting for GitHub's best-effort schedule. Excludes v2_state and v8
+  # ledger commits, so an observation push never triggers itself recursively.
+  push:
+    branches: [main]
+    paths:
+      - 'v2/**'
+      - 'tests/test_v2_*.py'
+      - '.github/workflows/v2-forward-paper.yml'
   workflow_dispatch:
   # Additional REAL clock from the already active canonical v8 observer.
   # Bounded once per successfully completed main lab workflow, serialized
@@ -35,6 +44,7 @@ jobs:
       - name: Run deterministic v2 replay and public-market contract tests
         run: |
           python -m unittest discover -s tests -p 'test_v2_forward_paper.py' -v
+          python -m unittest discover -s tests -p 'test_v2_source_end_to_end.py' -v
           python -m unittest discover -s tests -p 'test_v2_paper_portfolio.py' -v
           python -m v2.forward_paper --verify-only
       - name: Observe verified exchange books and confirmed signal rules
