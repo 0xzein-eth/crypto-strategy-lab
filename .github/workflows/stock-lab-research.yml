@@ -1,6 +1,10 @@
 name: Stock Strategy Lab IDX chronological research
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/stock-lab-research.yml'
   workflow_run:
     workflows: ["Stock Strategy Lab IDX daily CASH PAPER"]
     types: [completed]
