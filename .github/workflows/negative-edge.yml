@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'negative_edge_diagnostic.py'
+      - 'negative_edge_attribution.py'
+      - 'tests/test_negative_edge_attribution.py'
       - 'matched_controls.py'
       - 'tests/test_negative_edge_diagnostic.py'
       - '.github/workflows/negative-edge.yml'
@@ -43,9 +45,20 @@ jobs:
               json.dump(result, file, indent=2, sort_keys=True, allow_nan=False)
           print("Negative absolute:", [k for k,v in result["arms"].items() if v["negative_expectancy_warning"]])
           print("Worse than matched TRAIN controls:", [k for k,v in result["arms"].items() if v["worse_than_matched_control_training_warning"]])
+          import negative_edge_attribution
+          attribution = negative_edge_attribution.evaluate(records)
+          attribution["source_ledger_tip_sha256"] = tip
+          attribution["source_verified_events"] = seq
+          with open("negative-edge-attribution.json", "w", encoding="utf-8") as file:
+              json.dump(attribution, file, indent=2, sort_keys=True, allow_nan=False)
+          print("Descriptive regime/horizon loss cohorts:", {
+              d: [name for name,v in cell.items() if v["descriptive_negative_warning"]]
+              for d,cell in attribution["dimensions"].items()})
           PY
       - uses: actions/upload-artifact@v4
         with:
           name: negative-edge-research-report
-          path: negative-edge-report.json
+          path: |
+            negative-edge-report.json
+            negative-edge-attribution.json
           retention-days: 30
