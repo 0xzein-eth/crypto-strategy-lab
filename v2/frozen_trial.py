@@ -31,6 +31,25 @@ MIN_PAIRED_MATCHES_PER_ARM=100
 MAX_DRAWDOWN_USDT=100
 MIN_PORTFOLIO_PROFIT_FACTOR=1.20
 VERSION="v2-90day-predeclared-future-paper-v1"
+# These are Git *blob* SHA1 fingerprints at freeze registration time.
+# Freezing source prevents silent backfit of an actively measured signal,
+# wallet or shadow test even when someone forgets to increment VERSION.
+FROZEN_RESEARCH_BLOBS={
+    "signals.py":"87b1a0e122ac5b4bc2a388cab43f8c8c5c065412",
+    "v2/forward_paper.py":"ecba80ed70849eeef41932f493213535418d87d5",
+    "v2/shadow_research.py":"6561a88887ae0ba6b292792677102af92aaba633",
+}
+
+
+def verify_frozen_sources(root=None):
+    folder=Path(root) if root is not None else Path(__file__).resolve().parent.parent
+    for path,expected in FROZEN_RESEARCH_BLOBS.items():
+        data=(folder/path).read_bytes()
+        git_hash=hashlib.sha1(
+            ("blob %s\\0"%len(data)).encode()+data).hexdigest()
+        if git_hash!=expected:
+            raise ValueError("FROZEN_POLICY_VIOLATION: strategy or wallet code changed; register a NEW prospective epoch")
+    return True
 
 
 def contract():
@@ -43,6 +62,7 @@ def contract():
         "source_signal_policy_version":forward_paper.VERSION,
         "source_shadow_catalog_version":shadow_research.VERSION,
         "frozen_catalog_count":len(shadow_research.ARMS),
+        "exact_frozen_git_blob_source_fingerprints":FROZEN_RESEARCH_BLOBS,
         "predeclared_candidate_arms":list(CANDIDATES),
         "predeclared_exact_symbols":list(UNIVERSE),
         "fixed_horizon_hours":4,
@@ -64,6 +84,7 @@ def contract():
 
 
 def evaluate(wallet,shadow,*,now=None):
+    verify_frozen_sources()
     rules=contract()
     if wallet.get("version")!=forward_paper.VERSION or shadow.get("version")!=shadow_research.VERSION:
         raise ValueError("INTEGRITY_FAILURE: mismatching registered v2 sources")
@@ -171,6 +192,7 @@ def evaluate(wallet,shadow,*,now=None):
 
 
 def main():
+    verify_frozen_sources()
     cli=argparse.ArgumentParser(description="Frozen 90d forward research: do not peek before 2027")
     cli.add_argument("--wallet",default="v2_state/report.json")
     cli.add_argument("--shadow",default="v2_state/shadow_report.json")
