@@ -282,6 +282,23 @@ research prerequisite and may be impossible if upstream history is
 not publicly retrievable. No actual 365-/730-day result claimed until
 manifest data proves it.
 
+## Delivered quantitative quality gate — 2026-10-20
+
+The all-26-arm `v2.evidence_gate` now requires at least 100 actual
+depth-eligible matched signals, 20 independent UTC entry days and
+4 ISO weeks per candidate before calculating exploratory statistical
+evidence. It compares each signal against its previously SHA256-frozen
+same-asset/same-timestamp/same-horizon neutral control, clusters
+returns at UTC entry-day level, and applies deterministic 2,048-draw
+shared-day maxT familywise testing. Day-signs are common across all
+assets and hypotheses to account for broad market correlation.
+All adjusted p-values, absolute fee/spread/stress returns, group
+diversity and no-final-holdout blockers are published as artifacts via
+`v2-evidence-gate.yml`. This is **NOT** statistically valid proof of
+alpha from a repeatedly inspected dataset or a realistic order
+execution venue. No allocator promotes based on p-values.
+See [predeclared research cautions](V2_MULTIPLE_TESTING_EVIDENCE_20261020.md).
+
 ## Concrete phased build plan, prerequisites and definition of done
 
 | Phase | Suggested effort* | Owner artifact / implementation | Exit condition |

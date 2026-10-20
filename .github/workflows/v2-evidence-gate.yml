@@ -1,0 +1,39 @@
+name: Crypto Lab v2 day-cluster familywise research gate
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Crypto Lab v2 durable public-market PAPER wallet"]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '23 5 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v2-descriptive-hypothesis-gate
+  cancel-in-progress: false
+jobs:
+  study:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check authentic hashed v2 source and no-orders invariant
+        run: |
+          python -m v2.forward_paper --verify-only
+          python -m unittest discover -s tests -p 'test_v2_evidence_gate.py' -v
+      - name: Measure 26 frozen candidate hypotheses with UTC-day shared-control adjustment
+        run: |
+          python -m v2.evidence_gate --source v2_state/shadow_report.json --output /tmp/v2-frozen-multiplicity-review.json
+      - name: Always publish descriptive evidence and insufficient-data status
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-frozen-26-arm-familywise-research-evidence
+          path: /tmp/v2-frozen-multiplicity-review.json
+          retention-days: 30

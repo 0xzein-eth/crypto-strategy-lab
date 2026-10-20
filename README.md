@@ -158,6 +158,21 @@ berjalan batch terjadwal/dispatch dan menyimpan data terverifikasi di
 `v2_history/`. **Data historis tidak digunakan untuk mengarang
 transaksi forward ataupun untuk menyetujui trading riil.**
 
+## Crypto Lab v2 — kontrol bias dari banyak strategi
+
+`v2/evidence_gate.py` menilai 26 strategi berdasarkan hasil
+shadow dengan pasangan kontrol pada aset dan waktu yang sama,
+**mengelompokkan trade berdasarkan hari UTC** alih-alih menganggap
+ribuan transaksi independen. Menggunakan koreksi pengujian bersama
+dengan 2.048 *shared-day sign-flip permutations*. Baru memberi
+statistik eksploratoris ketika ada minimal 100 pasangan valid,
+20 hari entry terpisah dan 4 minggu ISO. Hasil tetap **tidak
+memperbolehkan promosi strategi otomatis** karena data telah
+sering diperiksa dan funding serta eksekusi riil belum lengkap.
+Laporan terbuka sebagai artefak GitHub Actions melalui
+[workflow evidence gate](.github/workflows/v2-evidence-gate.yml).
+[Baca protokolnya](docs/V2_MULTIPLE_TESTING_EVIDENCE_20261020.md).
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
