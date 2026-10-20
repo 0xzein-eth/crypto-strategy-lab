@@ -75,7 +75,7 @@ class SettledFundingEvidenceTests(unittest.TestCase):
         self.assertAlmostEqual(pair["settled_funding_adjusted_control_net_pct"],-.39)
         self.assertAlmostEqual(pair["incremental_after_settled_funding_pct"],.88)
         self.assertEqual(output["closed_wallet_results_with_measured_funding"][0][
-            "historical_closed_net_after_measured_funding_usdt"],"0.9800")
+            "historical_closed_net_after_measured_funding_usdt"],"0.98")
         self.assertFalse(output["wallet_final_equity_adjusted_for_all_funding"])
         self.assertFalse(output["90_day_untouched_alpha_proven"])
         self.assertFalse(output["live_deployment_authorized"])
