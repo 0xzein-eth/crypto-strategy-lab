@@ -311,8 +311,13 @@ def replay(events):
                 key=hashlib.sha256(("IDX-paper-v1|"+symbol+"|"+prior_date.isoformat()).encode()).digest()
                 arm=candidates[key[0]%len(candidates)]
                 current=tick["assets"][symbol]["bars"][-1]
-                equity_pre=equity_from_close(tick)
-                n=_units_to_buy(cash,current["open"],current["volume"],equity_pre)
+                # Causality: sizing cannot depend on today's CLOSE or today's
+                # eventual total VOLUME at a hypothetical morning OPEN.
+                # Those are unknowable at the moment of opening auction.
+                prior_bar=previous["assets"][symbol]["bars"][-1]
+                last_confirmed_equity=dec(curve[-1]["simulated_equity_idr"])
+                n=_units_to_buy(cash,current["open"],prior_bar["volume"],
+                                last_confirmed_equity)
                 if n<LOT:
                     if cash<dec(current["open"])*LOT*(1+BUY_FEE)*(1+ADVERSE_OPEN):
                         skipped_cash+=1
