@@ -7,11 +7,19 @@ on:
       - 'stock_lab/**'
       - 'tests/test_stock_lab.py'
       - '.github/workflows/stock-lab.yml'
+  # Extra independent opportunity when the cron scheduler is delayed.
+  # Still checks actual EOD time, provider date, and unique session.
+  workflow_run:
+    workflows: ["Crypto Lab v2 read-only data quality inventory"]
+    types: [completed]
+    branches: [main]
   schedule:
     # Indonesia / Jakarta UTC+7: best-effort after the 16:15 WIB post-close
     # session, with extra vendor EOD publication time. Mon-Fri only.
     - cron: '15 11 * * 1-5'
     - cron: '20 12 * * 1-5'
+    - cron: '35 13 * * 1-5' # 20:35 WIB late vendor publication
+    - cron: '20 14 * * 1-5' # 21:20 WIB last daily backstop
 permissions:
   contents: write
 concurrency:
@@ -19,6 +27,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.event != 'pull_request')
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
