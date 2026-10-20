@@ -505,7 +505,7 @@
     "underperformer_policy": ">=50 eligible training closes and >=7 training UTC days, clipped daily upper bound < -0.05R, training mean >0.05R worse than CTRL; only 4:1 exploration reweight, never disable; monitoring outcomes excluded",
     "warning": "No strategy has demonstrated a reliable tradable edge. Training-only allocations never access monitoring results. Historical monitoring was previously used for allocations, so it is not an untouched final holdout. Selection remains observational, multi-tested and correlated."
   },
-  "added": 0,
+  "added": 3,
   "blocked_market_providers": {
     "binance-futures": 451,
     "bybit-linear": 403
@@ -518,8 +518,8 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 13593,
-  "closed_this_run": 12,
-  "created": 14069,
+  "closed_this_run": 0,
+  "created": 14072,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.05839,
     "n": 12042,
@@ -531,26 +531,38 @@
       "band_previous_std_positive": 15,
       "bandrev_complete_long": 0,
       "bandrev_complete_short": 0,
-      "bandrev_current_reentry_long": 4,
+      "bandrev_current_reentry_long": 1,
       "bandrev_current_reentry_short": 0,
-      "bandrev_directional_recovery_long": 4,
+      "bandrev_directional_recovery_long": 1,
       "bandrev_directional_recovery_short": 0,
-      "bandrev_previous_outside_long": 5,
+      "bandrev_previous_outside_long": 1,
       "bandrev_previous_outside_short": 0,
       "bandsweep_confirmed_long": 0,
       "bandsweep_confirmed_short": 0
     },
     "concurrent_open_before_tick": 476,
     "concurrent_open_remaining_before_tick": 574,
-    "confirmed_arm_opportunities": {},
+    "confirmed_arm_opportunities": {
+      "ATRCHAN-v1": 1,
+      "BR-v3": 1,
+      "COMPBR-v1": 1,
+      "DC-v1": 1,
+      "MR-v3": 1,
+      "TRECLAIM-v1": 1,
+      "TREND-v1": 1
+    },
     "daily_new_entry_quota": 1750,
     "effective_new_slots_before_signal_checks": 44,
     "eligible_quote_symbols": 29,
     "fresh_entry_quote_rejections": 0,
-    "new_paper_opens_by_arm": {},
+    "new_paper_opens_by_arm": {
+      "COMPBR-v1": 1,
+      "TRECLAIM-v1": 1,
+      "TREND-v1": 1
+    },
     "no_confirmed_signal_baseline_probes_allowed": 0,
-    "no_confirmed_signal_proxy_slots_skipped": 15,
-    "no_new_entry_reason": "NO_CONFIRMED_SIGNAL_AND_SPARSE_PROBES_GATED",
+    "no_confirmed_signal_proxy_slots_skipped": 12,
+    "no_new_entry_reason": null,
     "no_signal_baseline_probe_percent": 12,
     "note": "Counts ONLY inspected real opportunities. A 12%-of-unique-symbol-slot deterministic fallback probe is permitted with NO confirmed OKX signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
     "paper_only": true,
@@ -586,8 +598,8 @@
     "scope": "real fresh market quote, distinct unsampled instrument/15m slot, within quota",
     "screened_symbol_slots": 15,
     "skipped_by_symbol_slot_or_capacity": 14,
-    "slots_with_any_confirmed_signal": 0,
-    "slots_with_no_confirmed_signal": 15,
+    "slots_with_any_confirmed_signal": 3,
+    "slots_with_no_confirmed_signal": 12,
     "training_only_negative_arms_v1": [],
     "training_or_monitoring_returns_used": false,
     "utc_day_opens_before_tick": 433,
@@ -807,7 +819,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-20T06:43:58.058874+00:00",
+      "as_of_utc": "2026-10-20T06:44:52.228582+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 4,
@@ -5377,7 +5389,7 @@
     "eligible_timely_perpetual_closures": 12042,
     "entry_regime": {
       "24h_down": {
-        "active": 209,
+        "active": 210,
         "breakeven": 0,
         "closed": 8205,
         "closed_expectancy_R": -0.06524,
@@ -5397,13 +5409,13 @@
         "late_closes": 835,
         "late_share_of_closed": 0.1018,
         "losses": 4318,
-        "opened": 8414,
+        "opened": 8415,
         "timely_closes": 7370,
         "win_rate": 0.4737,
         "wins": 3887
       },
       "24h_up": {
-        "active": 267,
+        "active": 269,
         "breakeven": 0,
         "closed": 5388,
         "closed_expectancy_R": -0.0634,
@@ -5423,7 +5435,7 @@
         "late_closes": 716,
         "late_share_of_closed": 0.1329,
         "losses": 2977,
-        "opened": 5655,
+        "opened": 5657,
         "timely_closes": 4672,
         "win_rate": 0.4475,
         "wins": 2411
@@ -5457,7 +5469,7 @@
         "wins": 2423
       },
       "06-11 UTC": {
-        "active": 112,
+        "active": 115,
         "breakeven": 0,
         "closed": 5472,
         "closed_expectancy_R": -0.09885,
@@ -5477,7 +5489,7 @@
         "late_closes": 425,
         "late_share_of_closed": 0.0777,
         "losses": 2943,
-        "opened": 5584,
+        "opened": 5587,
         "timely_closes": 5047,
         "win_rate": 0.4622,
         "wins": 2529
@@ -5535,7 +5547,7 @@
         "wins": 399
       }
     },
-    "evaluation_next_24_hours": 476,
+    "evaluation_next_24_hours": 478,
     "evaluation_next_hour": 67,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
@@ -5619,7 +5631,7 @@
         "wins": 1315
       },
       "24": {
-        "active": 234,
+        "active": 235,
         "breakeven": 0,
         "closed": 1344,
         "closed_expectancy_R": -0.05428,
@@ -5639,13 +5651,13 @@
         "late_closes": 130,
         "late_share_of_closed": 0.0967,
         "losses": 688,
-        "opened": 1578,
+        "opened": 1579,
         "timely_closes": 1214,
         "win_rate": 0.4881,
         "wins": 656
       },
       "4": {
-        "active": 35,
+        "active": 36,
         "breakeven": 0,
         "closed": 2282,
         "closed_expectancy_R": -0.07936,
@@ -5665,13 +5677,13 @@
         "late_closes": 283,
         "late_share_of_closed": 0.124,
         "losses": 1205,
-        "opened": 2317,
+        "opened": 2318,
         "timely_closes": 1999,
         "win_rate": 0.472,
         "wins": 1077
       },
       "8": {
-        "active": 76,
+        "active": 77,
         "breakeven": 0,
         "closed": 1905,
         "closed_expectancy_R": -0.02331,
@@ -5691,7 +5703,7 @@
         "late_closes": 197,
         "late_share_of_closed": 0.1034,
         "losses": 979,
-        "opened": 1981,
+        "opened": 1982,
         "timely_closes": 1708,
         "win_rate": 0.4861,
         "wins": 926
@@ -5699,7 +5711,7 @@
     },
     "market_type": {
       "perpetual": {
-        "active": 476,
+        "active": 479,
         "breakeven": 0,
         "closed": 13593,
         "closed_expectancy_R": -0.06451,
@@ -5719,7 +5731,7 @@
         "late_closes": 1551,
         "late_share_of_closed": 0.1141,
         "losses": 7295,
-        "opened": 14069,
+        "opened": 14072,
         "timely_closes": 12042,
         "win_rate": 0.4633,
         "wins": 6298
@@ -5730,7 +5742,7 @@
     "selection_note": "Regime/daypart labels frozen at entry, descriptive and correlated. Post-friction scores include frozen stress when present, otherwise a predeclared 0.12% extra-cost legacy haircut. Day-cluster LCB uses clipped day-mean R; positive screening cannot promote an edge.",
     "side": {
       "LONG": {
-        "active": 234,
+        "active": 237,
         "breakeven": 0,
         "closed": 6889,
         "closed_expectancy_R": -0.21528,
@@ -5750,7 +5762,7 @@
         "late_closes": 793,
         "late_share_of_closed": 0.1151,
         "losses": 4114,
-        "opened": 7123,
+        "opened": 7126,
         "timely_closes": 6096,
         "win_rate": 0.4028,
         "wins": 2775
@@ -5782,7 +5794,7 @@
         "wins": 3523
       }
     },
-    "simultaneous_open_research_notional_usd": 4760000.0,
+    "simultaneous_open_research_notional_usd": 4790000.0,
     "strategy": {
       "ATRCHAN-v1": {
         "active": 23,
@@ -5941,7 +5953,7 @@
         "wins": 5
       },
       "COMPBR-v1": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 53,
         "closed_expectancy_R": -0.79524,
@@ -5961,7 +5973,7 @@
         "late_closes": 1,
         "late_share_of_closed": 0.0189,
         "losses": 42,
-        "opened": 57,
+        "opened": 58,
         "timely_closes": 52,
         "win_rate": 0.2075,
         "wins": 11
@@ -6383,7 +6395,7 @@
         "wins": 8
       },
       "TRECLAIM-v1": {
-        "active": 7,
+        "active": 8,
         "breakeven": 0,
         "closed": 76,
         "closed_expectancy_R": 0.29438,
@@ -6403,13 +6415,13 @@
         "late_closes": 2,
         "late_share_of_closed": 0.0263,
         "losses": 36,
-        "opened": 83,
+        "opened": 84,
         "timely_closes": 74,
         "win_rate": 0.5263,
         "wins": 40
       },
       "TREND-v1": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 135,
         "closed_expectancy_R": -0.20399,
@@ -6429,7 +6441,7 @@
         "late_closes": 15,
         "late_share_of_closed": 0.1111,
         "losses": 76,
-        "opened": 138,
+        "opened": 139,
         "timely_closes": 120,
         "win_rate": 0.437,
         "wins": 59
@@ -6567,7 +6579,7 @@
         "wins": 163
       },
       "ADA": {
-        "active": 14,
+        "active": 15,
         "breakeven": 0,
         "closed": 275,
         "closed_expectancy_R": -0.20141,
@@ -6587,7 +6599,7 @@
         "late_closes": 22,
         "late_share_of_closed": 0.08,
         "losses": 157,
-        "opened": 289,
+        "opened": 290,
         "timely_closes": 253,
         "win_rate": 0.4291,
         "wins": 118
@@ -6619,7 +6631,7 @@
         "wins": 131
       },
       "APT": {
-        "active": 10,
+        "active": 11,
         "breakeven": 0,
         "closed": 307,
         "closed_expectancy_R": -0.11638,
@@ -6639,7 +6651,7 @@
         "late_closes": 34,
         "late_share_of_closed": 0.1107,
         "losses": 157,
-        "opened": 317,
+        "opened": 318,
         "timely_closes": 273,
         "win_rate": 0.4886,
         "wins": 150
@@ -7061,7 +7073,7 @@
         "wins": 198
       },
       "JTO": {
-        "active": 18,
+        "active": 19,
         "breakeven": 0,
         "closed": 158,
         "closed_expectancy_R": -0.0933,
@@ -7081,7 +7093,7 @@
         "late_closes": 9,
         "late_share_of_closed": 0.057,
         "losses": 80,
-        "opened": 176,
+        "opened": 177,
         "timely_closes": 149,
         "win_rate": 0.4937,
         "wins": 78
@@ -7659,7 +7671,7 @@
         "wins": 161
       }
     },
-    "total_research_notional_usd": 140690000.0
+    "total_research_notional_usd": 140720000.0
   },
   "friction_stress_scenario": {
     "additional_assumed_cost_usd": 135173.9,
@@ -7670,7 +7682,7 @@
   },
   "late_closed_this_run": 0,
   "late_closures": 1551,
-  "ledger_tip_sha256": "be349c2a32260df1f032afc0f6f07823c8411482bc09dde504ad5328b41f5308",
+  "ledger_tip_sha256": "76921dfed7e04ad4fd6985a29010f03e7262615bc9c8a334de175c6cd7490a56",
   "limitations": [
     "Correlated trades are not independent evidence of edge",
     "Fixed-horizon only; NO stop-loss, take-profit or interim exit; delayed observations excluded from eligible sample",
@@ -7704,7 +7716,7 @@
     "observed_at": null,
     "provider": null
   },
-  "open": 476,
+  "open": 479,
   "pending": 0,
   "profit_factor": 0.8857,
   "provider_observations": 48,
@@ -7724,19 +7736,18 @@
     "degraded_after_minutes": 45,
     "entry_sampling_quality_gate": "healthy_scheduler_coverage",
     "estimated_10m_slot_coverage": 1.0,
-    "estimated_distinct_10m_observation_intervals": 67,
+    "estimated_distinct_10m_observation_intervals": 66,
     "estimated_missed_10m_slots": 0,
     "horizon_sampling_quality_gate": "all_horizons_adequate_cadence",
     "jitter_tolerance_minutes": 3,
     "last_12_observed_gap_coverage": 1.0,
     "last_36_observed_gap_coverage": 1.0,
     "max_observed_gap_minutes": 10.014,
-    "near_duplicate_fast_intervals": 5,
+    "near_duplicate_fast_intervals": 6,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.006,
+    "prior_observation_gap_minutes": 0.903,
     "recent_observation_gaps_minutes": [
-      10.008,
       10.006,
       10.007,
       10.007,
@@ -7807,7 +7818,8 @@
       10.007,
       10.006,
       10.008,
-      10.006
+      10.006,
+      0.903
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -7825,7 +7837,7 @@
     "TON:okx-swap": "OKX missing ticker"
   },
   "spot_proxy_closures": 0,
-  "status": "NO_NEW_SIGNALS",
+  "status": "OK",
   "strategy_horizon": {
     "ATRCHAN-v1 / 12h": {
       "evidence": "preliminary, correlated",
@@ -8836,11 +8848,11 @@
       "net_R": -0.54306
     }
   },
-  "timestamp": "2026-10-20T06:43:58.058874Z",
+  "timestamp": "2026-10-20T06:44:52.228582Z",
   "total_round_trip_fees_usd": 135930.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
-  "verified_events": 27662,
+  "verified_events": 27665,
   "win_rate": 0.4633,
   "wins": 6298,
   "workflow_interval_note": "GitHub scheduled triggers are best-effort"
