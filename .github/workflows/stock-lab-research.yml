@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/stock-lab-research.yml'
+  # Run research independently of observer success; never claim results
+  # before real after-close bars are available.
+  schedule:
+    - cron: '40 12 * * 1-5' # 19:40 WIB
+    - cron: '40 14 * * 1-5' # 21:40 WIB
   workflow_run:
     workflows: ["Stock Strategy Lab IDX daily CASH PAPER"]
     types: [completed]

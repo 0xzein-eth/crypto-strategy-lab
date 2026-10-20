@@ -87,6 +87,32 @@ def yahoo_fixture(now,*,wrong_currency=False,incomplete=False):
 
 
 class MarketSourceTests(unittest.TestCase):
+    def test_public_chart_secondary_origin_after_transport_failure(self):
+        import urllib.error
+        class Response:
+            def __enter__(self): return self
+            def __exit__(self,*args): return False
+            def read(self,*args): return b'{"chart":{"result":[]}}'
+        urls=[]
+        def opener(request, timeout):
+            urls.append(request.full_url)
+            if "query1.finance.yahoo.com" in request.full_url:
+                raise urllib.error.HTTPError(request.full_url,429,"rate limit",{},None)
+            return Response()
+        result=source.get_json(source.endpoint("BBCA.JK"),opener=opener,
+                               sleeper=lambda delay:None)
+        self.assertEqual(result,{"chart":{"result":[]}})
+        self.assertEqual(len(urls),3)
+        self.assertTrue(urls[2].startswith(source.BACKUP_BASE))
+        self.assertEqual(urls[0].split("/chart/")[1],
+                         urls[2].split("/chart/")[1])
+        # Both providers failing never produces fabricated data.
+        def blocked(request,timeout):
+            raise urllib.error.HTTPError(request.full_url,429,"rate limit",{},None)
+        with self.assertRaisesRegex(RuntimeError,"SOURCE_UNAVAILABLE"):
+            source.get_json(source.endpoint("BBCA.JK"),opener=blocked,
+                            sleeper=lambda delay:None)
+
     def test_official_market_schedule_not_faked(self):
         self.assertEqual(len(source.SYMBOLS),6)
         self.assertTrue(all(x.endswith(".JK") for x in source.SYMBOLS))

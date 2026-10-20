@@ -18,7 +18,7 @@ on:
     types: [completed]
     branches: [main]
   schedule:
-    - cron: '7,37 * * * *'
+    - cron: '7,22,37,52 * * * *' # backup per 30m slot; on-disk journal prevents duplicates
 permissions:
   contents: write
 # Do NOT share v8 canonical ledger writer lock; state paths are disjoint.
@@ -46,6 +46,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_v2_forward_paper.py' -v
           python -m unittest discover -s tests -p 'test_v2_source_end_to_end.py' -v
           python -m unittest discover -s tests -p 'test_v2_paper_portfolio.py' -v
+          python -m unittest discover -s tests -p 'test_v2_observation_health.py' -v
           python -m v2.forward_paper --verify-only
       - name: Observe verified exchange books and confirmed signal rules
         id: observe
@@ -115,10 +116,15 @@ jobs:
               json.dumps(out,sort_keys=True,indent=2)+"\n")
           print(json.dumps(out,sort_keys=True))
           PY
+      - name: Report truly observed 30m cadence against explicit 90pct target
+        if: always()
+        run: python -m v2.observation_health --output /tmp/v2-cadence-health.json
       - name: Upload operational proof even when public feed fails
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v2-observer-run-health
-          path: /tmp/v2-observer-run-health.json
+          path: |
+            /tmp/v2-observer-run-health.json
+            /tmp/v2-cadence-health.json
           retention-days: 14
