@@ -240,6 +240,27 @@ real-source observations are accumulated *after code merge*.
 The previously seen FB-v3/VWAP-v1 were selected from repeatedly
 inspected v8 outcomes, hence new v2 performance is exploratory.
 
+## Research quality improvement — frozen 26-arm matched shadow cohorts (2026-10-20)
+
+New `v2.shadow_research` measures **all 26 predeclared confirmed
+signal arms** on genuine future same-venue BTC/ETH/SOL top-book data,
+not only the two historically inspected FB/VWAP paper-wallet arms.
+Every signal is matched to a frozen SHA256 LONG/SHORT neutral direction
+at its exact symbol/entry and subsequent actually observed 4h exit,
+with bid/ask and 0.05% per-side assumed fees, 30bps *additional
+unmeasured* adverse cost sensitivity and visible depth requirements.
+Correlated events are separated from independent UTC-day/ISO-week
+coverage. This improves falsifiability **without manufacturing trades**.
+The wallet remains two arms, two 200 USDT positions maximum, simulated
+starting equity 1000 USDT. All-arm shadow outcomes are generated
+deterministically into `v2_state/shadow_report.json` from hash-chained
+authentic forward ticks; no v8 ledger or historical outcomes mutated.
+This is NOT real-fill proof and cannot confer final holdout status.
+Operational trigger now includes successful completed main v8 runner
+as well as native v2 30-minute best-effort cron, with always-uploaded
+no-fake-tick health artifacts. New research specification:
+[26-arm prospective shadow protocol](V2_PROSPECTIVE_SHADOW_RESEARCH_20261020.md).
+
 ## Concrete phased build plan, prerequisites and definition of done
 
 | Phase | Suggested effort* | Owner artifact / implementation | Exit condition |
