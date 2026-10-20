@@ -261,6 +261,27 @@ as well as native v2 30-minute best-effort cron, with always-uploaded
 no-fake-tick health artifacts. New research specification:
 [26-arm prospective shadow protocol](V2_PROSPECTIVE_SHADOW_RESEARCH_20261020.md).
 
+## P1 data acquisition — real source expansion started 2026-10-20
+
+`v2/history_warehouse.py` + daily independent serialized
+`v2-history-warehouse.yml` incrementally seed verified existing v9
+price/funding caches, extend historical OHLCV backwards through
+authentic `/market/history-candles` pages and settled
+`/public/funding-rate-history` (no predicted funding).
+The **730-day price goal** is a truthful coverage flag rather than
+a commitment that the exchange serves the entire range; every
+source window is content-hashed and UTC-gapped/duplicate
+continuity-checked. Unverifiable funding remains explicitly
+INCOMPLETE rather than zero, even when price bars exist.
+Persist only isolated `v2_history/` source warehouse files and manifest;
+never edit canonical `data/events/`, `research_results`, or v8
+allocation. BTC, ETH and SOL are the *first* fixed instrument subset,
+not the ultimate unbiased all-listing universe. A final 2–3 year
+survivorship-aware, true-depth/funding-complete dataset remains a
+research prerequisite and may be impossible if upstream history is
+not publicly retrievable. No actual 365-/730-day result claimed until
+manifest data proves it.
+
 ## Concrete phased build plan, prerequisites and definition of done
 
 | Phase | Suggested effort* | Owner artifact / implementation | Exit condition |

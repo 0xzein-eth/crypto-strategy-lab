@@ -1,0 +1,93 @@
+name: Crypto Lab v2 bounded authentic historical warehouse
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'v2/history_warehouse.py'
+      - 'tests/test_v2_history_warehouse.py'
+      - '.github/workflows/v2-history-warehouse.yml'
+  schedule:
+    - cron: '41 4 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: v2-historical-warehouse-single-writer
+  cancel-in-progress: false
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Prove canonical v8 ledger remains valid and unchanged
+        run: python engine.py --verify-only
+      - name: Test source immutability, funding missingness and bounded pagination
+        run: python -m unittest discover -s tests -p 'test_v2_history_warehouse.py' -v
+      - name: Refresh genuine 15m candles and SETTLED funding separately
+        id: ingest
+        run: |
+          python -m v2.history_warehouse --symbols BTC ETH SOL --target-days 730 --price-backfill-pages 40 --funding-backfill-pages 20 > /tmp/v2-warehouse-result.json
+      - name: Validate hashes and never rewrite v8 data
+        run: |
+          python - <<'PY'
+          import json
+          from v2 import history_warehouse as h
+          p=json.load(open("v2_history/manifest.json"))
+          assert p["schema"]==h.SCHEMA
+          assert not p["never_submits_orders"] is False
+          assert set(p["symbols"])==set(h.SYMBOLS)
+          for s in h.SYMBOLS:
+              x=h.load(s,"candles")
+              assert len(x)==p["symbols"][s]["confirmed_bars"]
+              assert len(x)>=2
+              rates=h.load(s,"settled_funding")
+              assert len(rates)==p["symbols"][s]["funding_events"]
+          print(json.dumps({"price_bars":{s:p["symbols"][s]["confirmed_bars"] for s in h.SYMBOLS},
+                            "funding_complete":{s:p["symbols"][s]["settled_funding_full_price_window"] for s in h.SYMBOLS},
+                            "no_synthetic_bars":True}))
+          PY
+          git diff --check
+          if git status --porcelain data/ | grep .; then
+            echo 'INTEGRITY_FAILURE: historical warehouse must never edit v8 ledger'
+            exit 1
+          fi
+      - name: Persist ONLY verified v2 historical dataset and source manifest
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- v2_history/
+          if git diff --cached --quiet; then
+            echo 'No new verified data to persist'
+            exit 0
+          fi
+          git commit -m 'research(v2): append authentic older/updated OHLCV and settled funding [skip ci]'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo 'Persisted verified source provenance'
+              exit 0
+            fi
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo 'INTEGRITY_FAILURE: refused to force push data'
+              exit 1
+            fi
+          done
+          exit 1
+      - name: Upload true-source acquisition diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-historical-ingestion-manifest
+          path: |
+            /tmp/v2-warehouse-result.json
+            v2_history/manifest.json
+          if-no-files-found: warn
+          retention-days: 30
