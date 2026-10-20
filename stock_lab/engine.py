@@ -107,6 +107,19 @@ def validate_snapshot(tick):
             raise ValueError("INTEGRITY_FAILURE: insufficient bounded bar evidence")
         if bars[-1]["date"]!=tick["session"]:
             raise ValueError("CLOCK_INTEGRITY: last bar differs from observed session")
+        for bar in bars:
+            try:
+                if not isinstance(bar["date"],str) or not bar["date"]:
+                    raise ValueError("DATA_INVALID: empty historical session date")
+                if not all(dec(bar[k])>0 for k in ("open","high","low","close")):
+                    raise ValueError("DATA_INVALID: non-positive equity price")
+                if (dec(bar["volume"])<0 or
+                        dec(bar["low"])>min(dec(bar["open"]),dec(bar["close"])) or
+                        dec(bar["high"])<max(dec(bar["open"]),dec(bar["close"])) or
+                        dec(bar["high"])<dec(bar["low"])):
+                    raise ValueError("DATA_INVALID: implausible daily OHLC/volume")
+            except (KeyError,TypeError) as exc:
+                raise ValueError("DATA_INVALID: incomplete historical bar") from exc
         actual=strategies.signals(bars)
         if row.get("declared_decisions_for_NEXT_session")!=actual:
             raise ValueError("SIGNAL_INTEGRITY: frozen strategy output differs from candle evidence")
@@ -192,6 +205,15 @@ def replay(events):
         day=validate_snapshot(tick)
         if prior_date is not None and day<=prior_date:
             raise ValueError("CLOCK_INTEGRITY: non-increasing session dates")
+        if previous is not None:
+            for symbol in source.SYMBOLS:
+                old_rows={x["date"]:x for x in previous["assets"][symbol]["bars"]}
+                new_rows={x["date"]:x for x in tick["assets"][symbol]["bars"]}
+                if not (set(old_rows)&set(new_rows)):
+                    raise ValueError("DATA_GAP: no overlapping authentic market days")
+                for historic_date in set(old_rows)&set(new_rows):
+                    if old_rows[historic_date]!=new_rows[historic_date]:
+                        raise ValueError("SOURCE_REVISION: previously observed daily bar changed; suspend rather than rewrite PAPER fills")
         # A capital balance from a prior CLOSE is never silently reset.
         still=[]
         for claim in unsettled:
@@ -394,6 +416,12 @@ def observe(feed,old):
     snapshot=freeze_snapshot(feed)
     validate_snapshot(snapshot)
     if old and snapshot["session"]<=old[-1]["snapshot"]["session"]:
+        if snapshot["session"]==old[-1]["snapshot"]["session"]:
+            for sym in source.SYMBOLS:
+                previous_bar=old[-1]["snapshot"]["assets"][sym]["bars"][-1]
+                newly_received=snapshot["assets"][sym]["bars"][-1]
+                if previous_bar!=newly_received:
+                    raise ValueError("SOURCE_REVISION: duplicate-session EOD source bar revised; do not silently accept")
         return None
     row=seal(snapshot,len(old)+1,old[-1]["hash"] if old else ZERO)
     return row,*replay([*old,row])
