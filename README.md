@@ -137,6 +137,27 @@ Hasil lama sudah berulang kali diinspeksi sehingga **tidak ada
 strategi juara tervalidasi**. Baca
 [protokol studi forward 26-arm](docs/V2_PROSPECTIVE_SHADOW_RESEARCH_20261020.md).
 
+## Crypto Lab v2 — pengumpulan data historis hingga 2 tahun
+
+`v2/history_warehouse.py` membuat warehouse sendiri yang hanya
+menerima OHLCV OKX **15m confirmed** yang benar-benar diperoleh
+melalui API resmi, atau berasal dari cache v9 dengan integritas valid.
+Perluasan data dilakukan dalam halaman API terbatas setiap run dan
+dilanjutkan pada run berikutnya sampai maksimum **730 hari** jika
+sumber mendukung. Candle yang hilang, berubah, terduplikasi, tidak
+berurutan, atau berada di masa depan akan menyebabkan kegagalan, bukan
+interpolasi. Ada hash SHA256, tanggal UTC asli, jumlah candle asli dan
+status kecukupan 365/730 hari per aset. BTC/ETH/SOL dipilih sebagai
+subset awal; ini **bukan** bukti seluruh 12 aset atau 2 tahun tersedia.
+
+Data pendanaan `realizedRate` yang **sudah diselesaikan**
+oleh bursa dikumpulkan dan disimpan **terpisah**. Status funding yang
+tidak lengkap tidak boleh diubah menjadi anggapan nol biaya.
+Workflow [v2 historical warehouse](.github/workflows/v2-history-warehouse.yml)
+berjalan batch terjadwal/dispatch dan menyimpan data terverifikasi di
+`v2_history/`. **Data historis tidak digunakan untuk mengarang
+transaksi forward ataupun untuk menyetujui trading riil.**
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
