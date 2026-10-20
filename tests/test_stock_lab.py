@@ -45,6 +45,11 @@ for i,day in enumerate(DATES):
         "volume":2_000_000 if i>=90 else 800_000,
     })
 
+# Synthetic fixtures must themselves satisfy realistic daily OHLC order.
+for row in BARS:
+    row["high"]=max(row["open"],row["close"])+6
+    row["low"]=min(row["open"],row["close"])-6
+
 
 def make_feed(index, *, actions=None, series=None):
     rows=(series or BARS)[:index+1]
@@ -175,7 +180,8 @@ class CashPortfolioTests(unittest.TestCase):
             p.write_text(source.canonical(one[0])+"\n"+source.canonical(corrupted)+"\n")
             with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
                 e.read_events(p)
-        self.assertIsNone(e.observe(make_feed(91),[one[0]]))
+        self.assertIsNone(e.observe(make_feed(90),[one[0]]))
+        self.assertIsNone(e.observe(make_feed(91),[one[0],two[0]]))
 
     def test_split_while_holding_halts_without_fabricated_share_conversion(self):
         one=e.observe(make_feed(90),[])
