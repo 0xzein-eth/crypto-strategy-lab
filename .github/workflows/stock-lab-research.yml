@@ -36,7 +36,7 @@ jobs:
           local=dt.datetime.now(ZoneInfo("Asia/Jakarta"))
           can_observe=local.hour>=18
           with open(os.environ["GITHUB_OUTPUT"],"a") as out:
-              out.write("after_eod="+str(can_observe).lower()+"\\n")
+              out.write("after_eod="+str(can_observe).lower()+"\n")
           print("IDX local clock",local.isoformat(),"can query final daily bars:",can_observe)
           PY
       - name: Research all four strategies only on actual public IDX historical OHLCV
@@ -53,7 +53,7 @@ jobs:
                "hypothetical_trades_invented":0,
                "real_broker_orders":0}
           pathlib.Path("/tmp/idx-historical-3way-validation.json").write_text(
-              json.dumps(obj,indent=2,sort_keys=True)+"\\n")
+              json.dumps(obj,indent=2,sort_keys=True)+"\n")
           print(json.dumps(obj))
           PY
       - name: Share descriptive fixed-parameter training and embargo diagnostic
