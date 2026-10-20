@@ -187,6 +187,29 @@ class PublicSourceContractTests(unittest.TestCase):
         self.assertEqual(q["contracts_value_in_base"],"0.01")
         self.assertTrue(q["instrument_metadata_verified"])
 
+    def test_scheduled_default_time_path_uses_post_fetch_clock(self):
+        # Regression: current_tick() passes now=None to one_book(), so it
+        # must validate against the post-fetch clock, not None.
+        def getter(url):
+            if "/public/instruments?" in url:
+                return {"code":"0","data":[{
+                    "instId":"BTC-USDT-SWAP","instType":"SWAP",
+                    "ctType":"linear","ctValCcy":"BTC","state":"live",
+                    "settleCcy":"USDT","ctVal":"0.01"}]}
+            if "/market/books?" in url:
+                return {"code":"0","data":[{
+                    "ts":str(int((BASE-dt.timedelta(seconds=5)).timestamp()*1000)),
+                    "bids":[["100","50","0","1"]],
+                    "asks":[["100.05","40","0","1"]]}]}
+            raise AssertionError("Unexpected URL "+url)
+        sample=source.one_book("BTC",None,getter=getter,clock=lambda:BASE)
+        self.assertEqual(sample["bid_size_base"],"0.50")
+        self.assertEqual(sample["ask_size_base"],"0.40")
+        self.assertEqual(sample["provider"],"okx-swap")
+        with self.assertRaisesRegex(Exception,"SOURCE_STALE"):
+            source.one_book("BTC",None,getter=getter,
+                            clock=lambda:BASE+dt.timedelta(minutes=4))
+
     def test_wrong_contract_denomination_and_private_endpoint_fail_closed(self):
         def bad(url):
             return {"code":"0","data":[{

@@ -104,7 +104,10 @@ def one_book(symbol, now=None, *, getter=public_json,
         "contracts_value_in_base":str(ct_base),
         "instrument_metadata_verified":True,
     }
-    verify_quote(quote,symbol=symbol,now=now)
+    # Scheduled calls intentionally use now=None so the authoritative clock
+    # is read AFTER the network fetch. Validate against that same checked
+    # timestamp, not the empty caller sentinel (which rejects every tick).
+    verify_quote(quote,symbol=symbol,now=check_time)
     return quote
 
 
