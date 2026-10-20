@@ -72,7 +72,7 @@ never according to recent winner rankings.
 | Quantity | integer multiples of **100 shares** |
 | Position count | max 3 different stocks at any time |
 | Size | at most 30% current hypothetical account equity per entry |
-| Volume | maximum 1% of observed daily traded shares |
+| Volume | maximum 1% of **previously completed trading session** volume (no future same-day volume) |
 | Buy fee | assumed 0.15% |
 | Sell fee | assumed 0.25% |
 | Additional buy/sell open friction | 0.10% each side |
@@ -86,6 +86,12 @@ tax details, commissions and any tax/levy not represented by those
 rates. Official IDX orders/trades use regular-board 100-share lots and
 T+2 settlement, while the Yahoo source is not authoritative for
 exchange calendar, bid/ask, opening auction fills or volumes.
+
+The quantity proposed for the next session uses account equity from
+the **previous fully observed session** and the previous session's
+trading volume. Sizing from the upcoming same-day closing price or
+same-day full trading volume would leak future data and is explicitly
+prohibited by a no-lookahead regression test.
 
 Cash + unsettled sale receivables + estimated after-sell-fee value of
 held shares forms the simulated equity. It is not withdrawable
