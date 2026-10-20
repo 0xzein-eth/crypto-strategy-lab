@@ -95,16 +95,13 @@ class BroaderEvidenceTests(unittest.TestCase):
         self.assertEqual(research["actual_paper_wallet_positions_created_by_this_study"],0)
         self.assertEqual(shadow.assess(events),research)
 
-    def test_repeated_signal_same_bar_cannot_mint_extra_shadow_trials(self):
-        events=frozen_events(9,signals=(("BTC","RSI-v1","LONG"),))
-        tick2=copy.deepcopy(events[1]["tick"])
-        tick2["signals"]["BTC"]=[copy.deepcopy(events[0]["tick"]["signals"]["BTC"][0])]
-        events[1]=f.seal(tick2,2,events[0]["hash"])
-        for i in range(2,len(events)):
-            events[i]=f.seal(events[i]["tick"],i+1,events[i-1]["hash"])
-        audit=shadow.assess(events)
-        self.assertEqual(audit["per_arm"]["RSI-v1"]["opportunities_from_confirmed_bars"],1)
-        self.assertEqual(audit["per_arm"]["RSI-v1"]["closed_shadow_hypotheses_all"],1)
+    def test_duplicate_same_bar_hypothesis_fails_before_any_count(self):
+        # 30m slots and <=25m confirmed-bar freshness already preclude
+        # replaying the SAME candle at the next distinct 30m slot.
+        t=tick(BASE,signals=(("BTC","RSI-v1","LONG"),))
+        t["signals"]["BTC"].append(copy.deepcopy(t["signals"]["BTC"][0]))
+        with self.assertRaisesRegex(ValueError,"SIGNAL_INVALID"):
+            shadow.assess([f.seal(t,1,f.HASH_ZERO)])
 
     def test_no_future_quote_may_change_prior_shadow_result(self):
         series=frozen_events(10,signals=(("BTC","TP-v3","LONG"),),
