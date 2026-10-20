@@ -46,7 +46,7 @@ def verify_frozen_sources(root=None):
     for path,expected in FROZEN_RESEARCH_BLOBS.items():
         data=(folder/path).read_bytes()
         git_hash=hashlib.sha1(
-            ("blob %s\\0"%len(data)).encode()+data).hexdigest()
+            ("blob %s"%len(data)).encode()+bytes([0])+data).hexdigest()
         if git_hash!=expected:
             raise ValueError("FROZEN_POLICY_VIOLATION: strategy or wallet code changed; register a NEW prospective epoch")
     return True
