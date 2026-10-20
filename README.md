@@ -110,6 +110,33 @@ Ketiga pasar harus punya quote segar agar sebuah equity mark baru
 dicatat; source gagal berarti run berhenti, tidak memalsukan
 harga atau waktu.
 
+## Crypto Lab v2 — semua strategi diamati, modal paper tetap terbatas
+
+**Pembaruan 20 Oktober — studi shadow prospektif 26 strategi confirmed.**
+`v2/shadow_research.py` mencatat semua sinyal valid dari katalog
+*beku*, menghitung peluang → kelayakan depth/spread → hasil 4 jam pada
+quote asli berikutnya, dan membandingkan **kontrol arah deterministik
+pada waktu/aset sama** yang ditetapkan sebelum hasil diketahui.
+Aturan wallet **tidak diubah**: hanya FB-v3/VWAP-v1 yang berhak
+mengusulkan posisi paper, maksimum 2 × 200 USDT dari satu saldo
+1.000 USDT simulasi. Ada tidaknya sinyal shadow bukan perintah order.
+
+Hasil baru hanya boleh berasal dari event hash
+`v2_state/observations.jsonl`, dipublikasikan secara terpisah pada
+`v2_state/shadow_report.json`; equity akun tetap pada
+`v2_state/equity_curve.json`. Tidak ada data OHLCV masa depan,
+interpolasi CLOSE atau perubahan ledger v8. Workflow peneliti
+dapat terpicu oleh cron 30 menit **dan** run v8 sukses; setiap
+gagal sumber dapat diperiksa lewat artefak kesehatan workflow,
+tanpa memalsukan tick.
+
+**Peringatan:** biaya funding dan eksekusi sesungguhnya belum
+terukur lengkap; tambahan biaya 30bps adalah *stress asumsi*.
+Kontrol bayangan bukan eksperimen acak dengan uang.
+Hasil lama sudah berulang kali diinspeksi sehingga **tidak ada
+strategi juara tervalidasi**. Baca
+[protokol studi forward 26-arm](docs/V2_PROSPECTIVE_SHADOW_RESEARCH_20261020.md).
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
