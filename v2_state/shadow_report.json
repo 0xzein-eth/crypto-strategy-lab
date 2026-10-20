@@ -135,6 +135,27 @@
       "signal_side": "SHORT",
       "symbol": "SOL",
       "timely": true
+    },
+    {
+      "actual_observation_delay_seconds": 5435.324,
+      "arm": "BANDREV-v1",
+      "assumed_net_after_book_and_fees_pct": -0.6438807,
+      "assumed_stressed_net_pct": -0.9438807,
+      "delta_stress_pct": 0.0,
+      "entry_at": "2026-10-20T06:31:19.082612+00:00",
+      "entry_day": "2026-10-20",
+      "entry_id": "SOL:BANDREV-v1:LONG:2026-10-20T06:15:00Z",
+      "executable_topbook_quantity_both_sides": false,
+      "exit_due_at": "2026-10-20T10:31:19.082612+00:00",
+      "funding_observed_complete": false,
+      "genuine_exit_book_at": "2026-10-20T12:01:54.406620+00:00",
+      "neutral_control_side": "LONG",
+      "real_exchange_fill": false,
+      "same_time_neutral_net_after_book_fee_pct": -0.6438807,
+      "same_time_neutral_stressed_net_pct": -0.9438807,
+      "signal_side": "LONG",
+      "symbol": "SOL",
+      "timely": false
     }
   ],
   "extra_30bps_stress_assumed_not_measured": true,
@@ -143,7 +164,7 @@
   "genuine_book_observations_no_gapfill": true,
   "historical_validation_repeatedly_inspected": true,
   "hypothetical_exit_4h_first_real_observed": true,
-  "last_source_hash": "b10c1fe42882e9d70c06eb7bb331ed3ce44775e710c3beb7d6b7618e6d6d3264",
+  "last_source_hash": "85066b33f20c3c15f0e2a363e365239296aa71a36ed23056c1a43c9055b22eed",
   "multiple_correlated_arms_tested": 26,
   "neutral_comparator_is_frozen_sha256_random_direction": true,
   "neutral_comparator_is_not_funded_live_ctrl": true,
@@ -168,7 +189,7 @@
     },
     "BANDREV-v1": {
       "clipped_utc_day_descriptive_pair_interval_pct": null,
-      "closed_shadow_hypotheses_all": 0,
+      "closed_shadow_hypotheses_all": 1,
       "descriptive_calendar_maturity_target_met": false,
       "distinct_iso_weeks_in_matched_cohort": 0,
       "eligible_for_live_deployment": false,
@@ -182,7 +203,7 @@
       "stressed_signal_avg_pct": null,
       "timely_matched_control_closed": 0,
       "unfillable_or_wide_entry_count": 0,
-      "unresolved_due_to_no_future_observation": 1
+      "unresolved_due_to_no_future_observation": 0
     },
     "BANDSWEEP-v1": {
       "clipped_utc_day_descriptive_pair_interval_pct": null,
@@ -479,16 +500,16 @@
       "distinct_iso_weeks_in_matched_cohort": 0,
       "eligible_for_live_deployment": false,
       "entry_utc_days_in_matched_cohort": 0,
-      "feasible_book_entry_opportunities": 0,
+      "feasible_book_entry_opportunities": 1,
       "independent_out_of_sample_proof": false,
       "not_comparable_exit_depth_count": 0,
-      "opportunities_from_confirmed_bars": 0,
+      "opportunities_from_confirmed_bars": 1,
       "same_time_neutral_paired_delta_pct": null,
       "same_time_neutral_stressed_avg_pct": null,
       "stressed_signal_avg_pct": null,
       "timely_matched_control_closed": 0,
       "unfillable_or_wide_entry_count": 0,
-      "unresolved_due_to_no_future_observation": 0
+      "unresolved_due_to_no_future_observation": 1
     },
     "TPREG-v1": {
       "clipped_utc_day_descriptive_pair_interval_pct": null,
@@ -621,6 +642,6 @@
   "real_order_submissions": 0,
   "research_caveat": "All arm data collection, not winner mining: real bid/ask snapshots but hypothetical best-level fills, unknown settled funding/latency/slippage. Day intervals descriptive, not multiple-testing adjusted. Do not select live strategy based on this report.",
   "shadow_rows_do_not_imply_independent_trials": true,
-  "source_observation_events": 5,
+  "source_observation_events": 6,
   "version": "v2-shadow-all-confirmed-2026-10-20-v1"
 }
