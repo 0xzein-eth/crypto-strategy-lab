@@ -167,6 +167,24 @@ class CashPortfolioTests(unittest.TestCase):
         self.assertTrue(all(x["session"]<=DATES[91].isoformat() for x in curve))
         self.assertIsNone(wallet["win_rate_closed"])
 
+    def test_open_position_size_ignores_unseen_same_day_close_and_volume(self):
+        prior=e.observe(make_feed(90),[])
+        reference=e.observe(make_feed(91),[prior[0]])
+        altered=copy.deepcopy(BARS)
+        altered[91]["close"]=1200.0
+        altered[91]["volume"]=1
+        altered[91]["high"]=max(altered[91]["open"],altered[91]["close"])+6
+        altered[91]["low"]=min(altered[91]["open"],altered[91]["close"])-6
+        changed=e.observe(make_feed(91,series=altered),[prior[0]])
+        self.assertEqual(reference[1]["positions_opened"],
+                         changed[1]["positions_opened"])
+        self.assertEqual(reference[1]["open_positions_detail"],
+                         changed[1]["open_positions_detail"])
+        self.assertNotEqual(reference[1]["latest_simulated_equity_idr"],
+                            changed[1]["latest_simulated_equity_idr"])
+        # A genuine OPEN observed after the fact remains a hypothetical
+        # fill model. Closing price and future volume are NOT sizing inputs.
+
     def test_hash_chain_tampering_and_duplicate_session_fail(self):
         one=e.observe(make_feed(90),[])
         two=e.observe(make_feed(91),[one[0]])
