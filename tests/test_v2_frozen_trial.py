@@ -41,6 +41,8 @@ class FrozenProspectiveContractTests(unittest.TestCase):
         self.assertEqual(len(c["frozen_policy_digest_sha256"]),64)
         self.assertTrue(c["requires_explicit_separate_user_approval_for_any_real_execution"])
         self.assertEqual(c,trial.contract())
+        self.assertTrue(trial.verify_frozen_sources())
+        self.assertEqual(len(c["exact_frozen_git_blob_source_fingerprints"]),3)
 
     def test_before_registration_starts_no_future_results_or_prediction(self):
         out=trial.evaluate(wallet(dt.datetime(2026,10,20,4,tzinfo=UTC)),source())
