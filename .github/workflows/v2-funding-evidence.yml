@@ -1,0 +1,40 @@
+name: Crypto Lab v2 authentic funding cash-flow attribution
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Crypto Lab v2 durable public-market PAPER wallet"
+      - "Crypto Lab v2 bounded authentic historical warehouse"
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '13 7 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v2-readonly-settled-funding-study
+  cancel-in-progress: false
+jobs:
+  attribute:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Validate funding-only calculation and immutable v2 tick evidence
+        run: |
+          python -m unittest discover -s tests -p 'test_v2_funding_evidence.py' -v
+          python -m v2.forward_paper --verify-only
+      - name: Reconcile only genuine settled funding for 26 paired shadow arms
+        run: python -m v2.funding_evidence --output /tmp/v2-settled-funding-attribution.json
+      - name: Publish incomplete-funding and complete-coverage diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-authentic-settled-funding-cashflow-research
+          path: /tmp/v2-settled-funding-attribution.json
+          retention-days: 30
