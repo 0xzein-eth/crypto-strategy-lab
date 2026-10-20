@@ -186,6 +186,20 @@ funding/eksekusi, kontrol risiko akun, koreksi pengujian,
 dan izin pengguna adalah syarat terpisah. Tidak ada order riil.
 [Protokol beku](docs/V2_FROZEN_90DAY_TRIAL_20261020.md).
 
+## Crypto Lab v2 — biaya funding terverifikasi
+
+Studi `v2/funding_evidence.py` menambahkan evaluasi arus
+kas funding perpetual yang **sudah diselesaikan** dan tercatat
+di warehouse asli. Untuk setiap hasil shadow 4 jam, sistem
+mengecek apakah riwayat funding bagi interval aset tersebut
+benar-benar lengkap. Kalau belum, hasil **dikecualikan, bukan
+diasumsikan nol**. Biaya funding LONG/SHORT dan kontrol arah
+pembanding dihitung terpisah. Posisi wallet yang sudah CLOSED
+juga mendapat catatan funding tambahan secara read-only,
+tanpa mengubah equity curve, posisi, atau kode algoritma
+yang telah dibekukan. Ini belum mencakup fill/slippage riil.
+[Metode dan batasannya](docs/V2_SETTLED_FUNDING_ATTRIBUTION_20261020.md).
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
