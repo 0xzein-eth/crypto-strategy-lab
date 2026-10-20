@@ -107,9 +107,9 @@ def parse_chart(payload,symbol,*,now):
     if any(not isinstance(q.get(k),list) or len(q[k])!=len(stamps)
            for k in ("open","high","low","close","volume")):
         raise ValueError("SOURCE_INVALID: OHLCV arrays misaligned")
-    observed=now.astimezone(WIB)
-    if not now.tzinfo:
+    if not isinstance(now,dt.datetime) or now.tzinfo is None:
         raise ValueError("CLOCK_INVALID: aware now required")
+    observed=now.astimezone(WIB)
     active_date=observed.date().isoformat()
     history=[]
     for idx,t in enumerate(stamps):
