@@ -1,0 +1,38 @@
+name: Crypto Lab v2 frozen 90-day future validation status
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Crypto Lab v2 durable public-market PAPER wallet"]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '39 6 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v2-frozen-future-trial-status
+  cancel-in-progress: false
+jobs:
+  frozen-review:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Assert v2 hash integrity and immutable trial rules
+        run: |
+          python -m unittest discover -s tests -p 'test_v2_frozen_trial.py' -v
+          python -m v2.forward_paper --verify-only
+      - name: Withhold strategy returns until future 90-day period closes
+        run: python -m v2.frozen_trial --output /tmp/v2-future-protocol-status.json
+      - name: Publish study progress but never mutate source or submit orders
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-frozen-90day-experiment-status
+          path: /tmp/v2-future-protocol-status.json
+          retention-days: 30
