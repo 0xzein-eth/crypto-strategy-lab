@@ -94,6 +94,32 @@ declared dividends and payment dates are not reliably reconciled.
 A split while holding causes a *hard failure* rather than inventing a
 share adjustment or calling the resulting price move a market loss.
 
+## Pelatihan dan validasi historis otomatis (tanpa data bocor)
+
+`stock_lab/research.py` menggunakan **aturan sinyal persis sama** dari
+`stock_lab/strategies.py` yang digunakan observer harian, tetapi dengan
+dataset masa lalu berlabel **HISTORICAL BACKTEST**, tidak disulap
+menjadi transaksi prospektif. Dataset enam saham diselaraskan hanya
+pada hari perdagangan yang sama-sama tersedia, dengan periode awal
+minimum 200 hari bersama. Sinyal hari D hanya dihitung dari candle
+D dan sebelumnya; uji hypotetical entry pada OPEN berikutnya
+dan exit pada OPEN sesudah **5 sesi**. Hasil harus sepenuhnya berada
+dalam split data yang sama, dengan embargo minimal 5 sesi, dan
+melewati biaya broker/slippage asumtif yang sama seperti simulator.
+Dividend/split di sepanjang jendela tidak diisi return rekaan;
+transaksi tersebut dikecualikan.
+
+Data dibagi kronologis **60% training, 20% validation,
+20% historical holdout**. Strategi eksploratoris dipilih dari
+training saja; validation/holdout tidak digunakan memilih lagi.
+Pembandingnya adalah sekeranjang enam saham dengan periode dan
+biaya asumsi serupa—**bukan indeks IHSG resmi**. Historis tetap
+sudah diketahui dan dapat diperiksa berkali-kali, sehingga
+**holdout ini bukan bukti independen yang belum tersentuh**.
+Perlu penelitian prospective baru sebelum klaim alpha atau real trading.
+[Workflow training/validation otomatis](../.github/workflows/stock-lab-research.yml)
+dipicu setelah observasi EOD berhasil.
+
 ## Rigor, model training, future roadmap
 
 The project inherits the **scientific controls** from crypto research,
