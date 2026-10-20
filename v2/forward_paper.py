@@ -25,6 +25,7 @@ STATE = ROOT / "v2_state"
 OBSERVATIONS = STATE / "observations.jsonl"
 REPORT = STATE / "report.json"
 CURVE = STATE / "equity_curve.json"
+SHADOW_REPORT = STATE / "shadow_report.json"
 VERSION = "v2-onewallet-observer-2026-10-20-v1"
 HASH_ZERO = "0" * 64
 SYMBOLS = ("BTC", "ETH", "SOL")
@@ -91,14 +92,15 @@ def validate_tick(tick):
     now = ts(tick["observed_at"])
     if set(tick.get("books", {})) != set(SYMBOLS) or set(tick.get("signals", {})) != set(SYMBOLS):
         raise ValueError("SOURCE_UNAVAILABLE: must observe all 3 markets for a valid equity mark")
+    from v2.shadow_research import ARMS as SHADOW_ARMS
     for symbol in SYMBOLS:
         verify_quote(tick["books"][symbol], symbol=symbol, now=now)
         offered = tick["signals"][symbol]
-        if not isinstance(offered, list) or len(offered) > 25:
+        if not isinstance(offered, list) or len(offered) > 64:
             raise ValueError("SIGNAL_INVALID: unbounded / missing confirmed signal list")
         distinct = set()
         for row in offered:
-            if not isinstance(row, dict) or row.get("strategy") not in STRATEGIES or row.get("side") not in ("LONG", "SHORT"):
+            if not isinstance(row, dict) or row.get("strategy") not in SHADOW_ARMS or row.get("side") not in ("LONG", "SHORT"):
                 raise ValueError("SIGNAL_INVALID: arm not preregistered")
             ev = row.get("evidence", {})
             if not isinstance(ev, dict) or ev.get("bar_span") != "15m confirmed OKX USDT-SWAP":
@@ -192,7 +194,11 @@ def replay(events):
         # a forced-losing liquidation.
         if not forced:
             for symbol in SYMBOLS:
-                choices = sorted(tick["signals"][symbol],
+                # Broad shadow evidence must NEVER silently become wallet
+                # exposure. Keep precisely the original 2 fixed wallet arms.
+                wallet_only=[x for x in tick["signals"][symbol]
+                             if x["strategy"] in STRATEGIES]
+                choices = sorted(wallet_only,
                                  key=lambda x:(STRATEGIES.index(x["strategy"]),x["side"]))
                 if not choices:
                     continue
@@ -356,7 +362,14 @@ def main():
         parser.error("choose one mode")
     existing = read_events()
     old_report, old_curve = replay(existing)
+    from v2.shadow_research import assess
+    shadow=assess(existing)
     if args.verify_only:
+        if OBSERVATIONS.exists() and not SHADOW_REPORT.exists():
+            raise ValueError("INTEGRITY_FAILURE: missing derived shadow report")
+        if SHADOW_REPORT.exists():
+            if json.loads(SHADOW_REPORT.read_text(encoding="utf-8")) != shadow:
+                raise ValueError("INTEGRITY_FAILURE: shadow report diverges from hashed inputs")
         if REPORT.exists():
             actual = json.loads(REPORT.read_text(encoding="utf-8"))
             if actual != old_report:
@@ -386,6 +399,7 @@ def main():
         os.fsync(handle.fileno())
     atomic_json(REPORT,report)
     atomic_json(CURVE,curve)
+    atomic_json(SHADOW_REPORT,assess([*existing,new]))
     print(canonical({"observed_at":tick["observed_at"],
                      "equity_usdt":report["current_simulated_equity_usdt"],
                      "closed_positions":report["closed_positions"],
