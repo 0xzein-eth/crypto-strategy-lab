@@ -23,6 +23,7 @@ SYMBOLS=("BBCA.JK","BBRI.JK","BMRI.JK","TLKM.JK","ASII.JK","ICBP.JK")
 MIN_HISTORY=75
 PUBLISH_AFTER_HOUR_WIB=18
 BASE="https://query1.finance.yahoo.com/v8/finance/chart/"
+BACKUP_BASE="https://query2.finance.yahoo.com/v8/finance/chart/"
 USER_AGENT="Mozilla/5.0 (compatible; StockStrategyLab-PAPER-Research/0.1)"
 
 
@@ -52,23 +53,31 @@ def endpoint(symbol):
 
 
 def get_json(url,*,opener=urllib.request.urlopen,sleeper=time.sleep):
+    """Two bounded public Yahoo chart origins, never a different data schema.
+
+    A transport failure can retry on query2; returned candles STILL pass
+    strict venue, IDR, date, OHLCV, action, and six-symbol validation.
+    No synthetic/last-known-price fallback is permitted.
+    """
     if not url.startswith(BASE) or not url.split("?")[0].endswith(".JK"):
         raise ValueError("SOURCE_INVALID: no untrusted or private endpoint")
     last=None
-    for i in range(3):
-        try:
-            request=urllib.request.Request(url,headers={"User-Agent":USER_AGENT,"Accept":"application/json"})
-            with opener(request,timeout=12) as resp:
-                return json.load(resp)
-        except urllib.error.HTTPError as exc:
-            last=exc
-            if exc.code not in (429,500,502,503,504) or i==2:
-                raise
-        except (TimeoutError,urllib.error.URLError) as exc:
-            last=exc
-            if i==2:raise
-        sleeper(2*(i+1))
-    raise RuntimeError("SOURCE_UNAVAILABLE: bounded attempts exhausted") from last
+    for candidate in (url, BACKUP_BASE+url[len(BASE):]):
+        for attempt in range(2):
+            try:
+                request=urllib.request.Request(candidate,headers={
+                    "User-Agent":USER_AGENT,"Accept":"application/json"})
+                with opener(request,timeout=12) as resp:
+                    return json.load(resp)
+            except urllib.error.HTTPError as exc:
+                last=exc
+                if exc.code not in (403,429,500,502,503,504):
+                    raise
+            except (TimeoutError,urllib.error.URLError) as exc:
+                last=exc
+            if attempt==0:
+                sleeper(2)
+    raise RuntimeError("SOURCE_UNAVAILABLE: both public Yahoo chart origins failed") from last
 
 
 def _positive(value,*,zero_ok=False):
