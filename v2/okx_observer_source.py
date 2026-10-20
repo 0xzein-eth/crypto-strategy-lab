@@ -138,9 +138,13 @@ def one_signals(symbol, quote, *, getter=public_json):
         symbol,snapshot,
         lambda url: getter(url),
         lambda:book_time)
+    # Store the complete FROZEN forward-research catalog, not just two
+    # previously observed positive-looking arms. Only the separate wallet
+    # can choose its small precommitted FB/VWAP subset.
+    from v2.shadow_research import ARMS
     accepted=[]
     for item in confirmed:
-        if item.get("strategy") in ("FB-v3","VWAP-v1"):
+        if item.get("strategy") in ARMS:
             evidence=item["evidence"]
             accepted.append({
                 "strategy":item["strategy"],"side":item["side"],
@@ -153,7 +157,16 @@ def one_signals(symbol, quote, *, getter=public_json):
                     "signal_rule":evidence["signal_rule"],
                 },
             })
-    return accepted
+    # Repeated same-arm same-side same-bar candidates can arise through
+    # overlapping sub-families. Preserve only unique frozen hypotheses.
+    unique={}
+    for row in accepted:
+        k=(row["strategy"],row["side"],row["evidence"]["bar_time"])
+        if k in unique and unique[k]!=row:
+            raise ValueError("SOURCE_INVALID: conflicting duplicate confirmed signal")
+        unique[k]=row
+    return sorted(unique.values(),key=lambda row:(
+        ARMS.index(row["strategy"]),row["side"],row["evidence"]["bar_time"]))
 
 
 def current_tick(*, clock=lambda:dt.datetime.now(UTC),getter=public_json):

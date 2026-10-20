@@ -1,6 +1,13 @@
 name: Crypto Lab v2 durable public-market PAPER wallet
 on:
   workflow_dispatch:
+  # Additional REAL clock from the already active canonical v8 observer.
+  # Bounded once per successfully completed main lab workflow, serialized
+  # with normal v2 schedule; no fabricated missed 30m observations.
+  workflow_run:
+    workflows: ["Continuous paper strategy lab"]
+    types: [completed]
+    branches: [main]
   schedule:
     - cron: '7,37 * * * *'
 permissions:
@@ -12,6 +19,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe-and-persist:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
@@ -30,6 +38,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_v2_paper_portfolio.py' -v
           python -m v2.forward_paper --verify-only
       - name: Observe verified exchange books and confirmed signal rules
+        id: observe
         run: python -m v2.forward_paper --observe
       - name: Verify persisted observation hashes, cash and equity curve
         run: |
@@ -39,6 +48,10 @@ jobs:
             echo "INTEGRITY_FAILURE: the v2 observer must never modify v8 data/"
             exit 1
           fi
+      - name: Verify all-arms prospective shadow cohort regression
+        run: |
+          python -m unittest discover -s tests -p 'test_v2_shadow_research.py' -v
+          python -m v2.forward_paper --verify-only
       - name: Commit ONLY isolated new v2 forward-paper observation history
         run: |
           if [[ ! -d v2_state ]]; then
@@ -68,3 +81,34 @@ jobs:
           done
           echo "PERSISTENCE_FAILURE: unable to persist without force."
           exit 1
+
+      - name: Record workflow health without inventing market observations
+        if: always()
+        env:
+          OBSERVER_OUTCOME: ${{ steps.observe.outcome }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          import datetime as dt, json, os, pathlib
+          out={
+              "schema":"v2-workflow-operational-health-v1",
+              "workflow_trigger":os.environ["EVENT_NAME"],
+              "observer_step_result":os.environ.get("OBSERVER_OUTCOME","not_started"),
+              "actual_v2_observation_file_exists":pathlib.Path("v2_state/observations.jsonl").exists(),
+              "actual_v2_equity_report_exists":pathlib.Path("v2_state/report.json").exists(),
+              "actual_v2_shadow_report_exists":pathlib.Path("v2_state/shadow_report.json").exists(),
+              "recorded_at_utc":dt.datetime.now(dt.timezone.utc).isoformat(),
+              "health_is_not_a_market_snapshot":True,
+              "real_orders_submitted":False,
+          }
+          pathlib.Path("/tmp/v2-observer-run-health.json").write_text(
+              json.dumps(out,sort_keys=True,indent=2)+"\n")
+          print(json.dumps(out,sort_keys=True))
+          PY
+      - name: Upload operational proof even when public feed fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-observer-run-health
+          path: /tmp/v2-observer-run-health.json
+          retention-days: 14
