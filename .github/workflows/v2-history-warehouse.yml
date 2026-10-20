@@ -8,7 +8,7 @@ on:
       - 'tests/test_v2_history_warehouse.py'
       - '.github/workflows/v2-history-warehouse.yml'
   schedule:
-    - cron: '41 4 * * *'
+    - cron: '41 0,12 * * *'
 permissions:
   contents: write
 concurrency:
@@ -33,7 +33,7 @@ jobs:
       - name: Refresh genuine 15m candles and SETTLED funding separately
         id: ingest
         run: |
-          python -m v2.history_warehouse --symbols BTC ETH SOL --target-days 730 --price-backfill-pages 40 --funding-backfill-pages 20 > /tmp/v2-warehouse-result.json
+          python -m v2.history_warehouse --symbols BTC ETH SOL --target-days 730 --price-backfill-pages 60 --funding-backfill-pages 20 > /tmp/v2-warehouse-result.json
       - name: Validate hashes and never rewrite v8 data
         run: |
           python - <<'PY'
