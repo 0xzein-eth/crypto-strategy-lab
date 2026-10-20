@@ -299,6 +299,23 @@ alpha from a repeatedly inspected dataset or a realistic order
 execution venue. No allocator promotes based on p-values.
 See [predeclared research cautions](V2_MULTIPLE_TESTING_EVIDENCE_20261020.md).
 
+## P5 future 90-day paper trial registered in advance
+
+`v2.frozen_trial` has a genuine new 2026-10-21 to 2027-01-19
+UTC 90-day future entry window. A fixed version of the v2 source
+signals, one-wallet code, and 26-arm reference evaluation has
+pinned Git source fingerprints and a deterministic policy digest.
+Two previously inspected candidates FB-v3 and VWAP-v1 have
+predeclared calendar, matched control, liquidity, fee/funding,
+portfolio drawdown and multiple testing acceptance criteria.
+The trial tracker publishes only real-source progress counts
+until actual observed market time passes the 90-day period.
+Source and other monitoring outputs remain public, so this
+cannot be called fully human-blind. The future 90 days
+cannot be accelerated or certified in October 2026; no
+auto-promoted or executable live strategy exists.
+[Trial protocol](V2_FROZEN_90DAY_TRIAL_20261020.md).
+
 ## Concrete phased build plan, prerequisites and definition of done
 
 | Phase | Suggested effort* | Owner artifact / implementation | Exit condition |
