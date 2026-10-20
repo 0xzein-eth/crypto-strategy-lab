@@ -44,6 +44,7 @@ jobs:
       - name: Run deterministic v2 replay and public-market contract tests
         run: |
           python -m unittest discover -s tests -p 'test_v2_forward_paper.py' -v
+          python -m unittest discover -s tests -p 'test_v2_source_end_to_end.py' -v
           python -m unittest discover -s tests -p 'test_v2_paper_portfolio.py' -v
           python -m v2.forward_paper --verify-only
       - name: Observe verified exchange books and confirmed signal rules
