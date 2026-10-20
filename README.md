@@ -173,6 +173,19 @@ Laporan terbuka sebagai artefak GitHub Actions melalui
 [workflow evidence gate](.github/workflows/v2-evidence-gate.yml).
 [Baca protokolnya](docs/V2_MULTIPLE_TESTING_EVIDENCE_20261020.md).
 
+## Crypto Lab v2 — prospektif 90 hari terkunci
+
+Modul `v2/frozen_trial.py` memulai protokol periode masa depan
+**21 Oktober 2026 sampai 19 Januari 2027 UTC**, dengan
+versi kode strategi, wallet, dan penelitian yang dikunci
+berdasarkan Git blob SHA. Kandidat FB-v3 dan VWAP-v1 sudah
+pernah diperiksa sebelumnya, jadi bukan strategi terbukti.
+Selama 90 hari, tracker hanya mengumumkan progres dan integritas
+sumber, bukan win rate atau pemeringkatan kandidat. Kelengkapan
+funding/eksekusi, kontrol risiko akun, koreksi pengujian,
+dan izin pengguna adalah syarat terpisah. Tidak ada order riil.
+[Protokol beku](docs/V2_FROZEN_90DAY_TRIAL_20261020.md).
+
 ## Status operasional
 
 Eksekusi v8 pertama berhasil pada **8 Oktober 2026, pukul 10.18 WIB**, mencatat 6 eksperimen LAB-116–121 menggunakan snapshot **OKX USDT perpetual**; hash-chain ledger telah diverifikasi. Lihat [run pertama](https://github.com/0xzein-eth/crypto-strategy-lab/actions/runs/37722057618). Data terbaru selalu ada di `data/report.json`, bukan di teks README ini.
