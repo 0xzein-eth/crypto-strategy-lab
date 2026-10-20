@@ -17,6 +17,23 @@ riwayat pasar lebih panjang, *backtest-forward parity*, akuntansi portofolio
 yang realistis, model biaya, serta validasi final independen. **Tidak ada
 strategi saat ini yang dibuktikan aman/untung untuk trade riil.**
 
+## Stock Strategy Lab — saham reguler IDX (subproyek terpisah)
+
+Repo ini juga memuat **[Stock Strategy Lab](stock_lab/README.md)** untuk
+riset saham reguler Indonesia BBCA, BBRI, BMRI, TLKM, ASII dan ICBP,
+berbeda sepenuhnya dari crypto futures. Empat strategi harian
+trading long-only diuji dengan **satu saldo simulasi Rp10 juta**,
+maksimum tiga saham dan pembelian 100 lembar/lot, tanpa leverage
+atau short. Jurnal cash/EOD hash-chain, equity dan penelitian
+bayangan terpisah ada di `stock_lab_state/` setelah sumber IDX
+publik menghasilkan observasi sungguhan. Sumber adalah Yahoo
+Finance chart *tidak resmi*, harga OPEN harian hipotetis baru
+diketahui setelah EOD (bukan fill nyata), dividen/aksi korporasi
+belum lengkap. Otomatisasi GitHub
+[Stock Lab](.github/workflows/stock-lab.yml) nominal Senin–Jumat
+setelah pukul 18 WIB. *Penelitian ini bukan sinyal profit
+terjamin dan tidak mengaktifkan order broker.*
+
 ## Pembangunan v2 — audit biaya dan modal (fase P0)
 
 Modul `v2/legacy_audit.py` sekarang membongkar secara **read-only**

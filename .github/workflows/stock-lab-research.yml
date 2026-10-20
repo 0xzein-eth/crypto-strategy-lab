@@ -1,0 +1,39 @@
+name: Stock Strategy Lab IDX chronological research
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Stock Strategy Lab IDX daily CASH PAPER"]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: idx-stock-historical-evidence-only
+  cancel-in-progress: false
+jobs:
+  research:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify isolated future wallet, source timestamps and 3 chronological research splits
+        run: |
+          python -m unittest discover -s tests -p 'test_stock_lab.py' -v
+          python -m unittest discover -s tests -p 'test_stock_lab_research.py' -v
+          python -m stock_lab.engine --verify-only
+      - name: Research all four strategies only on actual public IDX historical OHLCV
+        run: python -m stock_lab.research --output /tmp/idx-historical-3way-validation.json
+      - name: Share descriptive fixed-parameter training and embargo diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: idx-cash-stock-training-validation-research
+          path: /tmp/idx-historical-3way-validation.json
+          if-no-files-found: warn
+          retention-days: 30
