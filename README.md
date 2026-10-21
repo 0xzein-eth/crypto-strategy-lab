@@ -17,7 +17,27 @@ riwayat pasar lebih panjang, *backtest-forward parity*, akuntansi portofolio
 yang realistis, model biaya, serta validasi final independen. **Tidak ada
 strategi saat ini yang dibuktikan aman/untung untuk trade riil.**
 
-## Stock Strategy Lab — saham reguler IDX (subproyek terpisah)
+## Active Stock Strategy Lab — Nasdaq + LQ45 (IHSG benchmark)
+
+**Berlaku mulai 21 Oktober 2026:** Trading lab saham pindah ke
+[`equity_lab/`](equity_lab/README.md): **25 saham tercatat di Nasdaq AS**
+dan **45 saham konstituen LQ45 periode Agustus–Oktober 2026**. IHSG
+(`^JKSE`) adalah benchmark Indonesia dan Nasdaq-100 (`^NDX`)
+benchmark AS; bukan saham dan tidak dapat dijadikan fill.
+Masing-masing memiliki jurnal hash, saldo dan biaya simulasi terpisah:
+USD $10.000 serta IDR Rp10 juta, tanpa konversi mata uang.
+Ada **14 keluarga strategi** dievaluasi dengan harga harian autentik,
+riset historis purged/walk-forward, serta simulated prospective paper
+account yang tidak bisa ditulis mundur. Data LQ45 berhenti otomatis
+ketika membership snapshot kedaluwarsa 30 Oktober 2026.
+
+**Riwayat sebelum migrasi:** `stock_lab/` dan `stock_lab_state/`
+adalah **arsip IDX enam saham**, bukan sistem saham yang masih
+mengambil trade terjadwal. Workflow lama sekarang read-only, dijalankan
+secara manual untuk audit histori. Jurnal yang sudah dibuat tidak
+ditimpa/dihapus dan performa arsip tidak digabung dengan epoch baru.
+
+## Arsip Stock Strategy Lab IDX — era lama enam saham
 
 Repo ini juga memuat **[Stock Strategy Lab](stock_lab/README.md)** untuk
 riset saham reguler Indonesia BBCA, BBRI, BMRI, TLKM, ASII dan ICBP,
