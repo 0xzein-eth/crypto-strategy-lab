@@ -23,7 +23,7 @@ jobs:
   research:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 14
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v5
         with:
@@ -35,6 +35,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_stock_lab.py' -v
           python -m unittest discover -s tests -p 'test_stock_lab_research.py' -v
+          python -m unittest discover -s tests -p 'test_stock_lab_expanded.py' -v
           python -m stock_lab.engine --verify-only
       - name: Check whether IDX daily market data can be final yet
         id: clock
@@ -51,6 +52,25 @@ jobs:
       - name: Research all four strategies only on actual public IDX historical OHLCV
         if: steps.clock.outputs.after_eod == 'true'
         run: python -m stock_lab.research --output /tmp/idx-historical-3way-validation.json
+      - name: Evaluate ten new non-overlapping historical arms across up to 18 IDX equities
+        if: steps.clock.outputs.after_eod == 'true'
+        id: expanded
+        continue-on-error: true
+        run: python -m stock_lab.expanded_research --output /tmp/idx-expanded-18x10-historical.json
+      - name: Explain unavailable extended historical source instead of inventing results
+        if: steps.clock.outputs.after_eod == 'true' && steps.expanded.outcome != 'success'
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('/tmp/idx-expanded-18x10-historical.json')
+          if not p.exists():
+              p.write_text(json.dumps({
+                  'schema':'idx-expanded-history-source-status-v1',
+                  'status':'UNAVAILABLE_OR_REJECTED_REAL_SOURCE',
+                  'historical_results_fabricated':False,
+                  'live_orders':0},indent=2)+'\\n')
+          print(p.read_text())
+          PY
       - name: Publish explicit before-EOD research readiness without fake results
         if: steps.clock.outputs.after_eod != 'true'
         run: |
@@ -70,6 +90,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: idx-cash-stock-training-validation-research
-          path: /tmp/idx-historical-3way-validation.json
+          path: |
+            /tmp/idx-historical-3way-validation.json
+            /tmp/idx-expanded-18x10-historical.json
           if-no-files-found: warn
           retention-days: 30
