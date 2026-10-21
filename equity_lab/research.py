@@ -37,6 +37,15 @@ def evaluate(market, stocks, benchmark=None):
     config=universe.market(market,now=dt.datetime(2026,10,21,tzinfo=source.UTC))
     if not stocks or set(stocks)-set(config["symbols"]):
         raise ValueError("SOURCE_INVALID: wrong research market")
+    benchmark_by_day={}
+    if benchmark is not None:
+        if (benchmark.get("symbol")!=config["benchmark"] or
+            benchmark.get("market")!=market or
+            benchmark.get("currency")!=config["currency"] or
+            benchmark.get("is_nontradable_benchmark") is not True or
+            source.sha(benchmark.get("history",[]))!=benchmark.get("history_sha256")):
+            raise ValueError("BENCHMARK_INTEGRITY: wrong index, currency or missing source hash")
+        benchmark_by_day={r["date"]:r for r in benchmark["history"]}
     accum=defaultdict(list)
     errors={}
     usable={}
@@ -74,6 +83,13 @@ def evaluate(market, stocks, benchmark=None):
             if bars[entry]["volume"]<10000:continue
             net=returns(market,bars[entry],bars[final])
             stress=net-STRESS_ADDITIONAL_ROUNDTRIP_PCT
+            # The benchmark is an index and cannot be physically filled.
+            # Paired date-to-date price move is a descriptive control only,
+            # not an executable fee-adjusted index portfolio.
+            index_start=benchmark_by_day.get(bars[entry]["date"])
+            index_end=benchmark_by_day.get(bars[final]["date"])
+            benchmark_return=(100*(index_end["open"]/index_start["open"]-1)
+                              if index_start and index_end else None)
             for arm in active:
                 key=(period,arm)
                 if i<=last_accepted[(symbol,arm,period)]:
@@ -81,13 +97,19 @@ def evaluate(market, stocks, benchmark=None):
                 last_accepted[(symbol,arm,period)]=final
                 accum[key].append({
                     "signal":bars[i]["date"],"symbol":symbol,
-                    "return_pct":net,"stress_return_pct":stress})
+                    "return_pct":net,"stress_return_pct":stress,
+                    "index_open_to_open_pct":benchmark_return,
+                    "stress_excess_vs_index_pct":(
+                        stress-benchmark_return
+                        if benchmark_return is not None else None)})
     def stats(rows):
         vals=[r["stress_return_pct"] for r in rows]
         gross_pos=sum(max(0,x) for x in vals)
         gross_neg=-sum(min(0,x) for x in vals)
         per_day=defaultdict(list)
         for r in rows:per_day[r["signal"]].append(r["stress_return_pct"])
+        index_pairs=[r["stress_excess_vs_index_pct"] for r in rows
+                     if r["stress_excess_vs_index_pct"] is not None]
         return {
             "historical_hypothetical_trades":len(rows),
             "distinct_signal_session_days":len(per_day),
@@ -96,6 +118,10 @@ def evaluate(market, stocks, benchmark=None):
             "stressed_mean_trade_pct":round(mean(vals),6) if vals else None,
             "stressed_profit_factor":round(gross_pos/gross_neg,5)
                                       if gross_neg else None,
+            "index_paired_historical_trades":len(index_pairs),
+            "stressed_mean_excess_vs_price_index_pct":(
+                 round(mean(index_pairs),6) if index_pairs else None),
+            "price_index_is_not_investable":True,
             "worst_day_cluster_avg_pct":round(min(mean(x) for x in per_day.values()),6)
                                          if per_day else None,
             "not_portfolio_roi":True}
