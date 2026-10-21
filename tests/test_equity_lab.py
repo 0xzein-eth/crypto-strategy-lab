@@ -9,6 +9,7 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from equity_lab import universe,source,forward,research
+from stock_lab import strategies,experimental
 
 UTC=dt.timezone.utc
 
