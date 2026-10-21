@@ -63,6 +63,46 @@ The limited cash portfolio chooses its proposed family with a
 fixed deterministic pre-outcome hash among eligible signals,
 never according to recent winner rankings.
 
+## Research expansion (21 October 2026) — HISTORICAL ONLY
+
+The **original 6 stocks and 4 strategy IDs remain frozen** in the prospective
+one-wallet paper journal. To increase independent research breadth *without
+rewriting the past*, a **separate** `stock_lab/experimental.py` catalogue adds
+10 predeclared daily-bar BUY hypotheses:
+
+`TREND_RECLAIM30`, `DONCHIAN40`, `DONCHIAN60`, `RSI_RECOVERY35`,
+`BOLLINGER_REENTRY20`, `VOLUME_SQUEEZE20`,
+`VOLUME_CLIMAX_FADE`, `ATR_EXPANSION14`, `MOMENTUM60`,
+`LOWVOL_PULLBACK60`.
+
+The historical *research-only* sample targets 18 Indonesian shares. In
+addition to the original six: BBNI, UNTR, INDF, KLBF, ANTM, PTBA, PGAS,
+ISAT, SMGR, CPIN, MYOR and AMRT (Yahoo `.JK` tickers). This is NOT an
+expansion of the funded paper wallet or a declaration that all tickers are
+always available. An unavailable, stale, incorrect or partial provider
+record is logged and skipped; the study requires **at least 6 authentic
+tickers and 250 aligned EOD sessions**, otherwise results are withheld.
+
+`stock_lab/expanded_research.py` computes historical five-session
+next-open-to-next-open returns with existing brokerage fee/impact
+assumptions **plus a further 25bp round-trip stress**. Chronological
+60/20/20 training, validation and repeatedly-inspected historical
+holdout periods have a 5-session purge. Same strategy / same ticker
+overlapping returns are excluded. Reporting includes stressed win rate,
+profit factor, average after-cost return, after-stress excess return
+relative to a same-date survivor basket, worst trade and worst
+signal-day average. The metrics are **not portfolio ROI**: overlapping
+trades across multiple tickers do not imply a funded account.
+Training-only descriptive rankings never promote an arm or overwrite
+paper execution. No true, pristine independent holdout exists yet.
+
+Results, or an explicit real-source rejection manifest, are uploaded
+as GitHub workflow artifacts under
+[Stock historical research](../.github/workflows/stock-lab-research.yml).
+This broader *survivor-selected* universe increases data breadth but
+does not remove dividends, delisting, vendor quality or unobserved
+open-auction execution biases.
+
 ## Paper capital and costs
 
 | Constraint | Frozen starting assumption |
