@@ -48,7 +48,29 @@ jobs:
           python -m unittest discover -s tests -p 'test_v2_paper_portfolio.py' -v
           python -m unittest discover -s tests -p 'test_v2_observation_health.py' -v
           python -m v2.forward_paper --verify-only
+      - name: Skip redundant 30m slot before calling the public source
+        id: slot
+        run: |
+          python - <<'PY'
+          import datetime as dt,json,os,pathlib
+          now=int(dt.datetime.now(dt.timezone.utc).timestamp())//1800
+          p=pathlib.Path("v2_state/observations.jsonl")
+          rows=p.read_text(encoding="utf-8").splitlines() if p.exists() else []
+          if rows:
+              latest=json.loads(rows[-1])["tick"]["observed_at"]
+              at=dt.datetime.fromisoformat(latest.replace("Z","+00:00"))
+              previous=int(at.timestamp())//1800
+              if previous>now:
+                  raise ValueError("CLOCK_INTEGRITY: hashed v2 tick ahead of UTC")
+              observe=previous<now
+          else:
+              observe=True
+          with open(os.environ["GITHUB_OUTPUT"],"a") as out:
+              out.write("needs_observation="+str(observe).lower()+"\\n")
+          print("New genuine 30m public-book slot required:",observe)
+          PY
       - name: Observe verified exchange books and confirmed signal rules
+        if: steps.slot.outputs.needs_observation == 'true'
         id: observe
         run: python -m v2.forward_paper --observe
       - name: Verify persisted observation hashes, cash and equity curve
