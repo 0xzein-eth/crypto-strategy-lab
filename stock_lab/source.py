@@ -20,6 +20,13 @@ UTC=dt.timezone.utc
 MARKET="IDX"
 PROVIDER="yahoo-chart-public-unauthenticated"
 SYMBOLS=("BBCA.JK","BBRI.JK","BMRI.JK","TLKM.JK","ASII.JK","ICBP.JK")
+# Research-only cohorts; NEVER added to the frozen six-symbol cash journal.
+EXTRA_RESEARCH_SYMBOLS=(
+    "BBNI.JK","UNTR.JK","INDF.JK","KLBF.JK","ANTM.JK","PTBA.JK",
+    "PGAS.JK","ISAT.JK","SMGR.JK","CPIN.JK","MYOR.JK","AMRT.JK",
+)
+HISTORICAL_RESEARCH_SYMBOLS=SYMBOLS+EXTRA_RESEARCH_SYMBOLS
+
 MIN_HISTORY=75
 PUBLISH_AFTER_HOUR_WIB=18
 BASE="https://query1.finance.yahoo.com/v8/finance/chart/"
@@ -42,7 +49,7 @@ def iso(now):
 
 
 def allowed_symbol(symbol):
-    if symbol not in SYMBOLS:
+    if symbol not in HISTORICAL_RESEARCH_SYMBOLS:
         raise ValueError("SOURCE_INVALID: ticker outside frozen IDX research universe")
     return symbol
 
@@ -201,3 +208,37 @@ def capture(*,now=None,getter=get_json,symbols=SYMBOLS):
             "markets":markets,"market_session_calendar_verified":False,
             "no_intraday_book_or_actual_broker_fills":True,
             "never_ordered_stocks":True}
+
+
+def capture_research_history(*,now=None,getter=get_json,
+                             symbols=HISTORICAL_RESEARCH_SYMBOLS):
+    """Extra independent historical-only cohort, never persisted as fills.
+
+    An unavailable research ticker is transparently skipped, rather than
+    substituting a fabricated return. Frozen six-symbol PAPER observer
+    remains unchanged, even when this research universe is larger.
+    """
+    now=now or dt.datetime.now(UTC)
+    if not isinstance(now,dt.datetime) or now.tzinfo is None:
+        raise ValueError("CLOCK_INVALID: aware timestamp required")
+    if now.astimezone(WIB).hour<PUBLISH_AFTER_HOUR_WIB:
+        raise ValueError("CLOCK_INTEGRITY: wait until after 18 WIB for historical capture")
+    if (len(set(symbols))!=len(symbols) or
+            any(s not in HISTORICAL_RESEARCH_SYMBOLS for s in symbols)):
+        raise ValueError("SOURCE_INVALID: unknown or duplicate research symbol")
+    markets,errors={},{}
+    for symbol in symbols:
+        try:
+            markets[symbol]=parse_chart(getter(endpoint(symbol)),symbol,now=now)
+        except (ValueError,RuntimeError,urllib.error.HTTPError,
+                urllib.error.URLError,TimeoutError) as exc:
+            errors[symbol]=type(exc).__name__+": "+str(exc)[:160]
+    if len(markets)<6:
+        raise ValueError("DATA_INSUFFICIENT: fewer than 6 authentic IDX histories; "+
+                         canonical(errors))
+    return {"schema":"idx-historical-expanded-public-only-v1",
+            "asof_utc":iso(now), "markets":markets,
+            "missing_or_rejected_symbols":errors,
+            "requested_symbols":list(symbols),
+            "funded_forward_wallet_observations":0,
+            "broker_orders":0}

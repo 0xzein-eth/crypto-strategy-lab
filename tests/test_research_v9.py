@@ -125,7 +125,7 @@ class FactoryTests(unittest.TestCase):
         for family in ("donchian","ztrend","rsi_trend"):
             self.assertIn(family,{x.family for x in expanded})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
 
     def test_twelve_hundred_variants_preserve_all_previous_750_ids(self):
         old = factory.variant_catalog(750)
@@ -136,7 +136,7 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue({"compression_breakout", "volatility_impulse",
                          "trend_reclaim"} <= {v.family for v in extended})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
 
     def test_one_thousand_six_hundred_preserves_every_old_id(self):
         original=factory.variant_catalog(1200)
@@ -146,7 +146,38 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue({"volume_climax_fade","rsi_recovery"} <=
                         {x.family for x in larger})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
+
+    def test_twenty_four_hundred_hypotheses_keep_two_thousand_prefix(self):
+        old=factory.variant_catalog(2000)
+        larger=factory.variant_catalog(2400)
+        self.assertEqual(len(larger),2400)
+        self.assertEqual(len(set(v.id for v in larger)),2400)
+        self.assertEqual([v.id for v in old],
+                         [v.id for v in larger[:2000]])
+        families=[v.family for v in larger[2000:]]
+        expected={"range_failure_revert","momentum_acceleration",
+                  "volume_followthrough","pullback_channel"}
+        self.assertEqual(set(families),expected)
+        self.assertEqual({x:families.count(x) for x in expected},
+                         {x:100 for x in expected})
+        self.assertEqual({v.horizon for v in larger[2000:]},
+                         set(factory.HORIZONS))
+        with self.assertRaises(ValueError):
+            factory.variant_catalog(2401)
+
+    def test_four_new_signals_use_only_confirmed_trailing_bars(self):
+        candles=market(400)
+        base=factory.Features(candles)
+        mutated=[r[:] for r in candles]
+        mutated[-1][4]*=1.2
+        mutated[-1][2]=max(mutated[-1][2],mutated[-1][4])
+        from_future=factory.Features(mutated)
+        for v in factory.variant_catalog(2400)[2000::13]:
+            first=factory.signal(base,v,250)
+            second=factory.signal(from_future,v,250)
+            self.assertIn(first,(-1,0,1))
+            self.assertEqual(first,second,v.id)
 
     def test_two_thousand_distinct_diverse_variants_preserve_all_1600_ids(self):
         old=factory.variant_catalog(1600)
@@ -163,7 +194,7 @@ class FactoryTests(unittest.TestCase):
         self.assertEqual(set(v.horizon for v in enlarged[1600:]),
                          set(factory.HORIZONS))
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
 
     def test_training_only_selection_covers_families_before_correlated_parameters(self):
         variants={
