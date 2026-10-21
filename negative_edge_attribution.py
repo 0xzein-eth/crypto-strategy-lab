@@ -49,9 +49,9 @@ def _group_report(rows):
 def evaluate(records):
     source=records.values() if isinstance(records,dict) else records
     groups={name:defaultdict(list) for name in
-            ("horizon_hours","side","entry_regime","sector")}
+            ("strategy","symbol","horizon_hours","side","entry_regime","sector")}
     eligible=0
-    missing={"side":0,"entry_regime":0,"sector":0}
+    missing={"strategy":0,"symbol":0,"side":0,"entry_regime":0,"sector":0}
     for row in source:
         if not learner.eligible(row):
             continue
@@ -60,6 +60,8 @@ def evaluate(records):
         stratum=ev.get("sampling_stratum") or []
         sector=(stratum[0] if stratum else universe.ASSET_SECTORS.get(row.get("symbol")))
         dimensions={
+            "strategy":row.get("strategy") or "UNKNOWN",
+            "symbol":row.get("symbol") or "UNKNOWN",
             "horizon_hours":str(row["horizon_hours"]),
             "side":row.get("side") or "UNKNOWN",
             "entry_regime":row.get("regime") or ev.get("entry_regime") or "UNKNOWN",

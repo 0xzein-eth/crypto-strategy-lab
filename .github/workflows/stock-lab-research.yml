@@ -1,29 +1,12 @@
-name: Stock Strategy Lab IDX chronological research
+name: Archive Audit - Former six-stock IDX historical research
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/stock-lab-research.yml'
-  # Run research independently of observer success; never claim results
-  # before real after-close bars are available.
-  schedule:
-    - cron: '40 12 * * 1-5' # 19:40 WIB
-    - cron: '40 14 * * 1-5' # 21:40 WIB
-  workflow_run:
-    workflows: ["Stock Strategy Lab IDX daily CASH PAPER"]
-    types: [completed]
-    branches: [main]
 permissions:
   contents: read
-concurrency:
-  group: idx-stock-historical-evidence-only
-  cancel-in-progress: false
 jobs:
-  research:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+  archived-ledger-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v5
         with:
@@ -31,67 +14,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Verify isolated future wallet, source timestamps and 3 chronological research splits
+      - name: Read-only historical ledger verification - NO new IDX trade
         run: |
-          python -m unittest discover -s tests -p 'test_stock_lab.py' -v
-          python -m unittest discover -s tests -p 'test_stock_lab_research.py' -v
-          python -m unittest discover -s tests -p 'test_stock_lab_expanded.py' -v
           python -m stock_lab.engine --verify-only
-      - name: Check whether IDX daily market data can be final yet
-        id: clock
-        run: |
-          python - <<'PY'
-          import datetime as dt,os
-          from zoneinfo import ZoneInfo
-          local=dt.datetime.now(ZoneInfo("Asia/Jakarta"))
-          can_observe=local.hour>=18
-          with open(os.environ["GITHUB_OUTPUT"],"a") as out:
-              out.write("after_eod="+str(can_observe).lower()+"\n")
-          print("IDX local clock",local.isoformat(),"can query final daily bars:",can_observe)
-          PY
-      - name: Research all four strategies only on actual public IDX historical OHLCV
-        if: steps.clock.outputs.after_eod == 'true'
-        run: python -m stock_lab.research --output /tmp/idx-historical-3way-validation.json
-      - name: Evaluate ten new non-overlapping historical arms across up to 18 IDX equities
-        if: steps.clock.outputs.after_eod == 'true'
-        id: expanded
-        continue-on-error: true
-        run: python -m stock_lab.expanded_research --output /tmp/idx-expanded-18x10-historical.json
-      - name: Explain unavailable extended historical source instead of inventing results
-        if: steps.clock.outputs.after_eod == 'true' && steps.expanded.outcome != 'success'
-        run: |
-          python - <<'PY'
-          import json,pathlib
-          p=pathlib.Path('/tmp/idx-expanded-18x10-historical.json')
-          if not p.exists():
-              p.write_text(json.dumps({
-                  'schema':'idx-expanded-history-source-status-v1',
-                  'status':'UNAVAILABLE_OR_REJECTED_REAL_SOURCE',
-                  'historical_results_fabricated':False,
-                  'live_orders':0},indent=2)+'\\n')
-          print(p.read_text())
-          PY
-      - name: Publish explicit before-EOD research readiness without fake results
-        if: steps.clock.outputs.after_eod != 'true'
-        run: |
-          python - <<'PY'
-          import json,pathlib
-          obj={"schema":"stock-research-window-status-v1",
-               "status":"WAITING_FOR_GENUINE_POST_18_WIB_EOD_DATA",
-               "historical_backtest_not_executed":True,
-               "hypothetical_trades_invented":0,
-               "real_broker_orders":0}
-          pathlib.Path("/tmp/idx-historical-3way-validation.json").write_text(
-              json.dumps(obj,indent=2,sort_keys=True)+"\n")
-          print(json.dumps(obj))
-          PY
-      - name: Share descriptive fixed-parameter training and embargo diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: idx-cash-stock-training-validation-research
-          path: |
-            /tmp/idx-historical-3way-validation.json
-            /tmp/idx-expanded-18x10-historical.json
-          if-no-files-found: warn
-          retention-days: 30
+          python -m unittest discover -s tests -p 'test_stock_lab.py' -v
+          echo "ARCHIVED: former six-stock/4-arm IDX workflow has no cron, push, or trading capture."
+          echo "New Nasdaq/LQ45 wallets are managed ONLY in dual-equity-lab.yml."

@@ -1,0 +1,147 @@
+name: Dual Nasdaq and LQ45 CASH PAPER Research
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'equity_lab/**'
+      - 'tests/test_equity_lab.py'
+      - '.github/workflows/dual-equity-lab.yml'
+  schedule:
+    # IDX: 19:35 WIB / 21:20 WIB, M-F.
+    - cron: '35 12 * * 1-5'
+    - cron: '20 14 * * 1-5'
+    # Nasdaq: 21:25-23:55 EDT, 20:25-22:55 EST, M-F local.
+    # Those evenings are Tue-Sat UTC and respect US DST without hardcoding it.
+    - cron: '25 1 * * 2-6'
+    - cron: '55 3 * * 2-6'
+permissions:
+  contents: write
+jobs:
+  offline-tests:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m unittest discover -s tests -p 'test_equity_lab.py' -v
+          python -m equity_lab.forward --market NASDAQ --verify-only
+          python -m equity_lab.forward --market LQ45 --verify-only
+          python -m stock_lab.engine --verify-only
+          python engine.py --verify-only
+  nasdaq:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '25 1 * * 2-6' || github.event.schedule == '55 3 * * 2-6'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    concurrency:
+      group: equity-nasdaq-one-cash-writer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Validate old hashes and money custody first
+        run: |
+          python -m unittest discover -s tests -p 'test_equity_lab.py' -v
+          python -m equity_lab.forward --market NASDAQ --verify-only
+      - name: Capture genuine Nasdaq EOD and one-wallet PAPER trade events
+        env:
+          EQUITY_HISTORICAL_OUTPUT: /tmp/nasdaq-14arm-historical.json
+        run: python -m equity_lab.forward --market NASDAQ --observe
+      - name: Verify account replay, immutable crypto and legacy IDX
+        run: |
+          python -m equity_lab.forward --market NASDAQ --verify-only
+          git diff --check
+          test -z "$(git status --porcelain data/ v2_state/ stock_lab_state/)"
+      - name: Commit only market-isolated US research history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if test -d equity_state/NASDAQ; then git add -A equity_state/NASDAQ/; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "paper(equities): authentic Nasdaq EOD and isolated USD cash account [skip ci]"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then exit 0; fi
+              git fetch origin main
+              if ! git rebase origin/main; then
+                git rebase --abort || true
+                echo "PERSISTENCE_FAILURE: conflict refused"
+                exit 1
+              fi
+            done
+            echo "PERSISTENCE_FAILURE: no force push"
+            exit 1
+          fi
+      - name: Research outcome or source outage diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nasdaq-equity-research-${{ github.run_id }}
+          path: /tmp/nasdaq-14arm-historical.json
+          if-no-files-found: warn
+          retention-days: 21
+  lq45:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '35 12 * * 1-5' || github.event.schedule == '20 14 * * 1-5'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: equity-lq45-one-cash-writer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify old hashes and no FX crossover
+        run: |
+          python -m unittest discover -s tests -p 'test_equity_lab.py' -v
+          python -m equity_lab.forward --market LQ45 --verify-only
+      - name: Capture genuine LQ45 EOD and one-wallet IDR PAPER trade events
+        env:
+          EQUITY_HISTORICAL_OUTPUT: /tmp/lq45-14arm-historical.json
+        run: python -m equity_lab.forward --market LQ45 --observe
+      - name: Verify old crypto and retired IDX untouched
+        run: |
+          python -m equity_lab.forward --market LQ45 --verify-only
+          git diff --check
+          test -z "$(git status --porcelain data/ v2_state/ stock_lab_state/)"
+      - name: Commit only new LQ45 paper cohort data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if test -d equity_state/LQ45; then git add -A equity_state/LQ45/; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "paper(equities): authentic LQ45 EOD and isolated IDR cash account [skip ci]"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then exit 0; fi
+              git fetch origin main
+              if ! git rebase origin/main; then
+                git rebase --abort || true
+                echo "PERSISTENCE_FAILURE: conflict refused"
+                exit 1
+              fi
+            done
+            echo "PERSISTENCE_FAILURE: no force push"
+            exit 1
+          fi
+      - name: Research outcome or source outage diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lq45-equity-research-${{ github.run_id }}
+          path: /tmp/lq45-14arm-historical.json
+          if-no-files-found: warn
+          retention-days: 21

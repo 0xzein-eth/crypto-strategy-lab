@@ -27,6 +27,9 @@ class NegativeAttributionTests(unittest.TestCase):
             self.assertTrue(r["descriptive_negative_warning"])
             self.assertEqual(r["distinct_entry_utc_days"],25)
             self.assertLess(r["after_cost_mean_R"],0)
+        self.assertEqual(report["dimensions"]["strategy"]["BR-v3"]["eligible_closes"],125)
+        self.assertEqual(report["dimensions"]["symbol"]["BTC"]["eligible_closes"],125)
+        self.assertEqual(report["missing_frozen_metadata"]["strategy"],0)
         self.assertTrue(report["no_strategy_selection_or_auto_reweight"])
         self.assertFalse(report["multiple_testing_adjusted"])
 
