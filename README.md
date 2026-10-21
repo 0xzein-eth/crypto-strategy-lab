@@ -34,6 +34,29 @@ belum lengkap. Otomatisasi GitHub
 setelah pukul 18 WIB. *Penelitian ini bukan sinyal profit
 terjamin dan tidak mengaktifkan order broker.*
 
+## Eksperimen historis tambahan — crypto v9 dan IDX
+
+Pada 21 Oktober 2026, jalur riset historis crypto v9 diperluas dari
+**2.000 menjadi 2.400 hipotesis** termasuk empat keluarga baru:
+`range_failure_revert`, `momentum_acceleration`,
+`volume_followthrough` dan `pullback_channel`.
+Target sumber 15-menit historis diperluas dari 12 ke **hingga 16**
+perpetual OKX yang terverifikasi. Seluruh 2.000 ID lama tetap berada
+pada urutan semula. Ketersediaan dan completeness funding dicatat;
+sumber yang tidak tersedia **tidak** digantikan harga sintetis atau
+funding 0%. Validasi meliputi trailing confirmed candles, pemisahan
+train dan tiga fold kronologis, biaya dasar, tambahan stress 25bp,
+dan pengamatan yang eksplisit **bukan** forward paper profit.
+
+Di saham, enam ticker/four-arm **cash wallet tidak berubah**.
+Sebagai riset historis terpisah, hingga **18 saham IDX** dan
+**10 strategi baru** diuji pada dua tahun data Yahoo EOD publik
+dengan 60/20/20 split, purge, stress fee, dan cohort
+non-overlap. [Metodologi tambahan](stock_lab/README.md).
+Kedua perluasan ini **tidak mengaktifkan pemilihan juara otomatis,
+membuktikan ROI, memprediksi win rate, atau mengirim order nyata**.
+Data historis dan penelitian prospektif tetap dipisahkan.
+
 ## Pembangunan v2 — audit biaya dan modal (fase P0)
 
 Modul `v2/legacy_audit.py` sekarang membongkar secara **read-only**
