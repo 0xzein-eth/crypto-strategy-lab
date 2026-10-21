@@ -1,129 +1,22 @@
-name: Stock Strategy Lab IDX daily CASH PAPER
+name: Archive Audit - Former six-stock IDX cash account
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'stock_lab/**'
-      - 'tests/test_stock_lab.py'
-      - '.github/workflows/stock-lab.yml'
-  # Extra independent opportunity when the cron scheduler is delayed.
-  # Still checks actual EOD time, provider date, and unique session.
-  workflow_run:
-    workflows: ["Historical Research Factory v9"]
-    types: [completed]
-    branches: [main]
-  schedule:
-    # Indonesia / Jakarta UTC+7: best-effort after the 16:15 WIB post-close
-    # session, with extra vendor EOD publication time. Mon-Fri only.
-    - cron: '15 11 * * 1-5'
-    - cron: '20 12 * * 1-5'
-    - cron: '35 13 * * 1-5' # 20:35 WIB late vendor publication
-    - cron: '20 14 * * 1-5' # 21:20 WIB last daily backstop
 permissions:
-  contents: write
-concurrency:
-  group: idx-stock-paper-single-writer
-  cancel-in-progress: false
+  contents: read
 jobs:
-  observe:
-    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.event != 'pull_request')
+  archived-ledger-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v5
         with:
           ref: main
-          fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Verify stock-only cash ledger regression, crypto v8 unchanged
+      - name: Read-only historical ledger verification - NO new IDX trade
         run: |
+          python -m stock_lab.engine --verify-only
           python -m unittest discover -s tests -p 'test_stock_lab.py' -v
-          python -m stock_lab.engine --verify-only
-          python engine.py --verify-only
-      - name: Refuse intraday daily-candle lookahead and allow only post-18 WIB
-        id: market
-        run: |
-          python - <<'PY'
-          import datetime as dt,os
-          from zoneinfo import ZoneInfo
-          now=dt.datetime.now(ZoneInfo("Asia/Jakarta"))
-          eligible=now.hour>=18
-          with open(os.environ["GITHUB_OUTPUT"],"a") as stream:
-              stream.write("eod_ready="+str(eligible).lower()+"\n")
-          print("IDX local time:",now.isoformat(),"Post-final-EOD permitted:",eligible)
-          PY
-      - name: Capture only actual third-party completed IDX daily bars
-        if: steps.market.outputs.eod_ready == 'true'
-        id: collect
-        run: python -m stock_lab.engine --observe
-      - name: Audit exact cash and future-only journal reproduction
-        if: steps.market.outputs.eod_ready == 'true'
-        run: |
-          python -m stock_lab.engine --verify-only
-          git diff --check
-          if git status --porcelain data/ v2_state/ v2_history/ | grep .; then
-            echo 'INTEGRITY_FAILURE: stock observer cannot change crypto histories'
-            exit 1
-          fi
-      - name: Persist ONLY stock_lab_state provenance and cash account
-        if: steps.market.outputs.eod_ready == 'true'
-        run: |
-          if [[ ! -d stock_lab_state ]]; then
-            echo 'NO_VERIFIED_IDX_BARS: no state emitted; never invent a trade'
-            exit 1
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- stock_lab_state/
-          if git diff --cached --quiet; then
-            echo 'No new complete common IDX session; skip duplicate commit'
-            exit 0
-          fi
-          git commit -m 'paper(stock): append authentic EOD cash-only IDX journal and research [skip ci]'
-          for attempt in 1 2 3; do
-            if git push origin HEAD:main; then
-              echo 'Persisted real completed IDX stock PAPER observation'
-              exit 0
-            fi
-            git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              echo 'INTEGRITY_FAILURE: concurrent conflicting EOD history; no force push'
-              exit 1
-            fi
-          done
-          exit 1
-      - name: Publish market data provenance/status even on source outage
-        if: always()
-        env:
-          EOD_READY: ${{ steps.market.outputs.eod_ready }}
-          COLLECTION_RESULT: ${{ steps.collect.outcome }}
-        run: |
-          python - <<'PY'
-          import datetime as dt,json,os,pathlib
-          p=pathlib.Path("stock_lab_state/report.json")
-          summary=json.loads(p.read_text()) if p.exists() else None
-          output={
-              "schema":"stock-idx-workflow-source-health-v1",
-              "observed_run_at_utc":dt.datetime.now(dt.timezone.utc).isoformat(),
-              "after_eod_window":os.environ.get("EOD_READY"),
-              "public_source_step":os.environ.get("COLLECTION_RESULT","not_started"),
-              "source_observations":summary["observation_sessions"] if summary else 0,
-              "latest_complete_session":summary["latest_observed_complete_session"] if summary else None,
-              "model_uses_only_previous_session_signal":True,
-              "not_a_trade_fill":True,"real_broker_orders":0,
-              "isolated_from_crypto_ledger":True,
-          }
-          pathlib.Path("/tmp/stock-idx-health.json").write_text(json.dumps(output,indent=2,sort_keys=True)+"\n")
-          print(json.dumps(output,sort_keys=True))
-          PY
-      - name: Upload diagnostics even if no genuine IDX record was added
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: stock-lab-idx-public-EOD-source-health
-          path: /tmp/stock-idx-health.json
-          retention-days: 21
+          echo "ARCHIVED: former six-stock/4-arm IDX workflow has no cron, push, or trading capture."
+          echo "New Nasdaq/LQ45 wallets are managed ONLY in dual-equity-lab.yml."
