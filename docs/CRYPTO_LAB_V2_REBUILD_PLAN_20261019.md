@@ -316,6 +316,24 @@ cannot be accelerated or certified in October 2026; no
 auto-promoted or executable live strategy exists.
 [Trial protocol](V2_FROZEN_90DAY_TRIAL_20261020.md).
 
+## P3: genuine SETTLED funding research cash-flow attribution
+
+`v2.funding_evidence` now combines true public settled realized
+rates in the separate v2 warehouse with exact future-entry 4h
+shadow pairs and CLOSED paper wallet records. Per-symbol, per-trade
+historical settlement coverage must pass a strict independent
+interval check before any funded return is computed; unknown
+funding intervals are excluded, never assumed to carry a 0% rate.
+LONG and SHORT payments are signed oppositely, matched neutral
+controls use identical observed entry/exit times, and an
+additional 20bp unmeasured impact/latency haircut is clearly
+a sensitivity assumption. Account wallet equity and margin
+are never silently revised; only an ex-post closed cash-flow
+scorecard is produced and its incompleteness is disclosed.
+Daily/no-order artifact workflow is
+`v2-funding-evidence.yml`.
+[Funding protocol](V2_SETTLED_FUNDING_ATTRIBUTION_20261020.md).
+
 ## Concrete phased build plan, prerequisites and definition of done
 
 | Phase | Suggested effort* | Owner artifact / implementation | Exit condition |
