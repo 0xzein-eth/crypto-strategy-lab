@@ -338,7 +338,7 @@ def observe(market):
                    "fabricated_results":0,"real_orders":0}
         dest=Path(output)
         dest.parent.mkdir(parents=True,exist_ok=True)
-        dest.write_text(json.dumps(study,indent=2,sort_keys=True,allow_nan=False)+"\\n",
+        dest.write_text(json.dumps(study,indent=2,sort_keys=True,allow_nan=False)+"\n",
                         encoding="utf-8")
     updated=append(events,tick)
     report=replay(updated,market)
