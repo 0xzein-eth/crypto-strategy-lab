@@ -48,8 +48,8 @@ def variant_catalog(max_variants=300):
     families must not rewrite prior experimental hypotheses or introduce
     retrospective selection changes. Expansion is historical/backtest-only.
     """
-    if not 1 <= max_variants <= 2000:
-        raise ValueError("max_variants must be within 1..2000")
+    if not 1 <= max_variants <= 2400:
+        raise ValueError("max_variants must be within 1..2400")
 
     def drain(by_family, limit):
         output = []
@@ -151,6 +151,28 @@ def variant_catalog(max_variants=300):
             diverse["efficient_trend"].append(
                 Variant("efficient_trend",n,efficiency,50,h))
         selected.extend(drain(diverse,max_variants-len(selected)))
+    if max_variants > 2000:
+        # Append-only: all previous 2,000 historical variant IDs and order
+        # remain frozen. Four NEW experimental families, 100 variants each,
+        # never used to change v8/v2 forward PAPER allocation retrospectively.
+        future = defaultdict(list)
+        for n, gate, h in product((8,12,20,32,48),
+                                  (0.8,1.0,1.2,1.5),HORIZONS):
+            future["range_failure_revert"].append(
+                Variant("range_failure_revert",n,gate,0,h))
+        for n, gate, h in product((8,12,20,32,48),
+                                  (0.10,0.20,0.30,0.40),HORIZONS):
+            future["momentum_acceleration"].append(
+                Variant("momentum_acceleration",n,gate,50,h))
+        for n, gate, h in product((8,12,20,32,48),
+                                  (1.0,1.2,1.4,1.8),HORIZONS):
+            future["volume_followthrough"].append(
+                Variant("volume_followthrough",n,gate,50,h))
+        for n, gate, h in product((8,12,20,32,48),
+                                  (0.0,0.1,0.2,0.3),HORIZONS):
+            future["pullback_channel"].append(
+                Variant("pullback_channel",n,gate,50,h))
+        selected.extend(drain(future,max_variants-len(selected)))
     if len(selected) != max_variants or len({v.id for v in selected}) != len(selected):
         raise AssertionError("insufficient unique predeclared research hypotheses")
     return selected
@@ -358,6 +380,56 @@ def signal(f, v, closed):
         return (1 if displacement>0 and close>fast>slow and fast>fast_prev
                 else -1 if displacement<0 and close<fast<slow and fast<fast_prev
                 else 0)
+    if v.family == "range_failure_revert":
+        n=v.lookback
+        prior_top=max(f.high[j-n-1:j-1])
+        prior_bottom=min(f.low[j-n-1:j-1])
+        reference_volume=f.window(f.vsum,j-1,20)
+        if reference_volume<=0 or f.vol[j]<v.threshold*reference_volume:
+            return 0
+        prev_close=f.close[j-1]
+        return (-1 if prev_close>prior_top and close<prior_top and close<f.open[j]
+                else 1 if prev_close<prior_bottom and close>prior_bottom
+                and close>f.open[j] else 0)
+    if v.family == "momentum_acceleration":
+        n=v.lookback
+        half=n//2
+        prev_move=f.close[j-half]/f.close[j-n]-1
+        recent_move=close/f.close[j-half]-1
+        acceleration=recent_move-prev_move
+        magnitude=max(0.002,abs(prev_move)*v.threshold)
+        fast=f.mean(j,20)
+        slow=f.mean(j,v.second)
+        return (1 if acceleration>magnitude and recent_move>0 and
+                close>fast>slow else -1 if acceleration< -magnitude and
+                recent_move<0 and close<fast<slow else 0)
+    if v.family == "volume_followthrough":
+        n=v.lookback
+        prior_volume=f.window(f.vsum,j-1,n)
+        if prior_volume<=0 or f.vol[j]<v.threshold*prior_volume:
+            return 0
+        fast=f.mean(j,20)
+        slow=f.mean(j,v.second)
+        prev=f.close[j-1]
+        return (1 if close>f.high[j-1] and prev>f.open[j-1] and
+                close>fast>slow else -1 if close<f.low[j-1] and
+                prev<f.open[j-1] and close<fast<slow else 0)
+    if v.family == "pullback_channel":
+        n=v.lookback
+        prev_mean=f.mean(j-1,n)
+        current_mean=f.mean(j,n)
+        prior_range=sum(f.high[k]-f.low[k] for k in range(j-n,j))/n
+        if prior_range<=0:
+            return 0
+        fast=f.mean(j,20)
+        slow=f.mean(j,v.second)
+        # Previous completed bar dipped toward the average, current
+        # completed bar reclaims it without observing any future bar.
+        return (1 if fast>slow and f.close[j-1] <= prev_mean-
+                v.threshold*prior_range and close>current_mean and close>f.open[j]
+                else -1 if fast<slow and f.close[j-1]>=prev_mean+
+                v.threshold*prior_range and close<current_mean and
+                close<f.open[j] else 0)
     if v.family == "long_control":
         return 1
     if v.family == "control":
@@ -693,7 +765,10 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
     family_counts = {name:sum(v.family==name for v in variants)
                      for name in sorted({v.family for v in variants})}
     return {
-        "schema_version": 1, "factory_version": "v9-param-grid-6-2000-diverse-streaming-stress25bp",
+        "schema_version": 1, "factory_version": (
+            "v9-param-grid-7-2400-diverse-streaming-stress25bp"
+            if max_variants>2000 else
+            "v9-param-grid-6-2000-diverse-streaming-stress25bp"),
         "validation_method": "expanding_train_three_chronological_folds_purged_96bars",
         "historical_only": True, "proven_edge": False, "champion": None,
         "measured_funding_symbols": sorted(funding_by_symbol),
