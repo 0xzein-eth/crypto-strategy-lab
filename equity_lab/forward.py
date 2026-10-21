@@ -284,6 +284,24 @@ def replay(events,market):
     losses=sum(dec(t["net_pnl"])<0 for t in closes)
     gross_wins=sum((dec(r["net_pnl"]) for r in closes if dec(r["net_pnl"])>0),Decimal(0))
     gross_losses=-sum((dec(r["net_pnl"]) for r in closes if dec(r["net_pnl"])<0),Decimal(0))
+    # Observational attribution only, not parameter tuning or winner rank.
+    strategy_results={}
+    for arm in ALL_ARMS:
+        rows=[r for r in closes if r["strategy"]==arm]
+        if not rows:continue
+        gain=sum((dec(r["net_pnl"]) for r in rows if dec(r["net_pnl"])>0),Decimal(0))
+        loss=-sum((dec(r["net_pnl"]) for r in rows if dec(r["net_pnl"])<0),Decimal(0))
+        strategy_results[arm]={
+            "closed_positions":len(rows),
+            "wins":sum(dec(r["net_pnl"])>0 for r in rows),
+            "losses":sum(dec(r["net_pnl"])<0 for r in rows),
+            "win_rate_pct":round(100*sum(dec(r["net_pnl"])>0 for r in rows)/len(rows),4),
+            "closed_pnl":money(sum((dec(r["net_pnl"]) for r in rows),Decimal(0))),
+            "profit_factor":round(float(gain/loss),5) if loss else None,
+            "avg_closed_return_pct":round(
+                sum(r["net_return_pct"] for r in rows)/len(rows),5),
+            "exploratory_not_statistically_independent":True,
+        }
     equity=curve[-1]["simulated_equity"] if curve else money(start_cash)
     return {
         "schema":VERSION,"market":market,"currency":currency,
@@ -300,6 +318,9 @@ def replay(events,market):
         "open_positions":list(positions.values()),
         "unsettled_receivables":settlements,
         "closed_trades_detail":closes[-100:],
+        "per_strategy":strategy_results,
+        "observed_last_session_symbol_count":(len(events[-1]["snapshot"]["assets"]) if events else 0),
+        "frozen_universe_target_count":len(conf["symbols"]),
         "genuine_complete_sessions":len(events),
         "last_market_session":events[-1]["snapshot"]["session"] if events else None,
         "last_source_hash":last_source,
