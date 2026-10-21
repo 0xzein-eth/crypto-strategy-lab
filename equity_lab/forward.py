@@ -324,6 +324,22 @@ def observe(market):
         print(source.canonical({"status":"ALREADY_RECORDED_SESSION",
                                 "market":market,"session":tick["session"]}))
         return
+    # Reuse exactly the SAME authentic capture for historical diagnostics.
+    # This study is never appended as prospective equity or P&L.
+    output=os.environ.get("EQUITY_HISTORICAL_OUTPUT")
+    if output:
+        from equity_lab import research
+        try:
+            study=research.evaluate(market,feed["stocks"],feed["benchmark"])
+        except (ValueError,RuntimeError) as exc:
+            study={"schema":"dual-equity-historical-source-status-v1",
+                   "market":market,"status":"NO_VALID_HISTORICAL_RESULT",
+                   "source_error":type(exc).__name__+": "+str(exc)[:240],
+                   "fabricated_results":0,"real_orders":0}
+        dest=Path(output)
+        dest.parent.mkdir(parents=True,exist_ok=True)
+        dest.write_text(json.dumps(study,indent=2,sort_keys=True,allow_nan=False)+"\\n",
+                        encoding="utf-8")
     updated=append(events,tick)
     report=replay(updated,market)
     event_path,report_path,curve_path=state_paths(market)
