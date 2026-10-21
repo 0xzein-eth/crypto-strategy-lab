@@ -16,7 +16,7 @@ from research_v9.promotion import build_queue
 ROOT = Path(__file__).resolve().parent
 RESULT_PATH = ROOT / "research_results" / "latest.json"
 QUEUE_PATH = ROOT / "research_results" / "forward_candidates.json"
-DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK", "XRP", "ADA", "AVAX", "DOGE", "DOT", "NEAR", "LTC", "SUI", "BNB", "TRX", "ATOM", "APT")  # strictly verified OKX swaps; funding completeness audited
+DEFAULT_SYMBOLS = ("BTC", "ETH", "SOL", "LINK", "XRP", "ADA", "AVAX", "DOGE", "DOT", "NEAR", "LTC", "SUI", "BNB", "TRX", "ATOM", "APT")  # public OKX swap symbols attempted individually; every venue, continuity and funding result audited
 
 
 def dataset_digest(bars):
