@@ -77,7 +77,7 @@ def yahoo(market,symbol,now,*,wrong_currency=False,index=False):
     q={k:[b[k] for b in bars] for k in ("open","high","low","close","volume")}
     return {"chart":{"error":None,"result":[{
          "meta":{"symbol":symbol,
-                 "currency":"USD" if wrong_currency else universe.MARKETS[market]["currency"],
+                 "currency":("IDR" if market=="NASDAQ" else "USD") if wrong_currency else universe.MARKETS[market]["currency"],
                  "exchangeTimezoneName":universe.MARKETS[market]["timezone"],
                  "instrumentType":"INDEX" if index else "EQUITY"},
          "timestamp":timestamps,
