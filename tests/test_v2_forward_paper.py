@@ -63,6 +63,18 @@ def build(count=9):
     return events
 
 
+class SlotDeduplicationTests(unittest.TestCase):
+    def test_fast_skip_same_real_half_hour_without_any_api_call(self):
+        existing=build(1)
+        self.assertTrue(f.already_observed_slot(
+            existing,BASE+dt.timedelta(minutes=12)))
+        self.assertFalse(f.already_observed_slot(
+            existing,BASE+dt.timedelta(minutes=30)))
+        self.assertFalse(f.already_observed_slot([],BASE))
+        with self.assertRaisesRegex(ValueError,"CLOCK_INTEGRITY"):
+            f.already_observed_slot(existing,BASE-dt.timedelta(hours=1))
+
+
 class DurableForwardWalletTests(unittest.TestCase):
     def test_one_cash_account_nonreset_across_periods_and_fixed_four_hour_close(self):
         ev=build()
