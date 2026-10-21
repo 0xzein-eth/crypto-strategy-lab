@@ -150,7 +150,7 @@ def variant_catalog(max_variants=300):
                 (4, 6, 8, 10, 12), (0.65, 0.75, 0.82, 0.90), HORIZONS):
             diverse["efficient_trend"].append(
                 Variant("efficient_trend",n,efficiency,50,h))
-        selected.extend(drain(diverse,max_variants-len(selected)))
+        selected.extend(drain(diverse,min(max_variants,2000)-len(selected)))
     if max_variants > 2000:
         # Append-only: all previous 2,000 historical variant IDs and order
         # remain frozen. Four NEW experimental families, 100 variants each,
