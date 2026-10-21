@@ -125,7 +125,7 @@ class FactoryTests(unittest.TestCase):
         for family in ("donchian","ztrend","rsi_trend"):
             self.assertIn(family,{x.family for x in expanded})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
 
     def test_twelve_hundred_variants_preserve_all_previous_750_ids(self):
         old = factory.variant_catalog(750)
@@ -136,7 +136,7 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue({"compression_breakout", "volatility_impulse",
                          "trend_reclaim"} <= {v.family for v in extended})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
 
     def test_one_thousand_six_hundred_preserves_every_old_id(self):
         original=factory.variant_catalog(1200)
@@ -146,7 +146,7 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue({"volume_climax_fade","rsi_recovery"} <=
                         {x.family for x in larger})
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
 
     def test_twenty_four_hundred_hypotheses_keep_two_thousand_prefix(self):
         old=factory.variant_catalog(2000)
@@ -194,7 +194,7 @@ class FactoryTests(unittest.TestCase):
         self.assertEqual(set(v.horizon for v in enlarged[1600:]),
                          set(factory.HORIZONS))
         with self.assertRaises(ValueError):
-            factory.variant_catalog(2001)
+            factory.variant_catalog(2401)
 
     def test_training_only_selection_covers_families_before_correlated_parameters(self):
         variants={
