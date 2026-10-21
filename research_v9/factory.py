@@ -787,7 +787,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
         "training_selection_policy": "first-best-per-family from TRAIN rankings, then fill; no validation feedback",
         "predeclared_variants_by_family": family_counts,
         "hypothesis_selection_policy": (
-            "First 1600 IDs unchanged; four new deterministic family types historical-only;"
+            "First 2000 IDs unchanged; four additional deterministic families historical-only;"
             " family-diverse training-only fold nominations;"
             " shadow evaluations of failed training variants NEVER promoted;"
             " not an independent alpha test"),
@@ -805,7 +805,7 @@ def walk_forward(datasets, max_variants=300, selections_per_fold=4,
             "Shadow evaluations for training-rejected hypotheses are exploratory, not formal candidate selection.",
             "Both ordinary and shadow walk-forward validation are REPEATEDLY inspected, not an untouched final holdout.",
             "Purge between training and validation; validation is REPEATEDLY observed.",
-            "2000 parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
+            "2400 exploratory parameter variants expand multiplicity; no family-wise alpha correction or tradable-edge claim.",
             "Multiple-parameter testing and correlated assets inflate apparent winners.",
             "A frozen untouched future dataset and prospective paper trials are REQUIRED."
         ],
