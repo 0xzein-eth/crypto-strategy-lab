@@ -333,23 +333,6 @@ def replay(events):
     return report, curve
 
 
-def already_observed_slot(existing, now):
-    """Avoid redundant public API calls without inventing a missing tick.
-
-    This is a pre-network optimization only. The fetched exchange timestamp
-    must STILL be validated by evaluate_candidate before any journal commit.
-    """
-    moment=ts(now)
-    if not existing:
-        return False
-    previous=ts(existing[-1]["tick"]["observed_at"])
-    prior_slot=int(previous.timestamp())//SLOT_SECONDS
-    new_slot=int(moment.timestamp())//SLOT_SECONDS
-    if new_slot<prior_slot:
-        raise ValueError("CLOCK_INTEGRITY: wall clock before last hashed tick")
-    return prior_slot==new_slot
-
-
 def evaluate_candidate(existing, tick):
     validate_tick(tick)
     now = ts(tick["observed_at"])
@@ -402,12 +385,6 @@ def main():
         return
     if not args.observe:
         parser.error("must explicitly request --observe, otherwise use --verify-only")
-    # Public API rate-limit protection: skip a slot already durably hashed.
-    # A later trigger in a genuinely unobserved slot still fetches actual books.
-    if already_observed_slot(existing,dt.datetime.now(UTC)):
-        print(canonical({"skipped":"already recorded this 30m slot before API fetch",
-                         "last_hash":old_report["last_tick_hash"],"no_orders":True}))
-        return
     from v2.okx_observer_source import current_tick
     tick = current_tick()
     if existing and int(ts(existing[-1]["tick"]["observed_at"]).timestamp()) // SLOT_SECONDS >= int(ts(tick["observed_at"]).timestamp()) // SLOT_SECONDS:
