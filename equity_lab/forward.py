@@ -262,6 +262,18 @@ def replay(events,market):
                     "entry_fee":money(entry_fee),"gross_cost":money(cost),
                     "modeled_fill_price":money(price),
                 }
+        # Re-mark *after* hypothetical D+1 OPEN allocations. The risk
+        # budget above used the prior fully observed pre-entry equity,
+        # but published EOD equity must include the new holdings.
+        fully_marked=all(symbol in assets for symbol in positions)
+        marked_assets=sum(
+            dec(assets[symbol]["last_bar"]["close"])*dec(pos["units"])*(1-sell_fee)
+            for symbol,pos in positions.items() if symbol in assets)
+        pending=sum(dec(x["amount"]) for x in settlements)
+        equity=cash+pending+marked_assets if fully_marked else None
+        if equity is not None:
+            peak=max(peak,equity)
+            max_dd=max(max_dd,(peak-equity)/peak if peak else Decimal("0"))
         curve.append({"session":session,"cash":money(cash),
                       "receivables":money(sum(dec(x["amount"]) for x in settlements)),
                       "simulated_equity":money(equity) if equity is not None else None,
