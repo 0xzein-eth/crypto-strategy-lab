@@ -1,5 +1,7 @@
 # Crypto Strategy Lab v8 — PAPER ONLY
 
+**Master blueprint (22 Oct 2026):** [Trading Lab Master Blueprint 2026–2027](docs/TRADING_LAB_MASTER_BLUEPRINT_2026_2027.md) — architecture, crypto/Nasdaq/LQ45 research roadmap, validation gates, cost controls, acceptance checklist. Paper-only, no validated champion.\n\n
+
 ![CI](https://github.com/0xzein-eth/crypto-strategy-lab/actions/workflows/ci.yml/badge.svg)
 
 **Lab eksperimen strategi kripto otomatis, berjalan lewat GitHub Actions, tanpa transaksi riil.**
