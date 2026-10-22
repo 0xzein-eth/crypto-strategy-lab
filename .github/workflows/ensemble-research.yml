@@ -1,0 +1,29 @@
+name: Independent equity ensembles (research only)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 3 * * 2'
+permissions:
+  contents: read
+jobs:
+  shadow-ensembles:
+    strategy:
+      fail-fast: false
+      matrix:
+        market: [NASDAQ, LQ45]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install research dependencies
+        run: pip install -r requirements.txt
+      - name: Run independent, after-cost ensemble research
+        run: python -m research_quality.equity_ensemble --market ${{ matrix.market }} --output ensemble-${{ matrix.market }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ensemble-${{ matrix.market }}
+          path: ensemble-${{ matrix.market }}.json
+          retention-days: 30
