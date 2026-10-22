@@ -1,0 +1,33 @@
+name: Cross-lab economic integrity audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'research_quality/**'
+      - 'tests/test_research_quality_audit.py'
+      - 'data/report.json'
+      - 'v2_state/report.json'
+      - 'equity_state/**/report.json'
+      - '.github/workflows/research-quality-audit.yml'
+  schedule:
+    - cron: '23 3 * * *'
+permissions:
+  contents: read
+jobs:
+  economic-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit regression tests
+        run: python -m unittest discover -s tests -p 'test_research_quality_audit.py' -v
+      - name: Build source-grounded audit
+        run: python -m research_quality.audit --output cross-lab-audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-lab-economic-audit
+          path: cross-lab-audit.json
+          retention-days: 30
