@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'research_quality/**'
-      - 'tests/test_research_quality_audit.py'
+      - 'tests/test_research_quality_*.py'
       - 'data/report.json'
       - 'v2_state/report.json'
       - 'equity_state/**/report.json'
@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Audit regression tests
-        run: python -m unittest discover -s tests -p 'test_research_quality_audit.py' -v
+        run: python -m unittest discover -s tests -p 'test_research_quality_*.py' -v
       - name: Build source-grounded audit
         run: python -m research_quality.audit --output cross-lab-audit.json
       - uses: actions/upload-artifact@v4
