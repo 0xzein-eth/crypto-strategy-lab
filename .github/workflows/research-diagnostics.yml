@@ -1,0 +1,35 @@
+name: Crypto and equity research diagnostics (read-only)
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'research_quality/**'
+      - 'tests/test_research_quality_*.py'
+      - 'tests/test_equity_ensemble_regression.py'
+      - '.github/workflows/research-diagnostics.yml'
+  schedule:
+    - cron: '17 4 * * *'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m compileall -q research_quality
+      - run: python -m unittest discover -s tests -p 'test_research_quality_*.py' -v
+      - run: python -m unittest discover -s tests -p 'test_equity_ensemble_regression.py' -v
+      - run: python -m research_quality.audit --output economic-audit.json
+      - name: Crypto composite observational diagnostics
+        run: python -m research_quality.crypto_composite_audit --output crypto-composites.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: historical-and-forward-research-diagnostics
+          path: |
+            economic-audit.json
+            crypto-composites.json
+          retention-days: 30
