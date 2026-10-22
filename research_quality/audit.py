@@ -43,6 +43,16 @@ def historic_crypto(report):
         "net_per_close_usd": round(net_per_trade, 5) if closed else None,
         "net_profit_factor": number(report, "profit_factor"),
         "price_edge_exceeds_friction": gross > fees if closed else False,
+        "gross_price_edge_usd_per_close": round(gross / closed, 6) if closed else None,
+        "fee_drag_usd_per_close": round(fees / closed, 6) if closed else None,
+        "required_additional_gross_edge_usd_per_close_to_break_even": round(max(0, -net) / closed, 6) if closed else None,
+        "gross_positive_but_net_negative": gross > 0 and net < 0,
+        "cost_sensitivity_hypothetical_usd": {
+            "fees_unchanged": round(net, 2),
+            "fees_25pct_lower": round(gross - fees * 0.75, 2),
+            "fees_50pct_lower": round(gross - fees * 0.50, 2),
+            "fees_25pct_higher": round(gross - fees * 1.25, 2),
+        },
         "prescription": "NO_AUTOMATIC_TRADE_SCALING_OR_STRATEGY_PROMOTION",
     }
 
