@@ -11,6 +11,7 @@ from statistics import mean
 from collections import defaultdict
 from equity_lab import source, universe
 from stock_lab import strategies, experimental
+from research_quality.after_cost_gate import evaluate as cost_hurdle
 
 FAMILIES={
  "trend_confirmation":("TREND20_60","TREND_RECLAIM30","MOMENTUM60"),
@@ -30,6 +31,8 @@ def evaluate(market, stocks):
         raise ValueError("invalid venue or cohort")
     fee=cfg["buy_fee_pct"]+cfg["sell_fee_pct"]+2*cfg["adverse_impact_each_side_pct"]
     total_cost=fee+.25
+    friction_review=cost_hurdle(None,cfg["buy_fee_pct"],cfg["sell_fee_pct"],
+                                impact_pct=2*cfg["adverse_impact_each_side_pct"],buffer_pct=.25)
     buckets=defaultdict(list)
     n_symbols=0
     for symbol, packet in sorted(stocks.items()):
@@ -82,6 +85,8 @@ def evaluate(market, stocks):
             "paper_only":True,"real_orders":0,"no_forward_wallet_mutation":True,
             "holdout_already_inspected":True,"frozen_membership_survivor_bias":True,
             "base_roundtrip_cost_pct":fee,"stress_extra_cost_pct":.25,
+            "pretrade_cost_gate":friction_review,
+            "realized_outcomes_never_used_as_forecast":True,
             "usable_symbols":n_symbols,"ensemble_count":len(FAMILIES),
             "not_a_portfolio_roi":True,"champions_automatically_promoted":[],
             "results":output}
