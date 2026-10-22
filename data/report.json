@@ -518,7 +518,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 18412,
-  "closed_this_run": 11,
+  "closed_this_run": 0,
   "created": 18834,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.06649,
@@ -818,7 +818,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-22T23:49:48.841250+00:00",
+      "as_of_utc": "2026-10-22T23:50:41.362220+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 2,
@@ -8591,8 +8591,8 @@
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 10,
-    "validated_real_public_quotes": 10,
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
     "validated_spot_proxy_quotes": 0
   },
   "losses": 9853,
@@ -8602,17 +8602,19 @@
   "net_expectancy_R": -0.07083,
   "net_pnl_usd": -195618.66,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-10-22T23:50:44.765000Z",
+    "provider": "okx-swap"
   },
   "open": 422,
   "pending": 0,
   "profit_factor": 0.8762,
-  "provider_observations": 10,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -8629,19 +8631,18 @@
     "degraded_after_minutes": 45,
     "entry_sampling_quality_gate": "healthy_scheduler_coverage",
     "estimated_10m_slot_coverage": 1.0,
-    "estimated_distinct_10m_observation_intervals": 69,
+    "estimated_distinct_10m_observation_intervals": 68,
     "estimated_missed_10m_slots": 0,
     "horizon_sampling_quality_gate": "all_horizons_adequate_cadence",
     "jitter_tolerance_minutes": 3,
     "last_12_observed_gap_coverage": 1.0,
     "last_36_observed_gap_coverage": 1.0,
     "max_observed_gap_minutes": 10.024,
-    "near_duplicate_fast_intervals": 3,
+    "near_duplicate_fast_intervals": 4,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.005,
+    "prior_observation_gap_minutes": 0.875,
     "recent_observation_gaps_minutes": [
-      10.005,
       10.005,
       10.005,
       10.006,
@@ -8712,7 +8713,8 @@
       10.007,
       10.005,
       10.005,
-      10.005
+      10.005,
+      0.875
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -9770,7 +9772,7 @@
       "net_R": 1.28891
     }
   },
-  "timestamp": "2026-10-22T23:49:48.841250Z",
+  "timestamp": "2026-10-22T23:50:41.362220Z",
   "total_round_trip_fees_usd": 184120.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
