@@ -52,7 +52,7 @@ class ObservationHealthTests(unittest.TestCase):
         import io
         stream=io.StringIO()
         print("needs_observation="+str(True).lower(),file=stream)
-        self.assertEqual(stream.getvalue(),"needs_observation=true\\n")
+        self.assertEqual(stream.getvalue(),"needs_observation=true\n")
 
     def test_staleness_distinct_from_low_coverage(self):
         result=summarize([record(0)],now=START+dt.timedelta(hours=3))
