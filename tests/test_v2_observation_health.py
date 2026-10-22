@@ -34,6 +34,26 @@ class ObservationHealthTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"CLOCK_INTEGRITY"):
             summarize([record(120)],now=START)
 
+    def test_workflow_slot_output_is_real_newline_not_literal_escape(self):
+        # Production regression from 2026-10-22: GitHub marked a v2
+        # workflow successful but skipped the market observer despite a
+        # freshly eligible slot because GITHUB_OUTPUT contained literal
+        # backslash-n rather than a real newline.
+        from pathlib import Path
+        workflow=(Path(__file__).resolve().parent.parent /
+                  ".github" / "workflows" / "v2-forward-paper.yml").read_text()
+        self.assertIn('print("needs_observation="+str(observe).lower(),file=out)',
+                      workflow)
+        self.assertIn("Validate GITHUB_OUTPUT contains a real, parseable slot decision",
+                      workflow)
+        self.assertIn('case "$NEEDS_OBSERVATION" in',workflow)
+        self.assertNotIn('out.write("needs_observation="+str(observe).lower()+"\\\\n")',
+                         workflow)
+        import io
+        stream=io.StringIO()
+        print("needs_observation="+str(True).lower(),file=stream)
+        self.assertEqual(stream.getvalue(),"needs_observation=true\\n")
+
     def test_staleness_distinct_from_low_coverage(self):
         result=summarize([record(0)],now=START+dt.timedelta(hours=3))
         self.assertEqual(result["status"],"STALE")
