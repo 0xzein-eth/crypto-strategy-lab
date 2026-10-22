@@ -518,7 +518,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 18372,
-  "closed_this_run": 7,
+  "closed_this_run": 0,
   "created": 18834,
   "eligible_perpetual_timely": {
     "expectancy_R": -0.06656,
@@ -818,7 +818,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-22T22:49:46.933210+00:00",
+      "as_of_utc": "2026-10-22T22:59:47.248563+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 2,
@@ -8590,8 +8590,8 @@
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 7,
-    "validated_real_public_quotes": 7,
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
     "validated_spot_proxy_quotes": 0
   },
   "losses": 9832,
@@ -8601,17 +8601,19 @@
   "net_expectancy_R": -0.07091,
   "net_pnl_usd": -195405.67,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-10-22T22:59:48.767000Z",
+    "provider": "okx-swap"
   },
   "open": 462,
   "pending": 0,
   "profit_factor": 0.8762,
-  "provider_observations": 7,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -8622,7 +8624,7 @@
       24
     ],
     "clean_future_10m_intervals_to_reach_90pct": 0,
-    "clean_future_10m_intervals_to_reach_95pct": 3,
+    "clean_future_10m_intervals_to_reach_95pct": 2,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -8638,9 +8640,8 @@
     "near_duplicate_fast_intervals": 3,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.006,
+    "prior_observation_gap_minutes": 10.005,
     "recent_observation_gaps_minutes": [
-      10.007,
       10.006,
       52.242,
       10.005,
@@ -8711,7 +8712,8 @@
       10.005,
       10.005,
       10.007,
-      10.006
+      10.006,
+      10.005
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -9769,7 +9771,7 @@
       "net_R": 1.28891
     }
   },
-  "timestamp": "2026-10-22T22:49:46.933210Z",
+  "timestamp": "2026-10-22T22:59:47.248563Z",
   "total_round_trip_fees_usd": 183720.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
