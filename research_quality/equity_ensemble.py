@@ -23,7 +23,9 @@ FAMILIES={
 }
 HORIZON=5
 def ensemble_votes(signals):
-    return {key:sum(signals.get(name)=="BUY" for name in members)>=2
+    """Two BUY votes with no contradictory EXIT among registered components."""
+    return {key:(sum(signals.get(name)=="BUY" for name in members)>=2 and
+                 not any(signals.get(name)=="EXIT" for name in members))
             for key,members in FAMILIES.items()}
 
 def evaluate(market, stocks):
