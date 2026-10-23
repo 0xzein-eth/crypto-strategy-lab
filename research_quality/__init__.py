@@ -1,5 +1,7 @@
-"""Compatibility interface for original v8 research_quality.py and new read-only modules.
+"""Legacy public quality API and new research-quality submodules.
 
-Keep research_quality.evaluate callable by legacy engine and v2 review code.
+A Python package takes precedence over a same-named top-level .py module;
+re-export the original functions/constants so engine and older tests remain valid.
 """
-from .legacy_quality import evaluate
+from .legacy_quality import *  # noqa: F401,F403
+from .legacy_quality import _day, _holdout
