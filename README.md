@@ -1,5 +1,20 @@
 # Crypto Strategy Lab v8 — PAPER ONLY
 
+**23 Okt 2026 — pengaman ekonomi legacy v8:** scheduler dan recovery kini
+menggunakan mode `observe-only`. Observasi quote pasar publik, laporan, dan
+penutupan posisi lama tetap berjalan; **tidak ada pembukaan eksperimen v8
+baru secara otomatis** karena belum ada strategi terbukti memiliki
+ekspektasi positif setelah biaya dan validasi independen. Posisi lama
+yang jatuh tempo masih dapat mengubah PnL kumulatif hingga semuanya selesai.
+Mode `legacy-explore` hanya dapat diminta **secara eksplisit** untuk uji
+hipotesis PAPER, bukan order bursa ataupun persetujuan strategi. Data
+`data/events/` sebelumnya **tidak diubah**. Perhitungan
+`economic_reconciliation` menunjukkan gross-sebelum-fee, total fee,
+dan net-fee-only, yang tidak boleh disamakan dengan equity wallet.
+Crypto v2, riset adaptif, dan dua wallet saham tetap terpisah.
+Dokumentasi: [audit entry safety dan syarat riset berikutnya](docs/V8_NEGATIVE_EDGE_SAFETY_20261023.md).
+
+
 **Audit implementasi 23 Oktober 2026:** [catatan diagnosis & perintah verifikasi](docs/TRADING_LAB_IMPLEMENTATION_AUDIT_20261023.md) — pemisahan PnL historis vs wallet, restorasi API lama, audit fee per horizon, confidence interval per hari, dan batasan pengujian.
 
 
