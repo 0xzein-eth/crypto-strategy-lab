@@ -34,5 +34,10 @@ class AuditTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             historic_crypto({"closed":1,"wins":1,"losses":0,
                 "net_pnl_usd":10,"total_round_trip_fees_usd":-1})
+    def test_fractional_or_negative_counts_are_not_truncated(self):
+        for closed,wins,losses in ((1.5,1,.5),(2,-1,3)):
+            with self.assertRaises(ValueError):
+                historic_crypto({"closed":closed,"wins":wins,"losses":losses,
+                    "net_pnl_usd":0,"total_round_trip_fees_usd":10})
 if __name__ == "__main__":
     unittest.main()

@@ -17,6 +17,22 @@ Dokumentasi: [audit entry safety dan syarat riset berikutnya](docs/V8_NEGATIVE_E
 
 **Audit implementasi 23 Oktober 2026:** [catatan diagnosis & perintah verifikasi](docs/TRADING_LAB_IMPLEMENTATION_AUDIT_20261023.md) — pemisahan PnL historis vs wallet, restorasi API lama, audit fee per horizon, confidence interval per hari, dan batasan pengujian.
 
+**Eksekusi dan audit lanjutan:** [hasil pengujian, data nyata, dan status roadmap](docs/ADAPTIVE_EXECUTION_AUDIT_20261023.md).
+
+**Riset adaptif crypto:** [rencana tiga kasta dan retest](docs/CRYPTO_ADAPTIVE_RESEARCH_PLAN.md).
+Epoch `adaptive_lab` menambah 144 hipotesis tunggal dan 30 resep gabungan
+cadangan, hingga 16 instrumen, serta kuota eksplorasi terpisah dari prioritas
+tinggi/sedang/rendah. `python -m adaptive_lab.engine --observe` mengambil
+observasi publik nyata; `--verify-only` memverifikasi seluruh replay.
+`python -m adaptive_lab.history --refresh --pages 5 --screen` memperluas
+history pada penyimpanan terpisah dan menguji tiga jendela historis.
+Trial v2 tidak diubah. Kasta belum diberikan sebelum bukti prospektif cukup.
+
+**Audit dan eksekusi roadmap (22 Okt 2026):**
+[temuan, perbaikan, dan jadwal jangka panjang](docs/AUDIT_EXECUTION_20261022.md).
+Audit lintas empat ledger yang memverifikasi replay dan hash warehouse:
+`python -m research_quality.readiness --output /tmp/roadmap-readiness.json`.
+Artifact membedakan integritas data dari kesiapan riset; tidak mempromosikan strategi.
 
 **Master blueprint (22 Oct 2026):** [Trading Lab Master Blueprint 2026–2027](docs/TRADING_LAB_MASTER_BLUEPRINT_2026_2027.md) — architecture, crypto/Nasdaq/LQ45 research roadmap, validation gates, cost controls, acceptance checklist. Paper-only, no validated champion.\n\n
 

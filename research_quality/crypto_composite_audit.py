@@ -6,6 +6,8 @@ or untouched holdout claims. Missing or divergent fills are excluded.
 """
 import argparse
 import json
+import math
+import datetime as dt
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean
@@ -42,10 +44,14 @@ def analyze(source):
             # The same observed asset/time/direction must have the same result;
             # NEVER select a profitable outcome among contradictory snapshots.
             values=[float(r["assumed_stressed_net_pct"]) for r in matched]
+            if any(isinstance(r["assumed_stressed_net_pct"],bool) for r in matched) or not all(math.isfinite(v) for v in values):
+                raise ValueError("nonfinite/nonnumeric matched outcome")
             if max(values)-min(values)>0.000001:
                 raise ValueError("different payoffs for identical quote path")
+            moment=dt.datetime.fromisoformat(at.replace("Z","+00:00"))
+            if moment.tzinfo is None:raise ValueError("entry UTC timezone required")
             candidates.append({"symbol":symbol,"at":at,"side":next(iter(sides)),
-                               "entry_day":at[:10],"stressed_net_pct":values[0],
+                               "entry_day":moment.astimezone(dt.timezone.utc).date().isoformat(),"stressed_net_pct":values[0],
                                "constituent_votes":len(matched)})
         days=len({c["entry_day"] for c in candidates})
         vals=[c["stressed_net_pct"] for c in candidates]
@@ -57,13 +63,10 @@ def analyze(source):
                       "profit_factor":round(pos/neg,5) if neg else None,
                       "ready_for_descriptive_review":len(vals)>=100 and days>=20,
                       "day_cluster_multiple_testing":interval_by_entry_day(
-                          [(r["entry_day"],r["stressed_net_pct"]) for r in candidates],
-                          families=len(COMPOSITES)),
+                          [(r["entry_day"],r["stressed_net_pct"]) for r in candidates],families=len(COMPOSITES)),
                       "not_independent_trade_fills":True}
     return {"schema":"v2-composite-shadow-observed-outcomes-v1",
-            "source_version":SOURCE_VERSION,
-            "source_observation_hash":source.get("last_source_hash"),
-            "shadow_only":True,
+            "source_version":SOURCE_VERSION,"source_observation_hash":source.get("last_source_hash"),"shadow_only":True,
             "funding_incomplete":True,"already_inspected_data":True,
             "real_orders":0,"auto_promoted":[],"results":result}
 

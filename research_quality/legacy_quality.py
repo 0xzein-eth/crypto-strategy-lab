@@ -24,7 +24,7 @@ def _day(value):
     date = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
     if date.tzinfo is None:
         raise ValueError("INTEGRITY_FAILURE: timezone missing")
-    return date.date().isoformat()
+    return date.astimezone(dt.timezone.utc).date().isoformat()
 
 
 def _holdout(day):

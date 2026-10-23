@@ -18,7 +18,7 @@ from stock_lab import strategies,experimental
 HORIZON=5
 MIN_ALIGNED=200
 STRESS_ADDITIONAL_ROUNDTRIP_PCT=.25
-SCHEMA="dual-nasdaq-lq45-historical-14-armed-after-cost-purged-v1"
+SCHEMA="dual-nasdaq-lq45-historical-14-armed-after-cost-purged-v2"
 
 
 def fees(market):
@@ -56,6 +56,7 @@ def evaluate(market, stocks, benchmark=None):
             source.sha(packet["history"])!=packet["history_sha256"]):
             raise ValueError("INTEGRITY_FAILURE: verified frozen OHLCV required")
         bars=packet["history"]
+        source.validate_history(bars)
         if len(bars)<MIN_ALIGNED:
             errors[symbol]="DATA_INSUFFICIENT: fewer than 200 EOD sessions"
             continue
@@ -80,7 +81,7 @@ def evaluate(market, stocks, benchmark=None):
             if final>=b:continue  # five-session purge before split boundary
             if any(r["date"] in corporate for r in bars[entry:final+1]):
                 continue # Unadjusted dividends/splits -> not coherent total return
-            if bars[entry]["volume"]<10000:continue
+            if bars[i]["volume"]<10000:continue
             net=returns(market,bars[entry],bars[final])
             stress=net-STRESS_ADDITIONAL_ROUNDTRIP_PCT
             # The benchmark is an index and cannot be physically filled.

@@ -19,7 +19,8 @@ from stock_lab import strategies,experimental
 ROOT=Path(__file__).resolve().parent.parent
 STATE=ROOT/"equity_state"
 ZERO="0"*64
-VERSION="dual-equity-two-cash-wallet-eod-paper-v1"
+LEGACY_VERSION="dual-equity-two-cash-wallet-eod-paper-v1"
+VERSION="dual-equity-two-cash-wallet-eod-paper-v2"
 HOLD_SESSIONS=5
 MAX_POSITIONS=3
 MAX_ENTRY_PCT=Decimal(".25")
@@ -60,6 +61,9 @@ def snapshot(feed):
             raise ValueError("SOURCE_INVALID: wrong venue/currency")
         if data["last_complete_session"]!=feed["session"]:
             raise ValueError("CLOCK_INTEGRITY: asynchronous market bar")
+        source.validate_history(data["history"],last_session=feed["session"])
+        if source.sha(data["history"])!=data["history_sha256"]:
+            raise ValueError("INTEGRITY_FAILURE: source history hash mismatch")
         bars=data["history"][-125:]
         assets[symbol]={
             "history":bars,"last_bar":bars[-1],
@@ -86,24 +90,32 @@ def check_snapshot(tick):
     config=universe.market(
         tick["market"],now=dt.datetime.fromisoformat(
             tick["observed_at_utc"].replace("Z","+00:00")))
-    if tick.get("schema")!=VERSION or tick.get("currency")!=config["currency"] or (
+    if tick.get("schema") not in (LEGACY_VERSION,VERSION) or tick.get("currency")!=config["currency"] or (
         tick.get("real_broker_orders")!=0):
         raise ValueError("INTEGRITY_FAILURE: invalid wallet epoch or real broker orders")
     observer=dt.datetime.fromisoformat(tick["observed_at_utc"].replace("Z","+00:00"))
+    if observer.tzinfo is None:
+        raise ValueError("CLOCK_INTEGRITY: timezone required")
     from zoneinfo import ZoneInfo
     local=observer.astimezone(ZoneInfo(config["timezone"]))
     day=dt.date.fromisoformat(tick["session"])
+    if day.weekday()>=5 or (
+            local.date()-day).days>source.MAX_MARKET_STALE_DAYS:
+        raise ValueError("CLOCK_INTEGRITY: stale/invalid market session")
     if local.date()<day or (local.date()==day and
                            local.hour<config["min_complete_local_hour"]):
         raise ValueError("CLOCK_INTEGRITY: incomplete local market session")
     if tick.get("membership_effective")!=config["membership_effective"]:
         raise ValueError("MEMBERSHIP_INTEGRITY: inconsistent fixed snapshot")
+    if tick.get("membership_expiry")!=config["membership_expiry"]:
+        raise ValueError("MEMBERSHIP_INTEGRITY: inconsistent snapshot expiry")
     if set(tick["assets"])-set(config["symbols"]) or len(tick["assets"])<8:
         raise ValueError("INTEGRITY_FAILURE: research universe drift")
     for symbol,entry in tick["assets"].items():
         bars=entry["history"]
         if len(bars)!=125 or bars[-1]!=entry["last_bar"]:
             raise ValueError("DATA_INTEGRITY: invalid bounded OHLCV evidence")
+        source.validate_history(bars,last_session=tick["session"])
         if source.sha(bars)!=entry["history_sha256"]:
             raise ValueError("INTEGRITY_FAILURE: modified source bars")
         if entry["signals"]!={**strategies.signals(bars),**experimental.signals(bars)}:
@@ -112,6 +124,8 @@ def check_snapshot(tick):
             raise ValueError("CLOCK_INTEGRITY: a ticker has stale EOD price")
     if tick["benchmark_last_bar"] is not None and tick["benchmark_last_bar"]["date"]!=tick["session"]:
         raise ValueError("BENCHMARK_INTEGRITY: mixed trading days")
+    if tick["benchmark_last_bar"] is not None:
+        source.validate_history([tick["benchmark_last_bar"]],last_session=tick["session"])
     return day
 
 
@@ -121,6 +135,7 @@ def read_events(market,path=None):
     head=ZERO
     out=[]
     last=None
+    last_observer=None
     for row in path.read_text(encoding="utf-8").splitlines():
         if not row:raise ValueError("INTEGRITY_FAILURE: blank observation")
         event=json.loads(row)
@@ -133,6 +148,12 @@ def read_events(market,path=None):
         if tick["market"]!=market:raise ValueError("MONEY_INTEGRITY: mixed ledger market")
         day=check_snapshot(tick)
         if last and day<=last:raise ValueError("CLOCK_INTEGRITY: repeated/reversed session")
+        observer=dt.datetime.fromisoformat(tick["observed_at_utc"].replace("Z","+00:00"))
+        if last_observer and observer<=last_observer:
+            raise ValueError("CLOCK_INTEGRITY: reversed observation time")
+        if out and out[-1]["snapshot"]["schema"]==VERSION and tick["schema"]==LEGACY_VERSION:
+            raise ValueError("INTEGRITY_FAILURE: wallet policy downgrade")
+        last_observer=observer
         last=day
         head=event["hash"]
         out.append(event)
@@ -143,6 +164,12 @@ def append(events,tick):
     day=check_snapshot(tick)
     if events and day<=check_snapshot(events[-1]["snapshot"]):
         raise ValueError("CLOCK_INTEGRITY: no replaying a filled daily session")
+    if events:
+        prev=events[-1]["snapshot"]
+        if dt.datetime.fromisoformat(tick["observed_at_utc"].replace("Z","+00:00"))<=dt.datetime.fromisoformat(prev["observed_at_utc"].replace("Z","+00:00")):
+            raise ValueError("CLOCK_INTEGRITY: reversed observation time")
+        if prev["schema"]==VERSION and tick["schema"]==LEGACY_VERSION:
+            raise ValueError("INTEGRITY_FAILURE: wallet policy downgrade")
     body={"seq":len(events)+1,
           "prev_hash":events[-1]["hash"] if events else ZERO,
           "snapshot":tick}
@@ -170,11 +197,29 @@ def replay(events,market):
     denied={}
     last_source=None
     for i,event in enumerate(events):
+        body={k:v for k,v in event.items() if k!="hash"}
+        if (set(body)!={"seq","prev_hash","snapshot"} or event["seq"]!=i+1 or
+                event["prev_hash"]!=(last_source or ZERO) or event["hash"]!=source.sha(body)):
+            raise ValueError("INTEGRITY_FAILURE: invalid equity replay event")
         tick=event["snapshot"]
         if tick["market"]!=market or tick["currency"]!=currency:
             raise ValueError("MONEY_INTEGRITY: no FX cross-subsidies")
         check_snapshot(tick)
+        if i:
+            previous_tick=events[i-1]["snapshot"]
+            if tick["session"]<=previous_tick["session"] or (
+                dt.datetime.fromisoformat(tick["observed_at_utc"].replace("Z","+00:00"))<=
+                dt.datetime.fromisoformat(previous_tick["observed_at_utc"].replace("Z","+00:00"))):
+                raise ValueError("CLOCK_INTEGRITY: repeated/reversed equity replay")
+            if previous_tick["schema"]==VERSION and tick["schema"]==LEGACY_VERSION:
+                raise ValueError("INTEGRITY_FAILURE: wallet policy downgrade")
         session=tick["session"]
+        legacy=tick["schema"]==LEGACY_VERSION
+        # v2 freezes the OPEN budget and risk decision at the prior EOD.
+        # Today's CLOSE is not available when that OPEN is assumed filled.
+        prior_equity=(dec(curve[-1]["simulated_equity"])
+                      if curve and curve[-1]["simulated_equity"] is not None else None)
+        prior_drawdown=max_dd
         for row in list(settlements):
             if row["available_after_session_idx"]<=i:
                 cash+=dec(row["amount"])
@@ -218,7 +263,9 @@ def replay(events,market):
         if equity is not None:
             peak=max(peak,equity)
             max_dd=max(max_dd,(peak-equity)/peak if peak else Decimal("0"))
-        if equity is None or max_dd>=MAX_DRAWDOWN_NEW_ENTRIES:
+        decision_equity=equity if legacy else prior_equity
+        decision_drawdown=max_dd if legacy else prior_drawdown
+        if equity is None or (i>0 and decision_equity is None) or decision_drawdown>=MAX_DRAWDOWN_NEW_ENTRIES:
             denied["unpriced_or_drawdown_freeze"]=denied.get("unpriced_or_drawdown_freeze",0)+1
         elif i>0 and len(positions)<MAX_POSITIONS:
             prev=events[i-1]["snapshot"]
@@ -228,8 +275,23 @@ def replay(events,market):
                 if record["last_bar"]["date"]!=prev["session"]:continue
                 if any(prev["session"]<=action<=session for action in assets[symbol]["actions"]):
                     continue
-                if assets[symbol]["last_bar"]["volume"]<10000:
+                volume_bar=assets[symbol]["last_bar"] if legacy else record["last_bar"]
+                if volume_bar["volume"]<10000:
                     continue
+                if not legacy:
+                    # A missed observer session cannot create a retroactive
+                    # next-open trade from an older signal.
+                    if assets[symbol]["history"][-2]["date"]!=prev["session"]:
+                        denied["missed_next_session"]=denied.get("missed_next_session",0)+1
+                        continue
+                    from zoneinfo import ZoneInfo
+                    opening=dt.datetime.combine(dt.date.fromisoformat(session),
+                        dt.time(9,30) if market=="NASDAQ" else dt.time(9),
+                        tzinfo=ZoneInfo(conf["timezone"]))
+                    observed=dt.datetime.fromisoformat(prev["observed_at_utc"].replace("Z","+00:00"))
+                    if observed>=opening:
+                        denied["signal_unavailable_before_open"]=denied.get("signal_unavailable_before_open",0)+1
+                        continue
                 for arm,kind in record["signals"].items():
                     if kind=="BUY":
                         proposals.append((symbol,arm))
@@ -243,7 +305,7 @@ def replay(events,market):
                 price=dec(assets[symbol]["last_bar"]["open"])*(1+adverse)
                 if price<=0:continue
                 old_volume=dec(prev["assets"][symbol]["last_bar"]["volume"])
-                affordable=min(cash,equity*MAX_ENTRY_PCT)
+                affordable=min(cash,decision_equity*MAX_ENTRY_PCT)
                 budget_units=int((affordable/(price*(1+buy_fee))).to_integral_value(
                                  rounding=ROUND_FLOOR))
                 volume_limit=int((old_volume*MAX_PRIOR_VOLUME_SHARE).to_integral_value(
@@ -304,7 +366,8 @@ def replay(events,market):
         }
     equity=curve[-1]["simulated_equity"] if curve else money(start_cash)
     return {
-        "schema":VERSION,"market":market,"currency":currency,
+        "schema":events[-1]["snapshot"]["schema"] if events else VERSION,
+        "market":market,"currency":currency,
         "paper_only":True,"real_orders":0,
         "initial_capital":money(start_cash),"simulated_equity":equity,
         "roi_pct":(round(float((dec(equity)/start_cash-1)*100),5)
@@ -336,9 +399,31 @@ def replay(events,market):
     }
 
 
+def verify_saved(market):
+    """Read-only reconciliation of source chain, report AND equity curve."""
+    events=read_events(market)
+    report=replay(events,market)
+    curve=report.pop("equity_curve")
+    event_path,report_path,curve_path=state_paths(market)
+    for path,expected in ((report_path,report),(curve_path,curve)):
+        if not path.is_file():
+            if event_path.exists():
+                raise ValueError("INTEGRITY_FAILURE: missing derived equity output: "+path.name)
+        elif json.loads(path.read_text(encoding="utf-8"))!=expected:
+            raise ValueError("INTEGRITY_FAILURE: derived equity output differs from replay: "+path.name)
+    return events,report,curve
+
+
+def atomic_json(path,value):
+    temporary=path.with_suffix(path.suffix+".tmp")
+    temporary.write_text(json.dumps(value,indent=2,sort_keys=True,allow_nan=False)+"\n",
+                         encoding="utf-8")
+    os.replace(temporary,path)
+
+
 def observe(market):
     # Existing hashes rechecked before any network request or new event.
-    events=read_events(market)
+    events,_,_=verify_saved(market)
     feed=source.collect(market)
     tick=snapshot(feed)
     if events and events[-1]["snapshot"]["session"]==tick["session"]:
@@ -365,13 +450,13 @@ def observe(market):
     report=replay(updated,market)
     event_path,report_path,curve_path=state_paths(market)
     event_path.parent.mkdir(parents=True,exist_ok=True)
-    event_path.write_text("".join(source.canonical(e)+"\n" for e in updated),
-                          encoding="utf-8")
+    with event_path.open("a",encoding="utf-8") as stream:
+        stream.write(source.canonical(updated[-1])+"\n")
+        stream.flush()
+        os.fsync(stream.fileno())
     curve=report.pop("equity_curve")
-    report_path.write_text(json.dumps(report,indent=2,sort_keys=True)+"\n",
-                           encoding="utf-8")
-    curve_path.write_text(json.dumps(curve,indent=2,sort_keys=True)+"\n",
-                          encoding="utf-8")
+    atomic_json(report_path,report)
+    atomic_json(curve_path,curve)
     print(source.canonical({"status":"AUTHENTIC_EOD_APPENDED",
                            "market":market,"session":tick["session"],
                            "observed_tickers":len(tick["assets"]),
@@ -391,9 +476,7 @@ def main():
     if opts.observe:
         observe(opts.market)
     else:
-        events=read_events(opts.market)
-        report=replay(events,opts.market)
-        report.pop("equity_curve",None)
+        _,report,_=verify_saved(opts.market)
         print(source.canonical(report))
 
 

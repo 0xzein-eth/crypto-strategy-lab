@@ -22,15 +22,21 @@ def number(obj, field, *, default=None):
         raise ValueError(f"{field}: nonfinite value")
     return result
 
+def count(obj,field):
+    value=number(obj,field)
+    if value is None or value<0 or int(value)!=value:
+        raise ValueError(field+": nonnegative integer required")
+    return int(value)
+
 def historic_crypto(report):
-    closed = int(number(report, "closed"))
-    wins = int(number(report, "wins"))
-    losses = int(number(report, "losses"))
+    closed = count(report, "closed")
+    wins = count(report, "wins")
+    losses = count(report, "losses")
     fees = number(report, "total_round_trip_fees_usd")
     net = number(report, "net_pnl_usd")
     if closed < 0 or wins + losses != closed or fees < 0:
         raise ValueError("invalid crypto ledger aggregates")
-    if report.get("schema_version", 8) != 8:
+    if report.get("schema_version",8)!=8:
         raise ValueError("invalid crypto ledger epoch")
     gross = net + fees
     fee_per_trade = fees / closed if closed else None
@@ -59,36 +65,38 @@ def historic_crypto(report):
     }
 
 def wallet(report):
-    count = int(number(report, "closed_positions"))
+    closed = count(report, "closed_positions")
     start = number(report, "initial_simulated_capital_usdt")
     equity = number(report, "current_simulated_equity_usdt")
-    if count < 0 or start <= 0 or equity < 0:
+    if start is None or equity is None or start <= 0 or equity < 0:
         raise ValueError("invalid paper wallet")
-    if report.get("paper_only") is not True or report.get("real_order_submissions") != 0:
+    if report.get("paper_only") is not True or report.get("real_order_submissions")!=0:
         raise ValueError("PAPER_INTEGRITY: crypto wallet real orders or invalid flag")
     return {
         "status": "FORWARD_PAPER_NOT_LIVE",
-        "closed_positions": count, "equity_usdt": equity,
+        "closed_positions": closed, "equity_usdt": equity,
         "return_pct": round((equity / start - 1) * 100, 6),
-        "win_rate": number(report, "observed_closed_win_rate") if count else None,
+        "win_rate": number(report, "observed_closed_win_rate") if closed else None,
         "funding_complete": bool(report.get("funding_source_complete") is True),
         "adequate_for_strategy_selection": False,
         "real_orders": 0,
     }
 
 def equity(report):
-    closed = int(number(report, "closed_trades"))
+    closed = count(report, "closed_trades")
     initial = number(report, "initial_capital")
     current = number(report, "simulated_equity")
-    if closed < 0 or initial <= 0 or current < 0:
+    if closed < 0 or initial <= 0 or (current is not None and current < 0):
         raise ValueError("invalid equity account")
-    if report.get("paper_only") is not True or report.get("real_orders") != 0:
+    if report.get("paper_only") is not True or report.get("real_orders")!=0:
         raise ValueError("PAPER_INTEGRITY: equity real orders or invalid flag")
     return {
         "status": "PROSPECTIVE_CASH_PAPER_EOD",
         "market": report["market"], "currency": report["currency"],
         "closed_trades": closed,
-        "equity": current, "return_pct": round(100 * (current / initial - 1), 6),
+        "equity": current,
+        "return_pct": round(100 * (current / initial - 1), 6) if current is not None else None,
+        "valuation_complete": current is not None,
         "win_rate": number(report, "win_rate") if closed else None,
         "profit_factor": number(report, "profit_factor") if closed else None,
         "adequate_for_strategy_selection": False,

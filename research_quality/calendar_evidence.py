@@ -7,17 +7,22 @@ untouched forward test or a guarantee of future profitability.
 from collections import defaultdict
 from statistics import mean, stdev, NormalDist
 import math
+import datetime as dt
 
 def interval_by_entry_day(rows, *, families, minimum_days=20, minimum_rows=100):
-    if not isinstance(families,int) or not 1<=families<=10000:
+    if isinstance(families,bool) or not isinstance(families,int) or not 1<=families<=10000:
         raise ValueError("invalid hypothesis count")
-    if not isinstance(minimum_days,int) or minimum_days<2:
+    if isinstance(minimum_days,bool) or not isinstance(minimum_days,int) or minimum_days<2:
         raise ValueError("invalid day threshold")
+    if isinstance(minimum_rows,bool) or not isinstance(minimum_rows,int) or minimum_rows<1:
+        raise ValueError("invalid row threshold")
     groups=defaultdict(list)
     n=0
     for day,value in rows:
         if not isinstance(day,str) or len(day)!=10:
             raise ValueError("invalid UTC date string")
+        if dt.date.fromisoformat(day).isoformat()!=day:
+            raise ValueError("invalid UTC calendar date")
         if isinstance(value,bool) or not isinstance(value,(int,float)) or not math.isfinite(value):
             raise ValueError("nonfinite strategy outcome")
         groups[day].append(float(value))

@@ -1,7 +1,7 @@
-"""Legacy public quality API and new research-quality submodules.
+"""Prospective research gates and independent, read-only diagnostics.
 
-A Python package takes precedence over a same-named top-level .py module;
-re-export the original functions/constants so engine and older tests remain valid.
+Keep the original public API available when Python resolves this package
+instead of the older top-level research_quality.py module.
 """
-from .legacy_quality import *  # noqa: F401,F403
-from .legacy_quality import _day, _holdout
+from research_quality.legacy_quality import *  # noqa: F401,F403
+from research_quality.legacy_quality import _day, _holdout
