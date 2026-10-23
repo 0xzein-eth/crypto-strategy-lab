@@ -1,5 +1,8 @@
 # Crypto Strategy Lab v8 — PAPER ONLY
 
+**Audit implementasi 23 Oktober 2026:** [catatan diagnosis & perintah verifikasi](docs/TRADING_LAB_IMPLEMENTATION_AUDIT_20261023.md) — pemisahan PnL historis vs wallet, restorasi API lama, audit fee per horizon, confidence interval per hari, dan batasan pengujian.
+
+
 **Master blueprint (22 Oct 2026):** [Trading Lab Master Blueprint 2026–2027](docs/TRADING_LAB_MASTER_BLUEPRINT_2026_2027.md) — architecture, crypto/Nasdaq/LQ45 research roadmap, validation gates, cost controls, acceptance checklist. Paper-only, no validated champion.\n\n
 
 ![CI](https://github.com/0xzein-eth/crypto-strategy-lab/actions/workflows/ci.yml/badge.svg)
