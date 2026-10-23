@@ -12,6 +12,7 @@ from collections import defaultdict
 from equity_lab import source, universe
 from stock_lab import strategies, experimental
 from research_quality.after_cost_gate import evaluate as cost_hurdle
+from research_quality.calendar_evidence import interval_by_entry_day
 
 FAMILIES={
  "trend_confirmation":("TREND20_60","TREND_RECLAIM30","MOMENTUM60"),
@@ -80,7 +81,8 @@ def evaluate(market, stocks):
                 "net_stress_mean_pct":round(mean(values),6) if values else None,
                 "win_rate_pct":round(100*sum(v>0 for v in values)/len(values),4) if values else None,
                 "profit_factor":round(positive/negative,5) if negative else None,
-                "sufficient_for_exploratory_review":len(values)>=100 and dates>=20}
+                "sufficient_for_exploratory_review":len(values)>=100 and dates>=20,
+                "day_cluster_multiple_testing":interval_by_entry_day(rows,families=len(FAMILIES))}
     return {"schema":"equity-ensemble-shadow-research-v1","market":market,
             "paper_only":True,"real_orders":0,"no_forward_wallet_mutation":True,
             "holdout_already_inspected":True,"frozen_membership_survivor_bias":True,
