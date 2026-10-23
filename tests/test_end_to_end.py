@@ -27,7 +27,7 @@ class EndToEnd(unittest.TestCase):
                  patch.object(engine,"REPORT",base/"data"/"report.json"),\
                  patch.object(engine,"STATE",base/"data"/"state.json"),\
                  patch.object(engine,"quote",side_effect=quote):
-                first=engine.run(6,clock=clock)
+                first=engine.run(6,clock=clock,entry_mode="legacy-explore")
                 self.assertEqual(first["added"],6)
                 self.assertEqual(first["verified_events"],6)
                 self.assertEqual(first["created"],6)
@@ -36,7 +36,7 @@ class EndToEnd(unittest.TestCase):
                 self.assertGreater(first["live_source_quality"]["validated_spot_proxy_quotes"],0)
                 self.assertFalse(first["live_source_quality"]["real_perpetual_quote_available_this_tick"])
                 now[0]=start+dt.timedelta(hours=25)
-                second=engine.run(6,clock=clock)
+                second=engine.run(6,clock=clock,entry_mode="legacy-explore")
                 self.assertEqual(second["closed_this_run"],6)
                 self.assertEqual(second["late_closed_this_run"],6)
                 self.assertTrue(second["scheduling_diagnostics"]["recovery_throttled"])
@@ -57,7 +57,7 @@ class EndToEnd(unittest.TestCase):
                 self.assertTrue((base/"data"/"state.json").exists())
                 # A healthy consecutive run can return to the normal sample budget.
                 now[0]+=dt.timedelta(minutes=10)
-                third=engine.run(6,clock=clock)
+                third=engine.run(6,clock=clock,entry_mode="legacy-explore")
                 self.assertFalse(third["scheduling_diagnostics"]["recovery_throttled"])
                 self.assertEqual(third["scheduling_diagnostics"]["requested_new_this_run"],6)
                 self.assertEqual(third["verified_events"],21)
