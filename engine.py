@@ -842,6 +842,17 @@ def summarize(records, moment):
             "wins": sum(p > 0 for p in pnl), "losses": sum(p < 0 for p in pnl),
             "win_rate": round(sum(p > 0 for p in pnl) / len(pnl), 4) if pnl else None,
             "net_pnl_usd": round(sum(pnl), 2),
+            "economic_reconciliation": {
+                "gross_before_fee_price_pnl_usd": round(
+                    sum(r["net_pnl_usd"] + r["fee_round_trip_usd"] for r in closed), 2),
+                "roundtrip_fee_usd": round(
+                    sum(r["fee_round_trip_usd"] for r in closed), 2),
+                "net_fee_only_pnl_usd": round(sum(pnl), 2),
+                "fee_only_break_even_pct_per_entry": round(2 * FEE_SIDE_PCT, 4),
+                "not_wallet_equity": True,
+                "real_spread_funding_and_impact_unproven": True,
+                "cumulative_drawdown_not_investable_account_drawdown": True,
+            },
             "net_R": round(sum(r["normalized_R"] for r in closed), 5),
             "net_expectancy_R": sample(closed)["expectancy_R"],
             "profit_factor": round(gross_win/gross_loss, 4) if gross_loss else None,
@@ -925,7 +936,17 @@ def atomic_json(path, obj):
             os.unlink(temp)
 
 
-def run(requested=14, clock=utcnow):
+def run(requested=14, clock=utcnow, entry_mode="observe-only"):
+    """Maintain legacy research evidence; default safely abstains from new opens.
+
+    All previously opened v8 fixed-horizon positions still get authentic
+    close attempts. Explicit legacy-explore is PAPER hypothesis sampling only,
+    not approval of an edge, funded account or executable order.
+    """
+    if entry_mode not in ("observe-only", "legacy-explore"):
+        raise ValueError("invalid v8 entry_mode")
+    if isinstance(requested, bool) or not isinstance(requested, int) or requested < 0:
+        raise ValueError("invalid requested research entries")
     current = clock()
     records, seq, prev_hash, next_id = replay()
     previous = None
@@ -950,6 +971,15 @@ def run(requested=14, clock=utcnow):
     requested_this_run, quality_reason = prospective_entry_budget(
         requested, coverage, recovery=recovery)
     allowed_horizons, horizon_reason = sampling_horizons(coverage)
+    pre_safety_budget = requested_this_run
+    # Fail CLOSED for the legacy high-turnover research ledger. A profitable
+    # prediction after realistic costs has NOT been independently validated.
+    # The historical 44-per-tick experiment budget remains reconstructible,
+    # but a scheduler cannot create further unvalidated paper PnL by default.
+    # Critically, this does not change already-open fixed-horizon exits.
+    if entry_mode == "observe-only":
+        requested_this_run = 0
+        quality_reason = "unvalidated_legacy_v8_no_new_entries"
     cache, errors, blocked_providers = {}, {}, {}
     def read_quote(symbol, provider=None):
         providers = (provider,) if provider else PROVIDERS
@@ -999,6 +1029,9 @@ def run(requested=14, clock=utcnow):
     # Count ONLY successful confirmed OHLCV evaluations; a missing API
     # source does not silently count as zero market opportunities.
     entry_opportunity_audit["band_signal_gate_counts"] = dict(sorted(band_signal_gate_totals.items()))
+    entry_opportunity_audit["entry_mode"] = entry_mode
+    if entry_mode == "observe-only":
+        entry_opportunity_audit["no_new_entry_reason"] = "UNVALIDATED_V8_EDGE_SAFETY_HOLD"
     for r in opens:
         records[r["id"]] = r
     events = [("CLOSE", r) for r in closures] + [("OPEN", r) for r in opens]
@@ -1033,7 +1066,19 @@ def run(requested=14, clock=utcnow):
     if seq != seq2 or prev_hash != head2 or confirmed != records:
         raise ValueError("INTEGRITY_FAILURE: event replay mismatch")
     result = summarize(records, current)
-    result.update(status="OK" if opens else "NO_NEW_SIGNALS",
+    result.update(status=("OBSERVE_ONLY_NO_NEW_V8_ENTRIES" if entry_mode == "observe-only"
+                          else "OK" if opens else "NO_NEW_SIGNALS"),
+                  entry_mode=entry_mode,
+                  entry_safety_policy={
+                      "policy": "legacy-v8-unvalidated-alpha-abstention-v1",
+                      "new_entries_permitted": entry_mode == "legacy-explore",
+                      "prospective_entry_budget_before_safety_hold": pre_safety_budget,
+                      "new_entries_after_safety_hold": requested_this_run,
+                      "due_exits_still_processed": True,
+                      "manual_override_research_only": "legacy-explore",
+                      "requires_new_independent_after_cost_evidence_for_promotion": True,
+                      "not_a_funded_portfolio": True,
+                  },
                   timestamp=stamp(current), added=len(opens), closed_this_run=len(closures),
                   late_closed_this_run=late, missed_due_snapshots=missing,
                   provider_observations=observations, source_errors=errors,
@@ -1095,6 +1140,12 @@ def run(requested=14, clock=utcnow):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Strict prospective paper research")
     ap.add_argument("--count", type=int, default=14)
+    ap.add_argument(
+        "--entry-mode", choices=("observe-only", "legacy-explore"),
+        default="observe-only",
+        help="Default observe-only closes existing v8 experiments and captures "
+             "public quotes without opening unvalidated new ones. "
+             "Legacy exploration must be explicitly opted into; PAPER only.")
     ap.add_argument("--verify-only", action="store_true")
     args = ap.parse_args()
     if args.verify_only:
@@ -1102,4 +1153,4 @@ if __name__ == "__main__":
         print(json.dumps({"verified": True, "events": seq,
                           "records": len(rs), "next_id": nxt, "hash": head}))
     else:
-        run(args.count)
+        run(args.count, entry_mode=args.entry_mode)
