@@ -30,6 +30,8 @@ def historic_crypto(report):
     net = number(report, "net_pnl_usd")
     if closed < 0 or wins + losses != closed or fees < 0:
         raise ValueError("invalid crypto ledger aggregates")
+    if report.get("schema_version", 8) != 8:
+        raise ValueError("invalid crypto ledger epoch")
     gross = net + fees
     fee_per_trade = fees / closed if closed else None
     gross_per_trade = gross / closed if closed else None
@@ -62,6 +64,8 @@ def wallet(report):
     equity = number(report, "current_simulated_equity_usdt")
     if count < 0 or start <= 0 or equity < 0:
         raise ValueError("invalid paper wallet")
+    if report.get("paper_only") is not True or report.get("real_order_submissions") != 0:
+        raise ValueError("PAPER_INTEGRITY: crypto wallet real orders or invalid flag")
     return {
         "status": "FORWARD_PAPER_NOT_LIVE",
         "closed_positions": count, "equity_usdt": equity,
@@ -78,6 +82,8 @@ def equity(report):
     current = number(report, "simulated_equity")
     if closed < 0 or initial <= 0 or current < 0:
         raise ValueError("invalid equity account")
+    if report.get("paper_only") is not True or report.get("real_orders") != 0:
+        raise ValueError("PAPER_INTEGRITY: equity real orders or invalid flag")
     return {
         "status": "PROSPECTIVE_CASH_PAPER_EOD",
         "market": report["market"], "currency": report["currency"],
