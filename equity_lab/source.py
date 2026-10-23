@@ -33,6 +33,37 @@ def sha(obj):
     return hashlib.sha256(canonical(obj).encode()).hexdigest()
 
 
+def validate_history(bars, *, last_session=None):
+    """Validate evidence semantics as well as its separately checked hash."""
+    if not isinstance(bars,list) or not bars:
+        raise ValueError("DATA_INVALID: missing OHLCV history")
+    previous=None
+    for bar in bars:
+        if not isinstance(bar,dict):
+            raise ValueError("DATA_INVALID: OHLCV object required")
+        try:
+            day=dt.date.fromisoformat(bar["date"])
+            fields=[bar[k] for k in ("open","high","low","close","volume")]
+        except (KeyError,TypeError,ValueError) as exc:
+            raise ValueError("DATA_INVALID: malformed OHLCV fields/date") from exc
+        if bar["date"]!=day.isoformat() or (previous and day<=previous):
+            raise ValueError("CLOCK_INTEGRITY: duplicate/reversed OHLCV dates")
+        if day.weekday()>=5:
+            raise ValueError("CLOCK_INTEGRITY: weekend equity bar")
+        if (not all(isinstance(x,(float,int)) and not isinstance(x,bool)
+                    and math.isfinite(x) for x in fields)):
+            raise ValueError("DATA_INVALID: nonfinite/nonnumeric OHLCV")
+        op,hi,lo,cl,volume=fields
+        if min(op,hi,lo,cl)<=0 or lo>min(op,cl) or hi<max(op,cl) or (
+                volume<0 or int(volume)!=volume):
+            raise ValueError("DATA_INVALID: invalid OHLCV range/volume")
+        if last_session is not None and day>dt.date.fromisoformat(last_session):
+            raise ValueError("CLOCK_INTEGRITY: future OHLCV evidence")
+        previous=day
+    if last_session is not None and bars[-1]["date"]!=last_session:
+        raise ValueError("CLOCK_INTEGRITY: stale OHLCV evidence")
+
+
 def iso(t):
     if t.tzinfo is None:raise ValueError("CLOCK_INVALID: timezone-naive observation")
     return t.astimezone(UTC).isoformat().replace("+00:00","Z")
@@ -108,6 +139,7 @@ def parse(payload,symbol,market_name,*,now,is_benchmark=False):
                         "close":round(float(cl),6),"volume":int(volume)})
     if len(history)<MIN_BARS:
         raise ValueError("DATA_INSUFFICIENT: at least 125 completed bars")
+    validate_history(history)
     days=[r["date"] for r in history]
     if days!=sorted(set(days)):
         raise ValueError("INTEGRITY_FAILURE: duplicate/out of order daily bar")

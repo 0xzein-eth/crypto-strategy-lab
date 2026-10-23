@@ -12,6 +12,7 @@ from collections import defaultdict
 from equity_lab import source, universe
 from stock_lab import strategies, experimental
 from research_quality.after_cost_gate import evaluate as cost_hurdle
+from research_quality.calendar_evidence import interval_by_entry_day
 
 FAMILIES={
  "trend_confirmation":("TREND20_60","TREND_RECLAIM30","MOMENTUM60"),
@@ -22,7 +23,8 @@ FAMILIES={
 }
 HORIZON=5
 def ensemble_votes(signals):
-    return {key:sum(signals.get(name)=="BUY" for name in members)>=2
+    return {key:(sum(signals.get(name)=="BUY" for name in members)>=2 and
+                 not any(signals.get(name)=="EXIT" for name in members))
             for key,members in FAMILIES.items()}
 
 def evaluate(market, stocks):
@@ -40,6 +42,7 @@ def evaluate(market, stocks):
             or source.sha(packet["history"])!=packet["history_sha256"]):
             raise ValueError("unverified OHLCV")
         bars=packet["history"]
+        source.validate_history(bars)
         if len(bars)<200:
             continue
         n_symbols+=1
@@ -50,7 +53,7 @@ def evaluate(market, stocks):
             segment=next((k for k in range(3) if borders[k]<=i<borders[k+1]),None)
             if segment is None or i+1+HORIZON>=borders[segment+1]:
                 continue
-            if bars[i+1]["volume"]<10000 or any(
+            if bars[i]["volume"]<10000 or any(
                 x["date"] in ca for x in bars[i+1:i+HORIZON+2]):
                 continue
             prefix=bars[:i+1]
@@ -80,8 +83,9 @@ def evaluate(market, stocks):
                 "net_stress_mean_pct":round(mean(values),6) if values else None,
                 "win_rate_pct":round(100*sum(v>0 for v in values)/len(values),4) if values else None,
                 "profit_factor":round(positive/negative,5) if negative else None,
-                "sufficient_for_exploratory_review":len(values)>=100 and dates>=20}
-    return {"schema":"equity-ensemble-shadow-research-v1","market":market,
+                "sufficient_for_exploratory_review":len(values)>=100 and dates>=20,
+                "day_cluster_multiple_testing":interval_by_entry_day(rows,families=len(FAMILIES))}
+    return {"schema":"equity-ensemble-shadow-research-v2","market":market,
             "paper_only":True,"real_orders":0,"no_forward_wallet_mutation":True,
             "holdout_already_inspected":True,"frozen_membership_survivor_bias":True,
             "base_roundtrip_cost_pct":fee,"stress_extra_cost_pct":.25,

@@ -1,0 +1,32 @@
+name: Roadmap replay and readiness audit
+on:
+  workflow_dispatch:
+  schedule:
+    # Read-only daily evidence; GitHub schedule delivery is best effort.
+    - cron: '47 3 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: roadmap-readonly-audit-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Run offline regressions
+        run: python -m unittest discover -s tests -v
+      - name: Reconcile all four ledgers and warehouse without writing state
+        run: python -m research_quality.readiness --output /tmp/roadmap-readiness.json
+      - name: Retain integrity failures and outstanding research prerequisites
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roadmap-readiness-${{ github.run_id }}
+          path: /tmp/roadmap-readiness.json
+          if-no-files-found: warn
+          retention-days: 21

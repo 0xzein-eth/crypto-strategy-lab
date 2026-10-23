@@ -6,6 +6,7 @@ on:
     paths:
       - 'equity_lab/**'
       - 'tests/test_equity_lab.py'
+      - 'tests/test_equity_audit_regression.py'
       - '.github/workflows/dual-equity-lab.yml'
   schedule:
     # IDX: 19:35 WIB / 21:20 WIB, M-F.
@@ -30,7 +31,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: |
-          python -m unittest discover -s tests -p 'test_equity_lab.py' -v
+          python -m unittest discover -s tests -p 'test_equity*.py' -v
           python -m equity_lab.forward --market NASDAQ --verify-only
           python -m equity_lab.forward --market LQ45 --verify-only
           python -m stock_lab.engine --verify-only
@@ -52,7 +53,7 @@ jobs:
           python-version: '3.12'
       - name: Validate old hashes and money custody first
         run: |
-          python -m unittest discover -s tests -p 'test_equity_lab.py' -v
+          python -m unittest discover -s tests -p 'test_equity*.py' -v
           python -m equity_lab.forward --market NASDAQ --verify-only
       - name: Capture genuine Nasdaq EOD and one-wallet PAPER trade events
         env:
@@ -107,7 +108,7 @@ jobs:
           python-version: '3.12'
       - name: Verify old hashes and no FX crossover
         run: |
-          python -m unittest discover -s tests -p 'test_equity_lab.py' -v
+          python -m unittest discover -s tests -p 'test_equity*.py' -v
           python -m equity_lab.forward --market LQ45 --verify-only
       - name: Capture genuine LQ45 EOD and one-wallet IDR PAPER trade events
         env:

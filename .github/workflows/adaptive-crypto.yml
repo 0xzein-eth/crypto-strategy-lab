@@ -1,0 +1,93 @@
+name: Adaptive crypto shadow tiers and retests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'adaptive_lab/**'
+      - 'tests/test_adaptive_lab.py'
+      - '.github/scripts/persist-adaptive.sh'
+      - '.github/workflows/adaptive-crypto.yml'
+  pull_request:
+    paths:
+      - 'adaptive_lab/**'
+      - 'tests/test_adaptive_lab.py'
+      - '.github/scripts/persist-adaptive.sh'
+      - '.github/workflows/adaptive-crypto.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '3,18,33,48 * * * *'
+    - cron: '43 3,15 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: adaptive-crypto-shadow-epoch-v1
+  cancel-in-progress: false
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -p 'test_adaptive_lab.py' -v
+      - run: bash -n .github/scripts/persist-adaptive.sh
+  shadow:
+    if: github.event_name != 'pull_request'
+    needs: contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify prior adaptive observations and frozen legacy trial
+        run: |
+          python -m adaptive_lab.engine --verify-only
+          python -m v2.frozen_trial --output /tmp/frozen-crypto-trial.json
+      - name: Observe up to sixteen authentic perpetual instruments
+        run: python -m adaptive_lab.engine --observe
+      - name: Reconcile all adaptive tier decisions from source
+        run: python -m adaptive_lab.engine --verify-only
+      - name: Persist only the separate shadow epoch
+        run: bash .github/scripts/persist-adaptive.sh adaptive_state
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: adaptive-shadow-${{ github.run_id }}
+          path: adaptive_state/
+          if-no-files-found: warn
+          retention-days: 21
+  history:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '43 3,15 * * *'
+    needs: shadow
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Extend genuine history in bounded API pages and screen 144 new arms
+        run: python -m adaptive_lab.history --refresh --pages 5 --screen
+      - name: Persist only the separate historical research store
+        run: bash .github/scripts/persist-adaptive.sh adaptive_history
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: adaptive-history-screen-${{ github.run_id }}
+          path: adaptive_history/screen.json
+          if-no-files-found: warn
+          retention-days: 21

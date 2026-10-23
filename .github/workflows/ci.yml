@@ -25,6 +25,10 @@ on:
       - 'tests/**'
       - 'v2/**'
       - 'stock_lab/**'
+      - 'equity_lab/**'
+      - 'research_quality/**'
+      - 'adaptive_lab/**'
+      - '.github/scripts/**'
       - '.github/workflows/**'
   pull_request:
   workflow_dispatch:
@@ -45,3 +49,13 @@ jobs:
       - run: python -m v2.legacy_audit --verify-main > /tmp/v2-legacy-fee-and-exposure-audit.json
       - run: python audit.py
       - run: python engine.py --verify-only
+      - name: Reconcile four research ledgers and warehouse provenance
+        run: python -m research_quality.readiness --output /tmp/roadmap-readiness.json
+      - name: Preserve roadmap integrity and research blockers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roadmap-readiness-${{ github.run_id }}
+          path: /tmp/roadmap-readiness.json
+          if-no-files-found: warn
+          retention-days: 21

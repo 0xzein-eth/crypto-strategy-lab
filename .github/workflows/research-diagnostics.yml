@@ -14,7 +14,7 @@ permissions:
 jobs:
   offline:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,7 +23,19 @@ jobs:
       - run: python -m compileall -q research_quality
       - run: python -m unittest discover -s tests -p 'test_research_quality_*.py' -v
       - run: python -m unittest discover -s tests -p 'test_equity_ensemble_regression.py' -v
+      - name: Reconcile canonical v8 event hashes
+        run: python engine.py --verify-only
+      - name: Verify independent crypto v2 PAPER account
+        run: python -m v2.forward_paper --verify-only
+      - name: Verify Nasdaq and LQ45 cash PAPER replay
+        run: |
+          python -m equity_lab.forward --market NASDAQ --verify-only
+          python -m equity_lab.forward --market LQ45 --verify-only
       - run: python -m research_quality.audit --output economic-audit.json
+      - name: Reconcile full v8 ledger and fee economics
+        run: python -m research_quality.crypto_forensics --output crypto-v8-forensics.json
+      - name: Independent-day multiple testing evidence
+        run: python -m v2.evidence_gate --source v2_state/shadow_report.json --output crypto-shadow-evidence.json
       - name: Crypto composite observational diagnostics
         run: python -m research_quality.crypto_composite_audit --output crypto-composites.json
       - uses: actions/upload-artifact@v4
@@ -32,4 +44,6 @@ jobs:
           path: |
             economic-audit.json
             crypto-composites.json
+            crypto-v8-forensics.json
+            crypto-shadow-evidence.json
           retention-days: 30
