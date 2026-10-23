@@ -10,6 +10,7 @@ from collections import defaultdict
 from pathlib import Path
 from statistics import mean
 from research_quality.composites import COMPOSITES
+from research_quality.calendar_evidence import interval_by_entry_day
 from v2.shadow_research import VERSION as SOURCE_VERSION
 
 def analyze(source):
@@ -55,9 +56,14 @@ def analyze(source):
                       "win_rate":sum(v>0 for v in vals)/len(vals) if vals else None,
                       "profit_factor":round(pos/neg,5) if neg else None,
                       "ready_for_descriptive_review":len(vals)>=100 and days>=20,
+                      "day_cluster_multiple_testing":interval_by_entry_day(
+                          [(r["entry_day"],r["stressed_net_pct"]) for r in candidates],
+                          families=len(COMPOSITES)),
                       "not_independent_trade_fills":True}
     return {"schema":"v2-composite-shadow-observed-outcomes-v1",
-            "source_version":SOURCE_VERSION,"shadow_only":True,
+            "source_version":SOURCE_VERSION,
+            "source_observation_hash":source.get("last_source_hash"),
+            "shadow_only":True,
             "funding_incomplete":True,"already_inspected_data":True,
             "real_orders":0,"auto_promoted":[],"results":result}
 
