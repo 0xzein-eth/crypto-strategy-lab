@@ -86,6 +86,29 @@ class CohortDiagnosticTests(unittest.TestCase):
         self.assertEqual(check["no_confirmed_signal_baseline_probes_allowed"], 0)
         self.assertEqual(check["new_paper_opens_by_arm"], {})
 
+    def test_liquid_quiet_regimes_get_confirmed_candle_opportunities(self):
+        now = BASE
+        quote = {"symbol": "BTC", "price": 100.0, "pct24h": 0.02,
+                 "quote_volume_24h": 20_000_000,
+                 "observed_at": engine.stamp(now), "provider": "okx-swap",
+                 "market_type": "perpetual", "instrument": "BTC-USDT-SWAP"}
+        def signal(symbol, market):
+            return [{"strategy": "IBREAK-v1", "side": "LONG",
+                     "evidence": {"bar_span": "15m confirmed OKX USDT-SWAP",
+                                  "bar_time": engine.stamp(
+                                      now - dt.timedelta(minutes=15))}}]
+        check = {}
+        with patch.object(engine, "SYMBOLS", ("BTC",)):
+            found = engine.new_candidates(
+                {}, lambda symbol, provider: quote, now, 116, 1,
+                advanced=signal, reobserve=lambda symbol, provider: quote,
+                clock=lambda: now, opportunity_audit=check)
+        self.assertEqual(check["quiet_24h_quotes_admitted"], 1)
+        self.assertEqual(check["slots_with_any_confirmed_signal"], 1)
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0]["market_type"], "perpetual")
+        self.assertTrue(found[0]["evidence"]["research_only"])
+
     def test_invalid_monetary_evidence_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "invalid canonical net PnL"):
             cohort_diagnostics.summarize([outcome("CTRL-v1", float("nan"))])
