@@ -48,6 +48,7 @@ def make_opportunity_audit(requested):
         "scope": "real fresh market quote, distinct unsampled instrument/15m slot, within quota",
         "requested_new_slots": requested,
         "eligible_quote_symbols": 0,
+        "quiet_24h_quotes_admitted": 0,
         "screened_symbol_slots": 0,
         "advanced_source_checks": 0,
         "unavailable_confirmed_candle_slots": 0,
