@@ -20,6 +20,7 @@ import universe
 import friction
 import outcome_stats
 import temporal_evidence
+import cohort_diagnostics
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -634,7 +635,15 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         if advanced is not None and q["provider"]=="okx-swap":
             if opportunity_audit is not None:
                 opportunity_audit["advanced_source_checks"] += 1
-            detections=advanced(symbol,q) or []
+            # A failed/missing OHLCV candle source is NOT equivalent to a
+            # successfully checked 15m candle with no candidate. Do not
+            # create even fallback probes from an unavailable candle source.
+            observed_signals = advanced(symbol,q)
+            if observed_signals is None:
+                if opportunity_audit is not None:
+                    opportunity_audit["unavailable_confirmed_candle_slots"] += 1
+                continue
+            detections = observed_signals
         # Indicator-based candidates can never be synthesized from a missing,
         # stale, unconfirmed or wrong-instrument candle.
         options=baseline+[
@@ -877,6 +886,7 @@ def summarize(records, moment):
             "spot_proxy_closures": sum(r["market_type"] == "spot_proxy" for r in closed),
             "eligible_perpetual_timely": sample(eligible),
             "adaptive_research": adaptive,
+            "cohort_diagnostics": cohort_diagnostics.summarize(records),
             "evidence_quality": {
                 "eligible_timely_perpetual_closes":len(eligible),
                 "eligible_share_of_all_closes":round(len(eligible)/len(closed),4) if closed else None,
@@ -936,12 +946,13 @@ def atomic_json(path, obj):
             os.unlink(temp)
 
 
-def run(requested=14, clock=utcnow, entry_mode="observe-only"):
-    """Maintain legacy research evidence; default safely abstains from new opens.
+def run(requested=14, clock=utcnow, entry_mode="legacy-explore"):
+    """Observe authentic market evidence; study many PAPER hypotheses by default.
 
-    All previously opened v8 fixed-horizon positions still get authentic
-    close attempts. Explicit legacy-explore is PAPER hypothesis sampling only,
-    not approval of an edge, funded account or executable order.
+    Research throughput and capital allocation are separate. Legacy-explore
+    makes unfunded immutable counterfactual experiments; it NEVER authorizes
+    an actual trading account or strategy promotion. Observe-only is available
+    for maintenance, while authentic due exits ALWAYS remain active.
     """
     if entry_mode not in ("observe-only", "legacy-explore"):
         raise ValueError("invalid v8 entry_mode")
@@ -972,11 +983,10 @@ def run(requested=14, clock=utcnow, entry_mode="observe-only"):
         requested, coverage, recovery=recovery)
     allowed_horizons, horizon_reason = sampling_horizons(coverage)
     pre_safety_budget = requested_this_run
-    # Fail CLOSED for the legacy high-turnover research ledger. A profitable
-    # prediction after realistic costs has NOT been independently validated.
-    # The historical 44-per-tick experiment budget remains reconstructible,
-    # but a scheduler cannot create further unvalidated paper PnL by default.
-    # Critically, this does not change already-open fixed-horizon exits.
+    # This cap is ONLY for manually requested OBSERVATION-ONLY maintenance;
+    # the ordinary research scheduler actively samples high-volume PAPER
+    # hypotheses. Evidence quality is enforced at candle/quote entry time and
+    # at cohort validation, not by confusing losses with funded exposure.
     if entry_mode == "observe-only":
         requested_this_run = 0
         quality_reason = "unvalidated_legacy_v8_no_new_entries"
@@ -1019,7 +1029,7 @@ def run(requested=14, clock=utcnow, entry_mode="observe-only"):
         except (urllib.error.URLError, TimeoutError, KeyError, TypeError,
                 ValueError, IndexError, RuntimeError, OSError) as exc:
             errors["15m_OHLCV:" + symbol] = str(exc)[:150]
-            return []
+            return None
     def reobserve(symbol, provider):
         return quote(symbol, provider, clock=clock)
     entry_opportunity_audit = {}
@@ -1070,12 +1080,14 @@ def run(requested=14, clock=utcnow, entry_mode="observe-only"):
                           else "OK" if opens else "NO_NEW_SIGNALS"),
                   entry_mode=entry_mode,
                   entry_safety_policy={
-                      "policy": "legacy-v8-unvalidated-alpha-abstention-v1",
+                      "policy": "high-throughput-paper-research-no-promotion-v2",
                       "new_entries_permitted": entry_mode == "legacy-explore",
                       "prospective_entry_budget_before_safety_hold": pre_safety_budget,
                       "new_entries_after_safety_hold": requested_this_run,
                       "due_exits_still_processed": True,
-                      "manual_override_research_only": "legacy-explore",
+                      "research_only": True,
+                      "no_live_trades_or_orders": True,
+                      "manual_observation_only_mode": "observe-only",
                       "requires_new_independent_after_cost_evidence_for_promotion": True,
                       "not_a_funded_portfolio": True,
                   },
@@ -1142,10 +1154,11 @@ if __name__ == "__main__":
     ap.add_argument("--count", type=int, default=14)
     ap.add_argument(
         "--entry-mode", choices=("observe-only", "legacy-explore"),
-        default="observe-only",
-        help="Default observe-only closes existing v8 experiments and captures "
-             "public quotes without opening unvalidated new ones. "
-             "Legacy exploration must be explicitly opted into; PAPER only.")
+        default="legacy-explore",
+        help="Default legacy-explore samples many strictly PAPER hypotheses, "
+             "keeps matched cost/provenance diagnostics and never sends orders. "
+             "Use observe-only explicitly to capture quotes and close positions "
+             "without opening more hypothetical research entries.")
     ap.add_argument("--verify-only", action="store_true")
     args = ap.parse_args()
     if args.verify_only:
