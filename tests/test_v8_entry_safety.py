@@ -54,6 +54,15 @@ class V8EntrySafetyTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             return engine.run(1, clock=lambda: self.now, **kwargs)
 
+    def test_default_is_active_high_volume_paper_research_not_auto_paused(self):
+        report = self.execute()
+        self.assertEqual(report["entry_mode"], "legacy-explore")
+        self.assertEqual(report["added"], 1)
+        self.assertTrue(report["entry_safety_policy"]["new_entries_permitted"])
+        self.assertTrue(report["entry_safety_policy"]["research_only"])
+        self.assertTrue(report["entry_safety_policy"]["no_live_trades_or_orders"])
+        self.assertFalse(report["entry_safety_policy"]["not_a_funded_portfolio"] is False)
+
     def test_explicit_observe_only_abstains_and_attests_market(self):
         result = self.execute(entry_mode="observe-only")
         self.assertEqual(result["entry_mode"], "observe-only")
