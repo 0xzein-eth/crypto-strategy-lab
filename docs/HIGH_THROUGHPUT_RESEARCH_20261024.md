@@ -13,6 +13,7 @@ Prior code returned `[]` when acquiring or parsing 15-minute OHLCV failed. Downs
 - actual, validated candle observations that yield `[]` correctly remain real *no-confirmed-signal* opportunities with the predeclared sparse 12% baseline probe;
 - confirmed 15m strategy signals may enter only when the original signal check returned actual evidence; fresh same-venue quote, true instrument identity, age and hash-ledger constraints remain;
 - missing candle slots get their **own diagnostic counter**, not falsely included among no-signal or sampled cases;
+- the former unconditional **abs(24h price change) >=0.5%** screen is removed for genuine fresh liquid quotes, allowing quiet/range regimes to enter 15m hypothesis discovery; the number of admitted quiet market quotes is measured. This is an expansion of sampling support, **not** proof those regimes have positive alpha.
 - spot-proxy study events remain structurally possible when genuine source data exist, but are EXCLUDED from perpetual strategy evidence as before.
 
 ## Use research data instead of judging raw aggregate PnL
