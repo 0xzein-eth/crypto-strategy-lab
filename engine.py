@@ -575,10 +575,14 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     for symbol in SYMBOLS:
         try:
             q = read_quote(symbol, None)
+            # Source quality requires current, liquid quotes; demanding a
+            # >=0.5% 24h move was an unjustified pre-filter which entirely
+            # excluded quiet/range regimes from genuine 15m signal discovery.
             if (q["quote_volume_24h"] >= MIN_QUOTE_VOLUME and
-                    abs(q["pct24h"]) >= 0.5 and
                     (moment - parse(q["observed_at"])).total_seconds() <= MAX_QUOTE_AGE_SECONDS):
                 quotes.append(q)
+                if opportunity_audit is not None and abs(q["pct24h"]) < 0.5:
+                    opportunity_audit["quiet_24h_quotes_admitted"] += 1
         except Exception:
             continue
     # Only entry-time labels, not past wins/losses, influence stratification.
