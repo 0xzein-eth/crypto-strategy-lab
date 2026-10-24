@@ -6,7 +6,7 @@ PAPER per tick**, bukan menutup pembukaan sampel hanya karena PnL riset
 negatif. Ini ialah pengumpulan hasil hipotesis, **bukan trading akun nyata**.
 Keterbatasan utama bukan jumlah eksperimen tetapi kualitas bukti:
 sumber OHLCV 15m yang gagal tidak boleh dianggap candle valid tanpa sinyal,
-dan `cohort_diagnostics` memisahkan kandidat 15m terkonfirmasi dari
+dan pasar likuid yang bergerak <0,5% selama 24 jam juga diperiksa (tanpa\npenyaringan tren yang membuang peluang strategi range). Laporan\n`cohort_diagnostics` memisahkan kandidat 15m terkonfirmasi dari
 proxy/control, periode penutupan terlambat dan sumber spot. Rekonsiliasi biaya
 dilaporkan per strategi × horizon × provenance, dengan jumlah hari berbeda
 agar sampel berkorelasi tidak dihitung sebagai validasi independen.
