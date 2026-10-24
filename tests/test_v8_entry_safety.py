@@ -54,8 +54,17 @@ class V8EntrySafetyTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             return engine.run(1, clock=lambda: self.now, **kwargs)
 
-    def test_default_abstains_even_when_requested_and_attests_market(self):
-        result = self.execute()
+    def test_default_is_active_high_volume_paper_research_not_auto_paused(self):
+        report = self.execute()
+        self.assertEqual(report["entry_mode"], "legacy-explore")
+        self.assertEqual(report["added"], 1)
+        self.assertTrue(report["entry_safety_policy"]["new_entries_permitted"])
+        self.assertTrue(report["entry_safety_policy"]["research_only"])
+        self.assertTrue(report["entry_safety_policy"]["no_live_trades_or_orders"])
+        self.assertFalse(report["entry_safety_policy"]["not_a_funded_portfolio"] is False)
+
+    def test_explicit_observe_only_abstains_and_attests_market(self):
+        result = self.execute(entry_mode="observe-only")
         self.assertEqual(result["entry_mode"], "observe-only")
         self.assertEqual(result["status"], "OBSERVE_ONLY_NO_NEW_V8_ENTRIES")
         self.assertEqual(result["created"], 0)
@@ -79,7 +88,7 @@ class V8EntrySafetyTests(unittest.TestCase):
         self.assertEqual(old_seq, 1)
         self.assertEqual(original[next(iter(original))]["status"], "OPEN")
         self.now += dt.timedelta(hours=25)
-        second = self.execute()
+        second = self.execute(entry_mode="observe-only")
         self.assertEqual(second["added"], 0)
         self.assertEqual(second["created"], 1)
         self.assertEqual(second["closed_this_run"], 1)

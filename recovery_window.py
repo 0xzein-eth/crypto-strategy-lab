@@ -218,7 +218,7 @@ def run_window(root=ROOT, pulses=DEFAULT_PULSES, interval_minutes=DEFAULT_INTERV
         # preserve last canonical data and retry at a later actual time.
         try:
             runner(["python", "engine.py", "--count", str(engine.MAX_NEW_PER_RUN),
-                    "--entry-mode", "observe-only"], root)
+                    "--entry-mode", "legacy-explore"], root)
         except subprocess.CalledProcessError as exc:
             detail=(exc.stderr or "") + "\n" + (exc.output or "")
             if ("DATA_UNAVAILABLE:" not in detail or

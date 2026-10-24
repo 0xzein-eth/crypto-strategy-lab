@@ -139,7 +139,7 @@ class EngineTests(unittest.TestCase):
                  patch.object(engine,"LEGACY",base/"data"/"ledger.json"),\
                  patch.object(engine,"quote",side_effect=current_quote):
                 result=engine.run(0,clock=lambda:self.t)
-                self.assertEqual(result["status"],"OBSERVE_ONLY_NO_NEW_V8_ENTRIES")
+                self.assertEqual(result["status"],"NO_NEW_SIGNALS")
                 self.assertEqual(result["created"],0)
                 self.assertEqual(result["verified_events"],0)
                 self.assertEqual(result["provider_observations"],1)

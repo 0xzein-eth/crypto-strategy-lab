@@ -56,11 +56,11 @@ jobs:
           python -m unittest discover -s tests -p 'test_band_hypotheses.py' -v
           python -m unittest discover -s tests -p 'test_recovery_window.py' -v
           python -m unittest discover -s tests -p 'test_schedule_coverage.py' -v
-      - name: Capture genuine market observations and close existing v8 experiments
-        # Legacy v8 has no independently validated after-cost alpha. Do not
-        # create 44 new notional-$10k hypotheses on each ten-minute tick.
-        # Still capture public quotes and resolve authentic due exits.
-        run: python engine.py --count 44 --entry-mode observe-only
+      - name: Collect high-throughput PAPER hypotheses and close due experiments
+        # 44 is a maximum, not actual funded order count. Open only genuine
+        # fresh unique 15m symbol-slot hypotheses with source quality gates.
+        # Large research samples cannot imply positive alpha or live readiness.
+        run: python engine.py --count 44 --entry-mode legacy-explore
       - name: Verify new event history and source files
         run: |
           python engine.py --verify-only

@@ -1,18 +1,21 @@
 # Crypto Strategy Lab v8 — PAPER ONLY
 
-**23 Okt 2026 — pengaman ekonomi legacy v8:** scheduler dan recovery kini
-menggunakan mode `observe-only`. Observasi quote pasar publik, laporan, dan
-penutupan posisi lama tetap berjalan; **tidak ada pembukaan eksperimen v8
-baru secara otomatis** karena belum ada strategi terbukti memiliki
-ekspektasi positif setelah biaya dan validasi independen. Posisi lama
-yang jatuh tempo masih dapat mengubah PnL kumulatif hingga semuanya selesai.
-Mode `legacy-explore` hanya dapat diminta **secara eksplisit** untuk uji
-hipotesis PAPER, bukan order bursa ataupun persetujuan strategi. Data
-`data/events/` sebelumnya **tidak diubah**. Perhitungan
-`economic_reconciliation` menunjukkan gross-sebelum-fee, total fee,
-dan net-fee-only, yang tidak boleh disamakan dengan equity wallet.
-Crypto v2, riset adaptif, dan dua wallet saham tetap terpisah.
-Dokumentasi: [audit entry safety dan syarat riset berikutnya](docs/V8_NEGATIVE_EDGE_SAFETY_20261023.md).
+**24 Okt 2026 — kebijakan riset dikoreksi:** scheduler dan recovery
+kembali menjalankan `legacy-explore` dengan batas maksimum **44 eksperimen
+PAPER per tick**, bukan menutup pembukaan sampel hanya karena PnL riset
+negatif. Ini ialah pengumpulan hasil hipotesis, **bukan trading akun nyata**.
+Keterbatasan utama bukan jumlah eksperimen tetapi kualitas bukti:
+sumber OHLCV 15m yang gagal tidak boleh dianggap candle valid tanpa sinyal,
+dan pasar likuid yang bergerak <0,5% selama 24 jam juga diperiksa (tanpa\npenyaringan tren yang membuang peluang strategi range). Laporan\n`cohort_diagnostics` memisahkan kandidat 15m terkonfirmasi dari
+proxy/control, periode penutupan terlambat dan sumber spot. Rekonsiliasi biaya
+dilaporkan per strategi × horizon × provenance, dengan jumlah hari berbeda
+agar sampel berkorelasi tidak dihitung sebagai validasi independen.
+**Tidak ada promosi otomatis ke trading nyata** walaupun satu kelompok
+tampak menghasilkan keuntungan. Mode `observe-only` tetap tersedia secara
+manual ketika diperlukan. Riwayat hash ledger tetap utuh.
+
+[Protokol throughput & evidence quality](docs/HIGH_THROUGHPUT_RESEARCH_20261024.md) ·
+[Audit PnL & koreksi keputusan lama](docs/V8_NEGATIVE_EDGE_SAFETY_20261023.md)
 
 
 **Audit implementasi 23 Oktober 2026:** [catatan diagnosis & perintah verifikasi](docs/TRADING_LAB_IMPLEMENTATION_AUDIT_20261023.md) — pemisahan PnL historis vs wallet, restorasi API lama, audit fee per horizon, confidence interval per hari, dan batasan pengujian.

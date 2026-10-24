@@ -48,8 +48,10 @@ def make_opportunity_audit(requested):
         "scope": "real fresh market quote, distinct unsampled instrument/15m slot, within quota",
         "requested_new_slots": requested,
         "eligible_quote_symbols": 0,
+        "quiet_24h_quotes_admitted": 0,
         "screened_symbol_slots": 0,
         "advanced_source_checks": 0,
+        "unavailable_confirmed_candle_slots": 0,
         "slots_with_any_confirmed_signal": 0,
         "slots_with_no_confirmed_signal": 0,
         "no_confirmed_signal_proxy_slots_skipped": 0,
@@ -60,7 +62,7 @@ def make_opportunity_audit(requested):
         "skipped_by_symbol_slot_or_capacity": 0,
         "fresh_entry_quote_rejections": 0,
         "recent_7d_confirmed_open_counts": {},
-        "note": "Counts ONLY inspected real opportunities. A 12%-of-unique-symbol-slot deterministic fallback probe is permitted with NO confirmed OKX signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
+        "note": "Counts ONLY inspected real opportunities. Missing/failed OKX candles are excluded and never counted as genuine no-signal. A 12%-of-unique-symbol-slot fallback probe is permitted after valid candles with NO confirmed signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
     }
 
 
