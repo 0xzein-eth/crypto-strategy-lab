@@ -1,4 +1,6 @@
 # Legacy v8 negative expectancy: entry safety and economic audit
+
+> **Correction 2026-10-24:** the 2026-10-23 policy below is superseded. It mistakenly paused **unfunded research hypothesis collection** instead of only guarding promotion to funded trading. High-throughput paper `legacy-explore` is now the default production/recovery observer; `observe-only` is optional manual maintenance. We retain this historical note for audit transparency. See [replacement policy](HIGH_THROUGHPUT_RESEARCH_20261024.md).
 **Audit date:** 2026-10-23. **Mode:** PAPER RESEARCH ONLY, no real exchange/broker orders.
 
 ## Evidence and diagnosis (persisted main snapshot at 2026-10-23 10:38:05 UTC)
