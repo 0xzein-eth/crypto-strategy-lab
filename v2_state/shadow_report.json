@@ -8661,6 +8661,69 @@
       "signal_side": "LONG",
       "symbol": "SOL",
       "timely": true
+    },
+    {
+      "actual_observation_delay_seconds": 3037.41,
+      "arm": "TP-v3",
+      "assumed_net_after_book_and_fees_pct": -0.6861056,
+      "assumed_stressed_net_pct": -0.9861056,
+      "delta_stress_pct": 0.0,
+      "entry_at": "2026-10-26T06:39:29.550536+00:00",
+      "entry_day": "2026-10-26",
+      "entry_id": "ETH:TP-v3:SHORT:2026-10-26T06:15:00Z",
+      "executable_topbook_quantity_both_sides": false,
+      "exit_due_at": "2026-10-26T10:39:29.550536+00:00",
+      "funding_observed_complete": false,
+      "genuine_exit_book_at": "2026-10-26T11:30:06.960792+00:00",
+      "neutral_control_side": "SHORT",
+      "real_exchange_fill": false,
+      "same_time_neutral_net_after_book_fee_pct": -0.6861056,
+      "same_time_neutral_stressed_net_pct": -0.9861056,
+      "signal_side": "SHORT",
+      "symbol": "ETH",
+      "timely": false
+    },
+    {
+      "actual_observation_delay_seconds": 3037.41,
+      "arm": "TPREG-v1",
+      "assumed_net_after_book_and_fees_pct": -0.6861056,
+      "assumed_stressed_net_pct": -0.9861056,
+      "delta_stress_pct": -1.1707599,
+      "entry_at": "2026-10-26T06:39:29.550536+00:00",
+      "entry_day": "2026-10-26",
+      "entry_id": "ETH:TPREG-v1:SHORT:2026-10-26T06:15:00Z",
+      "executable_topbook_quantity_both_sides": false,
+      "exit_due_at": "2026-10-26T10:39:29.550536+00:00",
+      "funding_observed_complete": false,
+      "genuine_exit_book_at": "2026-10-26T11:30:06.960792+00:00",
+      "neutral_control_side": "LONG",
+      "real_exchange_fill": false,
+      "same_time_neutral_net_after_book_fee_pct": 0.4846543,
+      "same_time_neutral_stressed_net_pct": 0.1846543,
+      "signal_side": "SHORT",
+      "symbol": "ETH",
+      "timely": false
+    },
+    {
+      "actual_observation_delay_seconds": 3037.41,
+      "arm": "TP-v3",
+      "assumed_net_after_book_and_fees_pct": -0.6157728,
+      "assumed_stressed_net_pct": -0.9157728,
+      "delta_stress_pct": -1.0111633,
+      "entry_at": "2026-10-26T06:39:29.550536+00:00",
+      "entry_day": "2026-10-26",
+      "entry_id": "SOL:TP-v3:SHORT:2026-10-26T06:15:00Z",
+      "executable_topbook_quantity_both_sides": false,
+      "exit_due_at": "2026-10-26T10:39:29.550536+00:00",
+      "funding_observed_complete": false,
+      "genuine_exit_book_at": "2026-10-26T11:30:06.960792+00:00",
+      "neutral_control_side": "LONG",
+      "real_exchange_fill": false,
+      "same_time_neutral_net_after_book_fee_pct": 0.3953906,
+      "same_time_neutral_stressed_net_pct": 0.0953906,
+      "signal_side": "SHORT",
+      "symbol": "SOL",
+      "timely": false
     }
   ],
   "extra_30bps_stress_assumed_not_measured": true,
@@ -8669,7 +8732,7 @@
   "genuine_book_observations_no_gapfill": true,
   "historical_validation_repeatedly_inspected": true,
   "hypothetical_exit_4h_first_real_observed": true,
-  "last_source_hash": "837cac1290533f13a4e43c764b09465eb77bc03759528eb66838f304501c7221",
+  "last_source_hash": "f9a62d70279e4486dcfbc6cbb9089c04eee7335210f8f3b34376e7b9dd6f2b38",
   "multiple_correlated_arms_tested": 26,
   "neutral_comparator_is_frozen_sha256_random_direction": true,
   "neutral_comparator_is_not_funded_live_ctrl": true,
@@ -9018,7 +9081,7 @@
     },
     "TP-v3": {
       "clipped_utc_day_descriptive_pair_interval_pct": null,
-      "closed_shadow_hypotheses_all": 8,
+      "closed_shadow_hypotheses_all": 10,
       "descriptive_calendar_maturity_target_met": false,
       "distinct_iso_weeks_in_matched_cohort": 1,
       "eligible_for_live_deployment": false,
@@ -9032,11 +9095,11 @@
       "stressed_signal_avg_pct": 0.1550215,
       "timely_matched_control_closed": 5,
       "unfillable_or_wide_entry_count": 0,
-      "unresolved_due_to_no_future_observation": 2
+      "unresolved_due_to_no_future_observation": 0
     },
     "TPREG-v1": {
       "clipped_utc_day_descriptive_pair_interval_pct": null,
-      "closed_shadow_hypotheses_all": 5,
+      "closed_shadow_hypotheses_all": 6,
       "descriptive_calendar_maturity_target_met": false,
       "distinct_iso_weeks_in_matched_cohort": 1,
       "eligible_for_live_deployment": false,
@@ -9050,7 +9113,7 @@
       "stressed_signal_avg_pct": 0.0869429,
       "timely_matched_control_closed": 4,
       "unfillable_or_wide_entry_count": 0,
-      "unresolved_due_to_no_future_observation": 1
+      "unresolved_due_to_no_future_observation": 0
     },
     "TRECLAIM-v1": {
       "clipped_utc_day_descriptive_pair_interval_pct": null,
@@ -9165,6 +9228,6 @@
   "real_order_submissions": 0,
   "research_caveat": "All arm data collection, not winner mining: real bid/ask snapshots but hypothetical best-level fills, unknown settled funding/latency/slippage. Day intervals descriptive, not multiple-testing adjusted. Do not select live strategy based on this report.",
   "shadow_rows_do_not_imply_independent_trials": true,
-  "source_observation_events": 113,
+  "source_observation_events": 114,
   "version": "v2-shadow-all-confirmed-2026-10-20-v1"
 }
