@@ -58,6 +58,8 @@ def make_opportunity_audit(requested):
         "no_confirmed_signal_baseline_probes_allowed": 0,
         "no_signal_baseline_probe_percent": NO_CONFIRMED_BASELINE_PROBE_PERCENT,
         "confirmed_arm_opportunities": {},
+        "symbol_decisions": [],
+        "symbol_decision_schema": "per-symbol-opportunity-v1",
         "new_paper_opens_by_arm": {},
         "skipped_by_symbol_slot_or_capacity": 0,
         "fresh_entry_quote_rejections": 0,

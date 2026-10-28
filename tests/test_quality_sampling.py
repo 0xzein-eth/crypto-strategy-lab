@@ -55,6 +55,9 @@ class ProxyQualityGateTests(unittest.TestCase):
             self.assertEqual(audit["confirmed_arm_opportunities"],{})
             self.assertEqual(audit["no_confirmed_signal_baseline_probes_allowed"],
                              int(expected))
+            self.assertEqual(len(audit["symbol_decisions"]), 1)
+            self.assertEqual(audit["symbol_decisions"][0]["decision"],
+                             "PAPER_OPEN_CREATED" if expected else "NO_SIGNAL_NOT_SAMPLED")
             self.assertEqual(audit["no_confirmed_signal_proxy_slots_skipped"],
                              int(not expected))
             if opened:

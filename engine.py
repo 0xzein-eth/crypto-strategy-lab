@@ -573,18 +573,49 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             existing_signatures.add((r["symbol"], r["provider"],
                                      r["strategy"], r["horizon_hours"]))
     quotes = []
+    decision_by_symbol = {}
+    def set_symbol_decision(symbol, stage, outcome, **details):
+        if opportunity_audit is None:
+            return
+        row = decision_by_symbol.get(symbol)
+        if row is None:
+            row = {"symbol": symbol, "stages": []}
+            decision_by_symbol[symbol] = row
+            opportunity_audit["symbol_decisions"].append(row)
+        event = {"stage": stage, "outcome": outcome}
+        event.update(details)
+        row["stages"].append(event)
+        row["last_stage"] = stage
+        row["decision"] = outcome
+        for key, value in details.items():
+            row[key] = value
     for symbol in SYMBOLS:
         try:
             q = read_quote(symbol, None)
             # Source quality requires current, liquid quotes; demanding a
             # >=0.5% 24h move was an unjustified pre-filter which entirely
             # excluded quiet/range regimes from genuine 15m signal discovery.
+            quote_age = (moment - parse(q["observed_at"])).total_seconds()
             if (q["quote_volume_24h"] >= MIN_QUOTE_VOLUME and
-                    (moment - parse(q["observed_at"])).total_seconds() <= MAX_QUOTE_AGE_SECONDS):
+                    quote_age <= MAX_QUOTE_AGE_SECONDS):
                 quotes.append(q)
+                set_symbol_decision(symbol, "quote", "ELIGIBLE_QUOTE",
+                                    provider=q.get("provider"), market_type=q.get("market_type"),
+                                    quote_age_seconds=round(quote_age, 3),
+                                    quote_volume_24h=round(q["quote_volume_24h"], 2),
+                                    pct24h=round(q["pct24h"], 6))
                 if opportunity_audit is not None and abs(q["pct24h"]) < 0.5:
                     opportunity_audit["quiet_24h_quotes_admitted"] += 1
-        except Exception:
+            else:
+                reason = ("LOW_QUOTE_VOLUME" if q["quote_volume_24h"] < MIN_QUOTE_VOLUME
+                          else "STALE_QUOTE")
+                set_symbol_decision(symbol, "quote", "QUOTE_REJECTED", reason=reason,
+                                    provider=q.get("provider"),
+                                    quote_age_seconds=round(quote_age, 3),
+                                    quote_volume_24h=round(q.get("quote_volume_24h", 0), 2))
+        except Exception as exc:
+            set_symbol_decision(symbol, "quote", "SOURCE_UNAVAILABLE",
+                                error_type=type(exc).__name__, reason=str(exc)[:120])
             continue
     # Only entry-time labels, not past wins/losses, influence stratification.
     prior_daily_strata=defaultdict(int)
@@ -617,6 +648,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     output, one_per_run = [], set()
     for rank, q in enumerate(quotes):
         if len(output) >= slots:
+            for uninspected in quotes[rank:]:
+                set_symbol_decision(uninspected["symbol"], "budget",
+                                    "NOT_SCREENED_AFTER_BUDGET",
+                                    reason="requested_new_slots_or_run_capacity_exhausted")
             break
         symbol = q["symbol"]
         if (symbol in one_per_run or
@@ -625,6 +660,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             active_by_symbol[symbol] >= MAX_PER_SYMBOL):
             if opportunity_audit is not None:
                 opportunity_audit["skipped_by_symbol_slot_or_capacity"] += 1
+            set_symbol_decision(symbol, "capacity", "SKIPPED_CAPACITY_OR_DUPLICATE",
+                                reason="one_per_symbol_slot_or_daily_or_open_cap")
             continue
         if opportunity_audit is not None:
             opportunity_audit["screened_symbol_slots"] += 1
@@ -647,6 +684,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             if observed_signals is None:
                 if opportunity_audit is not None:
                     opportunity_audit["unavailable_confirmed_candle_slots"] += 1
+                set_symbol_decision(symbol, "candle", "CANDLE_UNAVAILABLE",
+                                    reason="confirmed_15m_source_missing_or_invalid")
                 continue
             detections = observed_signals
         # Indicator-based candidates can never be synthesized from a missing,
@@ -660,6 +699,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         options=list({x["strategy"]:x for x in options}.values())
         confirmed_options = [item for item in options
                              if item["strategy"] in learner.ADVANCED]
+        set_symbol_decision(symbol, "signal",
+                            "CONFIRMED_SIGNAL" if confirmed_options else "VALID_NO_SIGNAL",
+                            confirmed_arms=sorted(item["strategy"] for item in confirmed_options),
+                            candidate_count=len(confirmed_options))
         if opportunity_audit is not None:
             if confirmed_options:
                 opportunity_audit["slots_with_any_confirmed_signal"] += 1
@@ -670,7 +713,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                                          item["strategy"])
         # The old 24h-only direction proxies dominated earlier losses despite
         # having no confirmed 15m setup. When we really checked OKX 15m for
-        # this slot and found NO advanced candidate, keep a deterministic 12%
+        # this slot and found NO advanced candidate, keep a deterministic 20%
         # sentinel cohort so negative regimes remain observable. In all other
         # symbol slots, actual confirmed arms plus 20% CTRL are sampled.
         # Preserve legacy offline (advanced=None) and spot-proxy study tests.
@@ -678,6 +721,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             if not entry_sampling.no_confirmed_baseline_probe(symbol, slot):
                 if opportunity_audit is not None:
                     opportunity_audit["no_confirmed_signal_proxy_slots_skipped"] += 1
+                set_symbol_decision(symbol, "sampling", "NO_SIGNAL_NOT_SAMPLED",
+                                    reason="predeclared_20_percent_control_sampling")
                 continue
             if opportunity_audit is not None:
                 opportunity_audit["no_confirmed_signal_baseline_probes_allowed"] += 1
@@ -701,6 +746,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             horizon_retry=offset
             break
         if chosen is None:
+            set_symbol_decision(symbol, "selection", "NO_AVAILABLE_ARM_HORIZON",
+                                reason="all_registered_arm_horizon_signatures_occupied")
             continue
         style,side=chosen["strategy"],chosen["side"]
         evidence={"price_change_24h_pct":round(q["pct24h"],6),
@@ -735,18 +782,24 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         # We never pretend the earlier screening ticker was an executable entry.
         try:
             entry = reobserve(symbol, q["provider"]) if reobserve else q
-        except Exception:
+        except Exception as exc:
             if opportunity_audit is not None:
                 opportunity_audit["fresh_entry_quote_rejections"] += 1
+            set_symbol_decision(symbol, "entry_requote", "ENTRY_REQUOTE_FAILED",
+                                reason=str(exc)[:120])
             continue
         if (entry["provider"], entry["market_type"], entry["instrument"]) != (
                 q["provider"], q["market_type"], q["instrument"]):
             if opportunity_audit is not None:
                 opportunity_audit["fresh_entry_quote_rejections"] += 1
+            set_symbol_decision(symbol, "entry_requote", "ENTRY_QUOTE_MISMATCH",
+                                reason="provider_market_type_or_instrument_changed")
             continue
         if (clock()-parse(entry["observed_at"])).total_seconds() > MAX_QUOTE_AGE_SECONDS:
             if opportunity_audit is not None:
                 opportunity_audit["fresh_entry_quote_rejections"] += 1
+            set_symbol_decision(symbol, "entry_requote", "ENTRY_QUOTE_STALE",
+                                reason="fresh_entry_quote_age_exceeded")
             continue
         rid = "LAB-" + str(next_id + len(output))
         entered_at = max(moment, clock(), parse(entry["observed_at"]))
@@ -768,6 +821,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         output.append(rec)
         if opportunity_audit is not None:
             entry_sampling.increment(opportunity_audit["new_paper_opens_by_arm"], style)
+        set_symbol_decision(symbol, "entry", "PAPER_OPEN_CREATED", strategy=style,
+                            side=side, horizon_hours=h, record_id=rid)
         one_per_run.add(symbol)
     if opportunity_audit is not None and not output and quotes:
         opportunity_audit["no_new_entry_reason"] = (

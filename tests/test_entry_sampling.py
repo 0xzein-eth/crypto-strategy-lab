@@ -160,6 +160,8 @@ class EntryExposureTests(unittest.TestCase):
         self.assertEqual(result,[])
         self.assertEqual(audit["eligible_quote_symbols"],0)
         self.assertEqual(audit["no_new_entry_reason"],"NO_ELIGIBLE_REAL_PUBLIC_QUOTES")
+        self.assertEqual(audit["symbol_decisions"][0]["decision"], "SOURCE_UNAVAILABLE")
+        self.assertEqual(audit["symbol_decisions"][0]["symbol"], "BTC")
 
     def test_symbol_slot_capacity_rejection_is_recorded_without_new_trades(self):
         audit={}
