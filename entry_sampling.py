@@ -56,17 +56,17 @@ def make_opportunity_audit(requested):
         "slots_with_no_confirmed_signal": 0,
         "no_confirmed_signal_proxy_slots_skipped": 0,
         "no_confirmed_signal_baseline_probes_allowed": 0,
-        "no_signal_baseline_probe_percent": 12,
+        "no_signal_baseline_probe_percent": NO_CONFIRMED_BASELINE_PROBE_PERCENT,
         "confirmed_arm_opportunities": {},
         "new_paper_opens_by_arm": {},
         "skipped_by_symbol_slot_or_capacity": 0,
         "fresh_entry_quote_rejections": 0,
         "recent_7d_confirmed_open_counts": {},
-        "note": "Counts ONLY inspected real opportunities. Missing/failed OKX candles are excluded and never counted as genuine no-signal. A 12%-of-unique-symbol-slot fallback probe is permitted after valid candles with NO confirmed signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
+        "note": "Counts ONLY inspected real opportunities. Missing/failed OKX candles are excluded and never counted as genuine no-signal. A 20%-of-unique-symbol-slot fallback probe is permitted after valid candles with NO confirmed signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
     }
 
 
-NO_CONFIRMED_BASELINE_PROBE_PERCENT = 12
+NO_CONFIRMED_BASELINE_PROBE_PERCENT = 20
 
 
 def no_confirmed_baseline_probe(symbol, signal_slot, pct=NO_CONFIRMED_BASELINE_PROBE_PERCENT):
