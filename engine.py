@@ -573,6 +573,22 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             existing_signatures.add((r["symbol"], r["provider"],
                                      r["strategy"], r["horizon_hours"]))
     quotes = []
+    decision_by_symbol = {}
+    def set_symbol_decision(symbol, stage, outcome, **details):
+        if opportunity_audit is None:
+            return
+        row = decision_by_symbol.get(symbol)
+        if row is None:
+            row = {"symbol": symbol, "stages": []}
+            decision_by_symbol[symbol] = row
+            opportunity_audit["symbol_decisions"].append(row)
+        event = {"stage": stage, "outcome": outcome}
+        event.update(details)
+        row["stages"].append(event)
+        row["last_stage"] = stage
+        row["decision"] = outcome
+        for key, value in details.items():
+            row[key] = value
     for symbol in SYMBOLS:
         try:
             q = read_quote(symbol, None)
