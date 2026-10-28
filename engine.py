@@ -742,6 +742,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             horizon_retry=offset
             break
         if chosen is None:
+            set_symbol_decision(symbol, "selection", "NO_AVAILABLE_ARM_HORIZON",
+                                reason="all_registered_arm_horizon_signatures_occupied")
             continue
         style,side=chosen["strategy"],chosen["side"]
         evidence={"price_change_24h_pct":round(q["pct24h"],6),
@@ -776,18 +778,24 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         # We never pretend the earlier screening ticker was an executable entry.
         try:
             entry = reobserve(symbol, q["provider"]) if reobserve else q
-        except Exception:
+        except Exception as exc:
             if opportunity_audit is not None:
                 opportunity_audit["fresh_entry_quote_rejections"] += 1
+            set_symbol_decision(symbol, "entry_requote", "ENTRY_REQUOTE_FAILED",
+                                reason=str(exc)[:120])
             continue
         if (entry["provider"], entry["market_type"], entry["instrument"]) != (
                 q["provider"], q["market_type"], q["instrument"]):
             if opportunity_audit is not None:
                 opportunity_audit["fresh_entry_quote_rejections"] += 1
+            set_symbol_decision(symbol, "entry_requote", "ENTRY_QUOTE_MISMATCH",
+                                reason="provider_market_type_or_instrument_changed")
             continue
         if (clock()-parse(entry["observed_at"])).total_seconds() > MAX_QUOTE_AGE_SECONDS:
             if opportunity_audit is not None:
                 opportunity_audit["fresh_entry_quote_rejections"] += 1
+            set_symbol_decision(symbol, "entry_requote", "ENTRY_QUOTE_STALE",
+                                reason="fresh_entry_quote_age_exceeded")
             continue
         rid = "LAB-" + str(next_id + len(output))
         entered_at = max(moment, clock(), parse(entry["observed_at"]))
@@ -809,6 +817,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         output.append(rec)
         if opportunity_audit is not None:
             entry_sampling.increment(opportunity_audit["new_paper_opens_by_arm"], style)
+        set_symbol_decision(symbol, "entry", "PAPER_OPEN_CREATED", strategy=style,
+                            side=side, horizon_hours=h, record_id=rid)
         one_per_run.add(symbol)
     if opportunity_audit is not None and not output and quotes:
         opportunity_audit["no_new_entry_reason"] = (
