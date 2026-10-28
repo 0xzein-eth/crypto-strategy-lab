@@ -38,7 +38,7 @@ class OpportunityHistoryTests(unittest.TestCase):
                 added=0, status="NO_NEW_SIGNALS", verified_events=0)
             row = json.loads(path.read_text())
             row["audit"]["screened_symbol_slots"] = 99
-            path.write_text(json.dumps(row) + "\\n")
+            path.write_text(json.dumps(row) + "\n")
             with self.assertRaisesRegex(ValueError, "INTEGRITY_FAILURE"):
                 opportunity_history.verify(path)
 
