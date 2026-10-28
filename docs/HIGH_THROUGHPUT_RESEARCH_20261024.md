@@ -10,7 +10,7 @@ The owner correctly distinguishes **research throughput** from **real capital ri
 
 Prior code returned `[]` when acquiring or parsing 15-minute OHLCV failed. Downstream mistakenly treated it as **valid checked candle, but no signal**, so a deterministic 12% control/proxy cohort could still enter for a candle that was *never verified*. Now:
 - `advanced(...)` returns `None` for missing/invalid candle observations and **no PAPER OPEN** is created from that unavailable OKX slot;
-- actual, validated candle observations that yield `[]` correctly remain real *no-confirmed-signal* opportunities with the predeclared sparse 12% baseline probe;
+- actual, validated candle observations that yield `[]` correctly remain real *no-confirmed-signal* opportunities with the predeclared sparse 20% baseline probe;
 - confirmed 15m strategy signals may enter only when the original signal check returned actual evidence; fresh same-venue quote, true instrument identity, age and hash-ledger constraints remain;
 - missing candle slots get their **own diagnostic counter**, not falsely included among no-signal or sampled cases;
 - the former unconditional **abs(24h price change) >=0.5%** screen is removed for genuine fresh liquid quotes, allowing quiet/range regimes to enter 15m hypothesis discovery; the number of admitted quiet market quotes is measured. This is an expansion of sampling support, **not** proof those regimes have positive alpha.
@@ -44,3 +44,10 @@ This reporting is **strictly descriptive** and NEVER fed into the online chooser
 - Synthetic offline tests cover no-candle-versus-valid-no-signal separation; per-group fee/provenance/cost reconciliation; preservation of optional observe-only and exit lifecycle.
 - All existing CI and ledger audit jobs must succeed before merge. Future observer report must independently show `entry_mode=legacy-explore`, while `added` may be zero in genuinely sparse conditions.
 - This change restores **data generation**, not positive expectancy. Strategy selection remains unsupported until independent prospective after-cost validation.
+
+
+## Implemented follow-up — 2026-10-28
+
+- The valid-candle/no-confirmed-signal baseline probe rate is now 20% (up from 12%). This applies only after a fresh eligible quote and successful confirmed-candle evaluation; missing/failed OHLCV still cannot create a fallback entry. This is a declared research-coverage change, not an alpha claim.
+- A separate `data/opportunity_history.jsonl` records one aggregate row per observer tick, including screened slots, confirmed/no-signal counts, unavailable-candle counts, rejections, opens and the no-entry reason. Rows are hash-chained and verified before each append; the immutable canonical trade event ledger remains untouched.
+- The history is run-level aggregate telemetry, NOT a reconstructed per-symbol opportunity tape. The next enhancement should add per-symbol decision records and matched, same-symbol/same-horizon controls before using these data for causal comparisons.

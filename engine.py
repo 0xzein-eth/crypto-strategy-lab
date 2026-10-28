@@ -21,6 +21,7 @@ import friction
 import outcome_stats
 import temporal_evidence
 import cohort_diagnostics
+import opportunity_history
 
 BASE = Path(__file__).resolve().parent
 EVENTS = BASE / "data" / "events"
@@ -1141,6 +1142,10 @@ def run(requested=14, clock=utcnow, entry_mode="legacy-explore"):
                   },
                   verified_events=seq, ledger_tip_sha256=prev_hash,
                   workflow_interval_note="GitHub scheduled triggers are best-effort")
+    result["opportunity_history"] = opportunity_history.append(
+        BASE / "data" / "opportunity_history.jsonl", timestamp=stamp(current), entry_mode=entry_mode,
+        audit=entry_opportunity_audit, added=len(opens), status=result["status"],
+        verified_events=seq)
     active = [r for r in records.values() if r["status"] == "OPEN"]
     recent_closed = sorted((r for r in records.values() if r["status"] == "CLOSED"),
                            key=lambda r: (r["resolved_at"], r["id"]), reverse=True)[:80]
