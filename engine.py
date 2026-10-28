@@ -28,7 +28,6 @@ EVENTS = BASE / "data" / "events"
 REPORT = BASE / "data" / "report.json"
 STATE = BASE / "data" / "state.json"
 LEGACY = BASE / "data" / "ledger.json"
-OPPORTUNITY_HISTORY = BASE / "data" / "opportunity_history.jsonl"
 UTC = dt.timezone.utc
 SYMBOLS = universe.SYMBOLS
 PROVIDERS = ("okx-swap", "bybit-linear", "binance-futures",
@@ -1144,7 +1143,7 @@ def run(requested=14, clock=utcnow, entry_mode="legacy-explore"):
                   verified_events=seq, ledger_tip_sha256=prev_hash,
                   workflow_interval_note="GitHub scheduled triggers are best-effort")
     result["opportunity_history"] = opportunity_history.append(
-        OPPORTUNITY_HISTORY, timestamp=stamp(current), entry_mode=entry_mode,
+        BASE / "data" / "opportunity_history.jsonl", timestamp=stamp(current), entry_mode=entry_mode,
         audit=entry_opportunity_audit, added=len(opens), status=result["status"],
         verified_events=seq)
     active = [r for r in records.values() if r["status"] == "OPEN"]
