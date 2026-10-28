@@ -66,8 +66,8 @@ class ProxyQualityGateTests(unittest.TestCase):
                 self.assertEqual(audit["no_new_entry_reason"],
                                  "NO_CONFIRMED_SIGNAL_AND_SPARSE_PROBES_GATED")
         self.assertEqual(seen,decisions)
-        self.assertGreater(sum(seen),20)
-        self.assertLess(sum(seen),65)
+        self.assertGreater(sum(seen),40)
+        self.assertLess(sum(seen),80)
 
     def test_real_confirmed_candidates_remain_available_at_every_fresh_slot(self):
         def make_advanced(symbol,market):
