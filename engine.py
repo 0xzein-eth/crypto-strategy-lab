@@ -713,7 +713,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                                          item["strategy"])
         # The old 24h-only direction proxies dominated earlier losses despite
         # having no confirmed 15m setup. When we really checked OKX 15m for
-        # this slot and found NO advanced candidate, keep a deterministic 12%
+        # this slot and found NO advanced candidate, keep a deterministic 20%
         # sentinel cohort so negative regimes remain observable. In all other
         # symbol slots, actual confirmed arms plus 20% CTRL are sampled.
         # Preserve legacy offline (advanced=None) and spot-proxy study tests.
