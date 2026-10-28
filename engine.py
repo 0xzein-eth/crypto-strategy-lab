@@ -648,6 +648,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     output, one_per_run = [], set()
     for rank, q in enumerate(quotes):
         if len(output) >= slots:
+            for uninspected in quotes[rank:]:
+                set_symbol_decision(uninspected["symbol"], "budget",
+                                    "NOT_SCREENED_AFTER_BUDGET",
+                                    reason="requested_new_slots_or_run_capacity_exhausted")
             break
         symbol = q["symbol"]
         if (symbol in one_per_run or
