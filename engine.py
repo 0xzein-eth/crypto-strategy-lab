@@ -595,12 +595,27 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             # Source quality requires current, liquid quotes; demanding a
             # >=0.5% 24h move was an unjustified pre-filter which entirely
             # excluded quiet/range regimes from genuine 15m signal discovery.
+            quote_age = (moment - parse(q["observed_at"])).total_seconds()
             if (q["quote_volume_24h"] >= MIN_QUOTE_VOLUME and
-                    (moment - parse(q["observed_at"])).total_seconds() <= MAX_QUOTE_AGE_SECONDS):
+                    quote_age <= MAX_QUOTE_AGE_SECONDS):
                 quotes.append(q)
+                set_symbol_decision(symbol, "quote", "ELIGIBLE_QUOTE",
+                                    provider=q.get("provider"), market_type=q.get("market_type"),
+                                    quote_age_seconds=round(quote_age, 3),
+                                    quote_volume_24h=round(q["quote_volume_24h"], 2),
+                                    pct24h=round(q["pct24h"], 6))
                 if opportunity_audit is not None and abs(q["pct24h"]) < 0.5:
                     opportunity_audit["quiet_24h_quotes_admitted"] += 1
-        except Exception:
+            else:
+                reason = ("LOW_QUOTE_VOLUME" if q["quote_volume_24h"] < MIN_QUOTE_VOLUME
+                          else "STALE_QUOTE")
+                set_symbol_decision(symbol, "quote", "QUOTE_REJECTED", reason=reason,
+                                    provider=q.get("provider"),
+                                    quote_age_seconds=round(quote_age, 3),
+                                    quote_volume_24h=round(q.get("quote_volume_24h", 0), 2))
+        except Exception as exc:
+            set_symbol_decision(symbol, "quote", "SOURCE_UNAVAILABLE",
+                                error_type=type(exc).__name__, reason=str(exc)[:120])
             continue
     # Only entry-time labels, not past wins/losses, influence stratification.
     prior_daily_strata=defaultdict(int)
