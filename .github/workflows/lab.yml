@@ -56,6 +56,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_band_hypotheses.py' -v
           python -m unittest discover -s tests -p 'test_recovery_window.py' -v
           python -m unittest discover -s tests -p 'test_schedule_coverage.py' -v
+          python -m unittest discover -s tests -p 'test_opportunity_history.py' -v
       - name: Collect high-throughput PAPER hypotheses and close due experiments
         # 44 is a maximum, not actual funded order count. Open only genuine
         # fresh unique 15m symbol-slot hypotheses with source quality gates.
