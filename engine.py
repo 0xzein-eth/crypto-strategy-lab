@@ -656,6 +656,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             active_by_symbol[symbol] >= MAX_PER_SYMBOL):
             if opportunity_audit is not None:
                 opportunity_audit["skipped_by_symbol_slot_or_capacity"] += 1
+            set_symbol_decision(symbol, "capacity", "SKIPPED_CAPACITY_OR_DUPLICATE",
+                                reason="one_per_symbol_slot_or_daily_or_open_cap")
             continue
         if opportunity_audit is not None:
             opportunity_audit["screened_symbol_slots"] += 1
@@ -678,6 +680,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             if observed_signals is None:
                 if opportunity_audit is not None:
                     opportunity_audit["unavailable_confirmed_candle_slots"] += 1
+                set_symbol_decision(symbol, "candle", "CANDLE_UNAVAILABLE",
+                                    reason="confirmed_15m_source_missing_or_invalid")
                 continue
             detections = observed_signals
         # Indicator-based candidates can never be synthesized from a missing,
@@ -691,6 +695,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
         options=list({x["strategy"]:x for x in options}.values())
         confirmed_options = [item for item in options
                              if item["strategy"] in learner.ADVANCED]
+        set_symbol_decision(symbol, "signal",
+                            "CONFIRMED_SIGNAL" if confirmed_options else "VALID_NO_SIGNAL",
+                            confirmed_arms=sorted(item["strategy"] for item in confirmed_options),
+                            candidate_count=len(confirmed_options))
         if opportunity_audit is not None:
             if confirmed_options:
                 opportunity_audit["slots_with_any_confirmed_signal"] += 1
@@ -709,6 +717,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             if not entry_sampling.no_confirmed_baseline_probe(symbol, slot):
                 if opportunity_audit is not None:
                     opportunity_audit["no_confirmed_signal_proxy_slots_skipped"] += 1
+                set_symbol_decision(symbol, "sampling", "NO_SIGNAL_NOT_SAMPLED",
+                                    reason="predeclared_20_percent_control_sampling")
                 continue
             if opportunity_audit is not None:
                 opportunity_audit["no_confirmed_signal_baseline_probes_allowed"] += 1
