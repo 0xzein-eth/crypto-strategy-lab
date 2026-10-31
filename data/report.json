@@ -60,14 +60,14 @@
         "holdout_days": 3,
         "holdout_n": 659,
         "holdout_net_R": -235.98583,
-        "n": 4604,
+        "n": 4605,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.252966,
-        "train_cluster_ucb_R": -0.033607,
+        "train_cluster_lcb_R": -0.253873,
+        "train_cluster_ucb_R": -0.033726,
         "train_days": 20,
-        "train_n": 3945,
-        "train_net_R": -707.6174,
+        "train_n": 3946,
+        "train_net_R": -710.15307,
         "underperformer_train_only": false
       },
       "BR-v3": {
@@ -145,14 +145,14 @@
         "holdout_days": 3,
         "holdout_n": 907,
         "holdout_net_R": -136.64258,
-        "n": 5823,
+        "n": 5825,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.251723,
-        "train_cluster_ucb_R": -0.059188,
+        "train_cluster_lcb_R": -0.251456,
+        "train_cluster_ucb_R": -0.058565,
         "train_days": 20,
-        "train_n": 4916,
-        "train_net_R": -479.78468,
+        "train_n": 4918,
+        "train_net_R": -477.50875,
         "underperformer_train_only": false
       },
       "DC-v1": {
@@ -196,14 +196,14 @@
         "holdout_days": 3,
         "holdout_n": 126,
         "holdout_net_R": 71.85892,
-        "n": 657,
+        "n": 658,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.186657,
-        "train_cluster_ucb_R": 0.245668,
+        "train_cluster_lcb_R": -0.183141,
+        "train_cluster_ucb_R": 0.249985,
         "train_days": 19,
-        "train_n": 531,
-        "train_net_R": 11.50496,
+        "train_n": 532,
+        "train_net_R": 16.29308,
         "underperformer_train_only": false
       },
       "IBREAK-v1": {
@@ -264,14 +264,14 @@
         "holdout_days": 3,
         "holdout_n": 659,
         "holdout_net_R": -20.76649,
-        "n": 4525,
+        "n": 4528,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.205204,
-        "train_cluster_ucb_R": 0.222514,
+        "train_cluster_lcb_R": -0.205533,
+        "train_cluster_ucb_R": 0.22172,
         "train_days": 20,
-        "train_n": 3866,
-        "train_net_R": -279.40369,
+        "train_n": 3869,
+        "train_net_R": -280.38968,
         "underperformer_train_only": false
       },
       "MR-v3": {
@@ -315,14 +315,14 @@
         "holdout_days": 3,
         "holdout_n": 387,
         "holdout_net_R": 64.5435,
-        "n": 1440,
+        "n": 1442,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.450741,
-        "train_cluster_ucb_R": 0.015865,
+        "train_cluster_lcb_R": -0.448829,
+        "train_cluster_ucb_R": 0.018678,
         "train_days": 19,
-        "train_n": 1053,
-        "train_net_R": -231.1526,
+        "train_n": 1055,
+        "train_net_R": -221.15636,
         "underperformer_train_only": false
       },
       "RSIREC-v1": {
@@ -417,14 +417,14 @@
         "holdout_days": 3,
         "holdout_n": 62,
         "holdout_net_R": -97.38606,
-        "n": 498,
+        "n": 500,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.449744,
-        "train_cluster_ucb_R": 0.034436,
+        "train_cluster_lcb_R": -0.45157,
+        "train_cluster_ucb_R": 0.033481,
         "train_days": 19,
-        "train_n": 436,
-        "train_net_R": -69.78063,
+        "train_n": 438,
+        "train_net_R": -71.75289,
         "underperformer_train_only": false
       },
       "VOL-v1": {
@@ -497,7 +497,7 @@
       }
     },
     "champion": null,
-    "eligible_closed": 29544,
+    "eligible_closed": 29555,
     "eligible_days": 23,
     "method": "v4-e0b1c674; training-only allocation; 20% day monitoring withheld from selection; clustered daily lower bound",
     "provisional_leaders": [],
@@ -515,8 +515,11 @@
     "underperformer_policy": ">=50 eligible training closes and >=7 training UTC days, clipped daily upper bound < -0.05R, training mean >0.05R worse than CTRL; only 4:1 exploration reweight, never disable; monitoring outcomes excluded",
     "warning": "No strategy has demonstrated a reliable tradable edge. Training-only allocations never access monitoring results. Historical monitoring was previously used for allocations, so it is not an untouched final holdout. Selection remains observational, multi-tested and correlated."
   },
-  "added": 0,
-  "blocked_market_providers": {},
+  "added": 31,
+  "blocked_market_providers": {
+    "binance-futures": 451,
+    "bybit-linear": 403
+  },
   "capacity_policy": {
     "max_new_per_run": 44,
     "max_new_per_utc_day": 1750,
@@ -524,29 +527,29 @@
     "max_open_per_symbol": 50,
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
-  "closed": 31372,
-  "closed_this_run": 2,
+  "closed": 31383,
+  "closed_this_run": 11,
   "cohort_diagnostics": {
     "by_source_provenance": {
       "confirmed_15m_candle": {
-        "fees_usd": 145920.0,
-        "gross_before_fee_usd": -105987.42,
-        "mean_net_usd_per_hypothesis": -17.2634,
-        "n": 14592,
-        "net_fee_only_usd": -251907.42,
+        "fees_usd": 145970.0,
+        "gross_before_fee_usd": -103943.6,
+        "mean_net_usd_per_hypothesis": -17.1209,
+        "n": 14597,
+        "net_fee_only_usd": -249913.6,
         "observed_distinct_utc_entry_days": 23,
-        "stress_model_covered": 14590,
-        "stress_model_net_usd": -398252.92
+        "stress_model_covered": 14595,
+        "stress_model_net_usd": -396331.11
       },
       "direction_proxy_or_neutral_control": {
-        "fees_usd": 149520.0,
-        "gross_before_fee_usd": 20115.98,
-        "mean_net_usd_per_hypothesis": -8.6546,
-        "n": 14952,
-        "net_fee_only_usd": -129404.02,
+        "fees_usd": 149580.0,
+        "gross_before_fee_usd": 20053.06,
+        "mean_net_usd_per_hypothesis": -8.6594,
+        "n": 14958,
+        "net_fee_only_usd": -129526.94,
         "observed_distinct_utc_entry_days": 23,
-        "stress_model_covered": 14947,
-        "stress_model_net_usd": -278999.2
+        "stress_model_covered": 14953,
+        "stress_model_net_usd": -279186.06
       }
     },
     "by_strategy_horizon_provenance": [
@@ -811,17 +814,17 @@
         "stress_model_net_usd": -12556.35
       },
       {
-        "fees_usd": 7500.0,
-        "gross_before_fee_usd": -456.13,
+        "fees_usd": 7510.0,
+        "gross_before_fee_usd": -807.82,
         "horizon_hours": 4,
-        "mean_net_usd_per_hypothesis": -10.6082,
-        "n": 750,
-        "net_fee_only_usd": -7956.13,
+        "mean_net_usd_per_hypothesis": -11.0757,
+        "n": 751,
+        "net_fee_only_usd": -8317.82,
         "observed_distinct_utc_entry_days": 22,
         "signal_provenance": "direction_proxy_or_neutral_control",
         "strategy": "BR-proxy-v1",
-        "stress_model_covered": 750,
-        "stress_model_net_usd": -15419.65
+        "stress_model_covered": 751,
+        "stress_model_net_usd": -15800.0
       },
       {
         "fees_usd": 6080.0,
@@ -1201,30 +1204,30 @@
         "stress_model_net_usd": -15160.52
       },
       {
-        "fees_usd": 10000.0,
-        "gross_before_fee_usd": 7291.64,
+        "fees_usd": 10010.0,
+        "gross_before_fee_usd": 7543.14,
         "horizon_hours": 4,
-        "mean_net_usd_per_hypothesis": -2.7084,
-        "n": 1000,
-        "net_fee_only_usd": -2708.36,
+        "mean_net_usd_per_hypothesis": -2.4644,
+        "n": 1001,
+        "net_fee_only_usd": -2466.86,
         "observed_distinct_utc_entry_days": 22,
         "signal_provenance": "direction_proxy_or_neutral_control",
         "strategy": "CTRL-v1",
-        "stress_model_covered": 1000,
-        "stress_model_net_usd": -12636.22
+        "stress_model_covered": 1001,
+        "stress_model_net_usd": -12408.37
       },
       {
-        "fees_usd": 8340.0,
-        "gross_before_fee_usd": -3825.11,
+        "fees_usd": 8350.0,
+        "gross_before_fee_usd": -3689.05,
         "horizon_hours": 8,
-        "mean_net_usd_per_hypothesis": -14.5865,
-        "n": 834,
-        "net_fee_only_usd": -12165.11,
+        "mean_net_usd_per_hypothesis": -14.418,
+        "n": 835,
+        "net_fee_only_usd": -12039.05,
         "observed_distinct_utc_entry_days": 22,
         "signal_provenance": "direction_proxy_or_neutral_control",
         "strategy": "CTRL-v1",
-        "stress_model_covered": 834,
-        "stress_model_net_usd": -20473.18
+        "stress_model_covered": 835,
+        "stress_model_net_usd": -20359.64
       },
       {
         "fees_usd": 7060.0,
@@ -1461,17 +1464,17 @@
         "stress_model_net_usd": 9775.35
       },
       {
-        "fees_usd": 1010.0,
-        "gross_before_fee_usd": 4865.41,
+        "fees_usd": 1020.0,
+        "gross_before_fee_usd": 5612.32,
         "horizon_hours": 12,
-        "mean_net_usd_per_hypothesis": 38.1724,
-        "n": 101,
-        "net_fee_only_usd": 3855.41,
+        "mean_net_usd_per_hypothesis": 45.0227,
+        "n": 102,
+        "net_fee_only_usd": 4592.32,
         "observed_distinct_utc_entry_days": 20,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "FB-v3",
-        "stress_model_covered": 101,
-        "stress_model_net_usd": 2886.75
+        "stress_model_covered": 102,
+        "stress_model_net_usd": 3604.97
       },
       {
         "fees_usd": 1020.0,
@@ -1747,17 +1750,17 @@
         "stress_model_net_usd": -29650.39
       },
       {
-        "fees_usd": 7270.0,
-        "gross_before_fee_usd": -8269.69,
+        "fees_usd": 7290.0,
+        "gross_before_fee_usd": -8476.62,
         "horizon_hours": 4,
-        "mean_net_usd_per_hypothesis": -21.3751,
-        "n": 727,
-        "net_fee_only_usd": -15539.69,
+        "mean_net_usd_per_hypothesis": -21.6277,
+        "n": 729,
+        "net_fee_only_usd": -15766.62,
         "observed_distinct_utc_entry_days": 22,
         "signal_provenance": "direction_proxy_or_neutral_control",
         "strategy": "MR-proxy-v1",
-        "stress_model_covered": 727,
-        "stress_model_net_usd": -22799.7
+        "stress_model_covered": 729,
+        "stress_model_net_usd": -23040.15
       },
       {
         "fees_usd": 6140.0,
@@ -1786,17 +1789,17 @@
         "stress_model_net_usd": 7915.46
       },
       {
-        "fees_usd": 4500.0,
-        "gross_before_fee_usd": 34587.63,
+        "fees_usd": 4510.0,
+        "gross_before_fee_usd": 34695.76,
         "horizon_hours": 24,
-        "mean_net_usd_per_hypothesis": 66.8614,
-        "n": 450,
-        "net_fee_only_usd": 30087.63,
-        "observed_distinct_utc_entry_days": 21,
+        "mean_net_usd_per_hypothesis": 66.9307,
+        "n": 451,
+        "net_fee_only_usd": 30185.76,
+        "observed_distinct_utc_entry_days": 22,
         "signal_provenance": "direction_proxy_or_neutral_control",
         "strategy": "MR-proxy-v1",
-        "stress_model_covered": 450,
-        "stress_model_net_usd": 25622.96
+        "stress_model_covered": 451,
+        "stress_model_net_usd": 25715.51
       },
       {
         "fees_usd": 1530.0,
@@ -2020,17 +2023,17 @@
         "stress_model_net_usd": 6249.14
       },
       {
-        "fees_usd": 1950.0,
-        "gross_before_fee_usd": -11759.79,
+        "fees_usd": 1970.0,
+        "gross_before_fee_usd": -10213.76,
         "horizon_hours": 24,
-        "mean_net_usd_per_hypothesis": -70.3066,
-        "n": 195,
-        "net_fee_only_usd": -13709.79,
-        "observed_distinct_utc_entry_days": 19,
+        "mean_net_usd_per_hypothesis": -61.8465,
+        "n": 197,
+        "net_fee_only_usd": -12183.76,
+        "observed_distinct_utc_entry_days": 20,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "RSI-v1",
-        "stress_model_covered": 195,
-        "stress_model_net_usd": -15621.79
+        "stress_model_covered": 197,
+        "stress_model_net_usd": -14122.36
       },
       {
         "fees_usd": 1140.0,
@@ -2475,30 +2478,30 @@
         "stress_model_net_usd": -3647.96
       },
       {
-        "fees_usd": 680.0,
-        "gross_before_fee_usd": -2940.38,
+        "fees_usd": 690.0,
+        "gross_before_fee_usd": -2769.67,
         "horizon_hours": 12,
-        "mean_net_usd_per_hypothesis": -53.241,
-        "n": 68,
-        "net_fee_only_usd": -3620.38,
+        "mean_net_usd_per_hypothesis": -50.1402,
+        "n": 69,
+        "net_fee_only_usd": -3459.67,
         "observed_distinct_utc_entry_days": 16,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "TREND-v1",
-        "stress_model_covered": 68,
-        "stress_model_net_usd": -4349.09
+        "stress_model_covered": 69,
+        "stress_model_net_usd": -4205.29
       },
       {
-        "fees_usd": 840.0,
-        "gross_before_fee_usd": -6897.01,
+        "fees_usd": 850.0,
+        "gross_before_fee_usd": -7316.84,
         "horizon_hours": 24,
-        "mean_net_usd_per_hypothesis": -92.1072,
-        "n": 84,
-        "net_fee_only_usd": -7737.01,
-        "observed_distinct_utc_entry_days": 18,
+        "mean_net_usd_per_hypothesis": -96.0804,
+        "n": 85,
+        "net_fee_only_usd": -8166.84,
+        "observed_distinct_utc_entry_days": 19,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "TREND-v1",
-        "stress_model_covered": 84,
-        "stress_model_net_usd": -8625.51
+        "stress_model_covered": 85,
+        "stress_model_net_usd": -9065.16
       },
       {
         "fees_usd": 540.0,
@@ -2814,20 +2817,20 @@
       }
     ],
     "closed_partition": {
-      "all_closed": 31372,
-      "eligible_confirmed_15m_candle": 14592,
-      "eligible_direction_proxy_or_neutral_control": 14952,
-      "eligible_timely_perpetual_closed": 29544,
+      "all_closed": 31383,
+      "eligible_confirmed_15m_candle": 14597,
+      "eligible_direction_proxy_or_neutral_control": 14958,
+      "eligible_timely_perpetual_closed": 29555,
       "late_perpetual_closed": 1828
     },
     "eligible_cost_reconciliation": {
-      "fees_usd": 295440.0,
-      "gross_before_fee_usd": -85871.44,
-      "mean_net_usd_per_hypothesis": -12.9066,
-      "n": 29544,
-      "net_fee_only_usd": -381311.44,
-      "stress_model_covered": 29537,
-      "stress_model_net_usd": -677252.13
+      "fees_usd": 295550.0,
+      "gross_before_fee_usd": -83890.54,
+      "mean_net_usd_per_hypothesis": -12.8385,
+      "n": 29555,
+      "net_fee_only_usd": -379440.54,
+      "stress_model_covered": 29548,
+      "stress_model_net_usd": -675517.17
     },
     "not_a_funded_wallet": true,
     "not_independent_trials": true,
@@ -2838,41 +2841,79 @@
     "unknown_unverified_advanced_not_promoted": true,
     "version": "immutable-v8-cohort-provenance-and-cost-v1"
   },
-  "created": 31746,
+  "created": 31777,
   "economic_reconciliation": {
     "cumulative_drawdown_not_investable_account_drawdown": true,
     "fee_only_break_even_pct_per_entry": 0.1,
-    "gross_before_fee_price_pnl_usd": -100907.31,
-    "net_fee_only_pnl_usd": -414627.31,
+    "gross_before_fee_price_pnl_usd": -98926.41,
+    "net_fee_only_pnl_usd": -412756.41,
     "not_wallet_equity": true,
     "real_spread_funding_and_impact_unproven": true,
-    "roundtrip_fee_usd": 313720.0
+    "roundtrip_fee_usd": 313830.0
   },
   "eligible_perpetual_timely": {
-    "expectancy_R": -0.08604,
-    "n": 29544,
-    "net_R": -2542.07629
+    "expectancy_R": -0.08559,
+    "n": 29555,
+    "net_R": -2529.60359
   },
   "entry_mode": "legacy-explore",
   "entry_opportunity_audit": {
-    "advanced_source_checks": 0,
-    "band_signal_gate_counts": {},
-    "concurrent_open_before_tick": 374,
-    "concurrent_open_remaining_before_tick": 676,
-    "confirmed_arm_opportunities": {},
+    "advanced_source_checks": 45,
+    "band_signal_gate_counts": {
+      "band_previous_std_positive": 45,
+      "bandrev_complete_long": 0,
+      "bandrev_complete_short": 0,
+      "bandrev_current_reentry_long": 0,
+      "bandrev_current_reentry_short": 0,
+      "bandrev_directional_recovery_long": 0,
+      "bandrev_directional_recovery_short": 0,
+      "bandrev_previous_outside_long": 0,
+      "bandrev_previous_outside_short": 15,
+      "bandsweep_confirmed_long": 0,
+      "bandsweep_confirmed_short": 0
+    },
+    "concurrent_open_before_tick": 363,
+    "concurrent_open_remaining_before_tick": 687,
+    "confirmed_arm_opportunities": {
+      "ATRCHAN-v1": 3,
+      "BR-v3": 1,
+      "BRREG-v1": 1,
+      "COMPBR-v1": 1,
+      "DC-v1": 2,
+      "EFFTREND-v1": 1,
+      "FB-v3": 7,
+      "IBREAK-v1": 1,
+      "IMPULSE-v1": 1,
+      "LS-v3": 4,
+      "MR-v3": 3,
+      "RANGE-v1": 3,
+      "RSI-v1": 13,
+      "RSITREND-v1": 14,
+      "TREND-v1": 1,
+      "VOLFADE-v1": 1
+    },
     "daily_new_entry_quota": 1750,
-    "effective_new_slots_before_signal_checks": 0,
-    "eligible_quote_symbols": 0,
+    "effective_new_slots_before_signal_checks": 44,
+    "eligible_quote_symbols": 45,
     "entry_mode": "legacy-explore",
     "fresh_entry_quote_rejections": 0,
-    "new_paper_opens_by_arm": {},
-    "no_confirmed_signal_baseline_probes_allowed": 0,
-    "no_confirmed_signal_proxy_slots_skipped": 0,
-    "no_new_entry_reason": "DAILY_OPEN_QUOTA_REACHED",
+    "new_paper_opens_by_arm": {
+      "BR-v3": 1,
+      "CTRL-v1": 8,
+      "FB-v3": 6,
+      "LS-v3": 2,
+      "MR-proxy-v1": 2,
+      "RANGE-v1": 1,
+      "RSI-v1": 8,
+      "RSITREND-v1": 3
+    },
+    "no_confirmed_signal_baseline_probes_allowed": 3,
+    "no_confirmed_signal_proxy_slots_skipped": 14,
+    "no_new_entry_reason": null,
     "no_signal_baseline_probe_percent": 20,
     "note": "Counts ONLY inspected real opportunities. Missing/failed OKX candles are excluded and never counted as genuine no-signal. A 20%-of-unique-symbol-slot fallback probe is permitted after valid candles with NO confirmed signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
     "paper_only": true,
-    "quiet_24h_quotes_admitted": 0,
+    "quiet_24h_quotes_admitted": 1,
     "recent_7d_confirmed_open_counts": {
       "ATRCHAN-v1": 420,
       "BANDREV-v1": 90,
@@ -2903,12 +2944,2001 @@
     },
     "requested_new_slots": 44,
     "scope": "real fresh market quote, distinct unsampled instrument/15m slot, within quota",
-    "screened_symbol_slots": 0,
+    "screened_symbol_slots": 45,
     "skipped_by_symbol_slot_or_capacity": 0,
-    "slots_with_any_confirmed_signal": 0,
-    "slots_with_no_confirmed_signal": 0,
+    "slots_with_any_confirmed_signal": 28,
+    "slots_with_no_confirmed_signal": 17,
     "symbol_decision_schema": "per-symbol-opportunity-v1",
-    "symbol_decisions": [],
+    "symbol_decisions": [
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": -1.182187,
+        "provider": "okx-swap",
+        "quote_age_seconds": -5.543,
+        "quote_volume_24h": 9915869331.94,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": -1.182187,
+            "provider": "okx-swap",
+            "quote_age_seconds": -5.543,
+            "quote_volume_24h": 9915869331.94,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "BTC"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": -0.356537,
+        "provider": "okx-swap",
+        "quote_age_seconds": -8.642,
+        "quote_volume_24h": 8831460650.06,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": -0.356537,
+            "provider": "okx-swap",
+            "quote_age_seconds": -8.642,
+            "quote_volume_24h": 8831460650.06,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "ETH"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 0.679703,
+        "provider": "okx-swap",
+        "quote_age_seconds": -6.249,
+        "quote_volume_24h": 1448135672.22,
+        "record_id": "LAB-31871",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 0.679703,
+            "provider": "okx-swap",
+            "quote_age_seconds": -6.249,
+            "quote_volume_24h": 1448135672.22,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31871",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "SOL"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 1.325388,
+        "provider": "okx-swap",
+        "quote_age_seconds": -8.649,
+        "quote_volume_24h": 155882205.12,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 1.325388,
+            "provider": "okx-swap",
+            "quote_age_seconds": -8.649,
+            "quote_volume_24h": 155882205.12,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "BNB"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 1.470113,
+        "provider": "okx-swap",
+        "quote_age_seconds": -8.646,
+        "quote_volume_24h": 404049661.36,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 1.470113,
+            "provider": "okx-swap",
+            "quote_age_seconds": -8.646,
+            "quote_volume_24h": 404049661.36,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "XRP"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 2.359727,
+        "provider": "okx-swap",
+        "quote_age_seconds": -8.546,
+        "quote_volume_24h": 50657171.84,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 2.359727,
+            "provider": "okx-swap",
+            "quote_age_seconds": -8.546,
+            "quote_volume_24h": 50657171.84,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "ADA"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 0.809878,
+        "provider": "okx-swap",
+        "quote_age_seconds": -9.049,
+        "quote_volume_24h": 256244411.39,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 0.809878,
+            "provider": "okx-swap",
+            "quote_age_seconds": -9.049,
+            "quote_volume_24h": 256244411.39,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "DOGE"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 12,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 8.320769,
+        "provider": "okx-swap",
+        "quote_age_seconds": -9.449,
+        "quote_volume_24h": 66560359.48,
+        "record_id": "LAB-31877",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 8.320769,
+            "provider": "okx-swap",
+            "quote_age_seconds": -9.449,
+            "quote_volume_24h": 66560359.48,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 12,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31877",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "LINK"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 4,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.589124,
+        "provider": "okx-swap",
+        "quote_age_seconds": -9.045,
+        "quote_volume_24h": 35123908.87,
+        "record_id": "LAB-31892",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.589124,
+            "provider": "okx-swap",
+            "quote_age_seconds": -9.045,
+            "quote_volume_24h": 35123908.87,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 4,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31892",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "AVAX"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "FB-v3"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 12,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.863793,
+        "provider": "okx-swap",
+        "quote_age_seconds": -6.45,
+        "quote_volume_24h": 101705194.61,
+        "record_id": "LAB-31889",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.863793,
+            "provider": "okx-swap",
+            "quote_age_seconds": -6.45,
+            "quote_volume_24h": 101705194.61,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "FB-v3"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 12,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31889",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "FB-v3"
+          }
+        ],
+        "strategy": "FB-v3",
+        "symbol": "SUI"
+      },
+      {
+        "candidate_count": 5,
+        "confirmed_arms": [
+          "ATRCHAN-v1",
+          "DC-v1",
+          "MR-v3",
+          "RANGE-v1",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 12,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 1.658163,
+        "provider": "okx-swap",
+        "quote_age_seconds": -9.63,
+        "quote_volume_24h": 35071329.07,
+        "record_id": "LAB-31881",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 1.658163,
+            "provider": "okx-swap",
+            "quote_age_seconds": -9.63,
+            "quote_volume_24h": 35071329.07,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 5,
+            "confirmed_arms": [
+              "ATRCHAN-v1",
+              "DC-v1",
+              "MR-v3",
+              "RANGE-v1",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 12,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31881",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "LTC"
+      },
+      {
+        "candidate_count": 4,
+        "confirmed_arms": [
+          "IBREAK-v1",
+          "IMPULSE-v1",
+          "RSITREND-v1",
+          "TREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": -8.273532,
+        "provider": "okx-swap",
+        "quote_age_seconds": -9.642,
+        "quote_volume_24h": 83556593.15,
+        "record_id": "LAB-31868",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": -8.273532,
+            "provider": "okx-swap",
+            "quote_age_seconds": -9.642,
+            "quote_volume_24h": 83556593.15,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 4,
+            "confirmed_arms": [
+              "IBREAK-v1",
+              "IMPULSE-v1",
+              "RSITREND-v1",
+              "TREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31868",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "TRX"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 7.429453,
+        "provider": "okx-swap",
+        "quote_age_seconds": -9.647,
+        "quote_volume_24h": 21478867.32,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 7.429453,
+            "provider": "okx-swap",
+            "quote_age_seconds": -9.647,
+            "quote_volume_24h": 21478867.32,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "DOT"
+      },
+      {
+        "candidate_count": 3,
+        "confirmed_arms": [
+          "MR-v3",
+          "RSI-v1",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 12,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 10.698758,
+        "provider": "okx-swap",
+        "quote_age_seconds": -10.623,
+        "quote_volume_24h": 156054508.64,
+        "record_id": "LAB-31885",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 10.698758,
+            "provider": "okx-swap",
+            "quote_age_seconds": -10.623,
+            "quote_volume_24h": 156054508.64,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 3,
+            "confirmed_arms": [
+              "MR-v3",
+              "RSI-v1",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 12,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31885",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "UNI"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 2,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 8.313798,
+        "provider": "okx-swap",
+        "quote_age_seconds": -10.047,
+        "quote_volume_24h": 46709193.74,
+        "record_id": "LAB-31880",
+        "side": "LONG",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 8.313798,
+            "provider": "okx-swap",
+            "quote_age_seconds": -10.047,
+            "quote_volume_24h": 46709193.74,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 2,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31880",
+            "side": "LONG",
+            "stage": "entry",
+            "strategy": "RSITREND-v1"
+          }
+        ],
+        "strategy": "RSITREND-v1",
+        "symbol": "AAVE"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 6.129511,
+        "provider": "okx-swap",
+        "quote_age_seconds": -6.55,
+        "quote_volume_24h": 238781340.28,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 6.129511,
+            "provider": "okx-swap",
+            "quote_age_seconds": -6.55,
+            "quote_volume_24h": 238781340.28,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "NEAR"
+      },
+      {
+        "candidate_count": 2,
+        "confirmed_arms": [
+          "RSI-v1",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 12,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.755869,
+        "provider": "okx-swap",
+        "quote_age_seconds": -9.646,
+        "quote_volume_24h": 6049651.79,
+        "record_id": "LAB-31865",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.755869,
+            "provider": "okx-swap",
+            "quote_age_seconds": -9.646,
+            "quote_volume_24h": 6049651.79,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 2,
+            "confirmed_arms": [
+              "RSI-v1",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 12,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31865",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "ATOM"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 4,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 6.823821,
+        "provider": "okx-swap",
+        "quote_age_seconds": -11.043,
+        "quote_volume_24h": 41460997.53,
+        "record_id": "LAB-31876",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 6.823821,
+            "provider": "okx-swap",
+            "quote_age_seconds": -11.043,
+            "quote_volume_24h": 41460997.53,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 4,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31876",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "MR-proxy-v1"
+          }
+        ],
+        "strategy": "MR-proxy-v1",
+        "symbol": "ARB"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 2,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 19.982159,
+        "provider": "okx-swap",
+        "quote_age_seconds": -11.648,
+        "quote_volume_24h": 38313515.04,
+        "record_id": "LAB-31888",
+        "side": "LONG",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 19.982159,
+            "provider": "okx-swap",
+            "quote_age_seconds": -11.648,
+            "quote_volume_24h": 38313515.04,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 2,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31888",
+            "side": "LONG",
+            "stage": "entry",
+            "strategy": "RSITREND-v1"
+          }
+        ],
+        "strategy": "RSITREND-v1",
+        "symbol": "OP"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "FB-v3"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": -1.539096,
+        "provider": "okx-swap",
+        "quote_age_seconds": -11.742,
+        "quote_volume_24h": 16610257.67,
+        "record_id": "LAB-31875",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": -1.539096,
+            "provider": "okx-swap",
+            "quote_age_seconds": -11.742,
+            "quote_volume_24h": 16610257.67,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "FB-v3"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31875",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "FB-v3"
+          }
+        ],
+        "strategy": "FB-v3",
+        "symbol": "INJ"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 5.716142,
+        "provider": "okx-swap",
+        "quote_age_seconds": -11.404,
+        "quote_volume_24h": 14326838.23,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 5.716142,
+            "provider": "okx-swap",
+            "quote_age_seconds": -11.404,
+            "quote_volume_24h": 14326838.23,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "APT"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 5.459177,
+        "provider": "okx-swap",
+        "quote_age_seconds": -11.65,
+        "quote_volume_24h": 72412711.21,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 5.459177,
+            "provider": "okx-swap",
+            "quote_age_seconds": -11.65,
+            "quote_volume_24h": 72412711.21,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "FIL"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 9.145072,
+        "provider": "okx-swap",
+        "quote_age_seconds": -11.649,
+        "quote_volume_24h": 568631026.55,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 9.145072,
+            "provider": "okx-swap",
+            "quote_age_seconds": -11.649,
+            "quote_volume_24h": 568631026.55,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "PEPE"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 6.726727,
+        "provider": "okx-swap",
+        "quote_age_seconds": -12.648,
+        "quote_volume_24h": 7747837.64,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 6.726727,
+            "provider": "okx-swap",
+            "quote_age_seconds": -12.648,
+            "quote_volume_24h": 7747837.64,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "WIF"
+      },
+      {
+        "decision": "QUOTE_REJECTED",
+        "last_stage": "quote",
+        "provider": "kraken-spot-proxy",
+        "quote_age_seconds": -13.215,
+        "quote_volume_24h": 895020.03,
+        "reason": "LOW_QUOTE_VOLUME",
+        "stages": [
+          {
+            "outcome": "QUOTE_REJECTED",
+            "provider": "kraken-spot-proxy",
+            "quote_age_seconds": -13.215,
+            "quote_volume_24h": 895020.03,
+            "reason": "LOW_QUOTE_VOLUME",
+            "stage": "quote"
+          }
+        ],
+        "symbol": "TON"
+      },
+      {
+        "candidate_count": 3,
+        "confirmed_arms": [
+          "LS-v3",
+          "RSI-v1",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 24,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 1.889986,
+        "provider": "okx-swap",
+        "quote_age_seconds": -12.542,
+        "quote_volume_24h": 9729464.52,
+        "record_id": "LAB-31882",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 1.889986,
+            "provider": "okx-swap",
+            "quote_age_seconds": -12.542,
+            "quote_volume_24h": 9729464.52,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 3,
+            "confirmed_arms": [
+              "LS-v3",
+              "RSI-v1",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 24,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31882",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "ETC"
+      },
+      {
+        "candidate_count": 7,
+        "confirmed_arms": [
+          "ATRCHAN-v1",
+          "BR-v3",
+          "BRREG-v1",
+          "COMPBR-v1",
+          "DC-v1",
+          "EFFTREND-v1",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 8.138767,
+        "provider": "okx-swap",
+        "quote_age_seconds": -13.346,
+        "quote_volume_24h": 86420330.95,
+        "record_id": "LAB-31878",
+        "side": "LONG",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 8.138767,
+            "provider": "okx-swap",
+            "quote_age_seconds": -13.346,
+            "quote_volume_24h": 86420330.95,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 7,
+            "confirmed_arms": [
+              "ATRCHAN-v1",
+              "BR-v3",
+              "BRREG-v1",
+              "COMPBR-v1",
+              "DC-v1",
+              "EFFTREND-v1",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31878",
+            "side": "LONG",
+            "stage": "entry",
+            "strategy": "BR-v3"
+          }
+        ],
+        "strategy": "BR-v3",
+        "symbol": "BCH"
+      },
+      {
+        "candidate_count": 3,
+        "confirmed_arms": [
+          "MR-v3",
+          "RANGE-v1",
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 24,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 5.143805,
+        "provider": "okx-swap",
+        "quote_age_seconds": -13.243,
+        "quote_volume_24h": 25251996.04,
+        "record_id": "LAB-31867",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 5.143805,
+            "provider": "okx-swap",
+            "quote_age_seconds": -13.243,
+            "quote_volume_24h": 25251996.04,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 3,
+            "confirmed_arms": [
+              "MR-v3",
+              "RANGE-v1",
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 24,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31867",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RANGE-v1"
+          }
+        ],
+        "strategy": "RANGE-v1",
+        "symbol": "XLM"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 4.652848,
+        "provider": "okx-swap",
+        "quote_age_seconds": -13.043,
+        "quote_volume_24h": 12073230.57,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 4.652848,
+            "provider": "okx-swap",
+            "quote_age_seconds": -13.043,
+            "quote_volume_24h": 12073230.57,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "HBAR"
+      },
+      {
+        "candidate_count": 2,
+        "confirmed_arms": [
+          "FB-v3",
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 2,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.050564,
+        "provider": "okx-swap",
+        "quote_age_seconds": -5.447,
+        "quote_volume_24h": 5178274.49,
+        "record_id": "LAB-31891",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.050564,
+            "provider": "okx-swap",
+            "quote_age_seconds": -5.447,
+            "quote_volume_24h": 5178274.49,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 2,
+            "confirmed_arms": [
+              "FB-v3",
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 2,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31891",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "FB-v3"
+          }
+        ],
+        "strategy": "FB-v3",
+        "symbol": "SEI"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 5.19103,
+        "provider": "okx-swap",
+        "quote_age_seconds": -7.044,
+        "quote_volume_24h": 15229552.01,
+        "record_id": "LAB-31887",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 5.19103,
+            "provider": "okx-swap",
+            "quote_age_seconds": -7.044,
+            "quote_volume_24h": 15229552.01,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31887",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "ICP"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 2.108305,
+        "provider": "okx-swap",
+        "quote_age_seconds": -14.142,
+        "quote_volume_24h": 3853179.6,
+        "record_id": "LAB-31886",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 2.108305,
+            "provider": "okx-swap",
+            "quote_age_seconds": -14.142,
+            "quote_volume_24h": 3853179.6,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31886",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "ALGO"
+      },
+      {
+        "decision": "QUOTE_REJECTED",
+        "last_stage": "quote",
+        "provider": "kraken-spot-proxy",
+        "quote_age_seconds": -14.554,
+        "quote_volume_24h": 610957.32,
+        "reason": "LOW_QUOTE_VOLUME",
+        "stages": [
+          {
+            "outcome": "QUOTE_REJECTED",
+            "provider": "kraken-spot-proxy",
+            "quote_age_seconds": -14.554,
+            "quote_volume_24h": 610957.32,
+            "reason": "LOW_QUOTE_VOLUME",
+            "stage": "quote"
+          }
+        ],
+        "symbol": "RUNE"
+      },
+      {
+        "candidate_count": 3,
+        "confirmed_arms": [
+          "LS-v3",
+          "RSI-v1",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 4,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 4.576475,
+        "provider": "okx-swap",
+        "quote_age_seconds": -13.449,
+        "quote_volume_24h": 4802197.67,
+        "record_id": "LAB-31869",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 4.576475,
+            "provider": "okx-swap",
+            "quote_age_seconds": -13.449,
+            "quote_volume_24h": 4802197.67,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 3,
+            "confirmed_arms": [
+              "LS-v3",
+              "RSI-v1",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 4,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31869",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "LS-v3"
+          }
+        ],
+        "strategy": "LS-v3",
+        "symbol": "JUP"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.359173,
+        "provider": "okx-swap",
+        "quote_age_seconds": -14.45,
+        "quote_volume_24h": 22323452.64,
+        "record_id": "LAB-31879",
+        "side": "LONG",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.359173,
+            "provider": "okx-swap",
+            "quote_age_seconds": -14.45,
+            "quote_volume_24h": 22323452.64,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31879",
+            "side": "LONG",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "SHIB"
+      },
+      {
+        "candidate_count": 3,
+        "confirmed_arms": [
+          "ATRCHAN-v1",
+          "RSITREND-v1",
+          "VOLFADE-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 12,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": -5.39119,
+        "provider": "okx-swap",
+        "quote_age_seconds": -14.051,
+        "quote_volume_24h": 29529333.06,
+        "record_id": "LAB-31874",
+        "side": "LONG",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": -5.39119,
+            "provider": "okx-swap",
+            "quote_age_seconds": -14.051,
+            "quote_volume_24h": 29529333.06,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 3,
+            "confirmed_arms": [
+              "ATRCHAN-v1",
+              "RSITREND-v1",
+              "VOLFADE-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 12,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31874",
+            "side": "LONG",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "CRV"
+      },
+      {
+        "decision": "QUOTE_REJECTED",
+        "last_stage": "quote",
+        "provider": "okx-swap",
+        "quote_age_seconds": -14.445,
+        "quote_volume_24h": 1059343.9,
+        "reason": "LOW_QUOTE_VOLUME",
+        "stages": [
+          {
+            "outcome": "QUOTE_REJECTED",
+            "provider": "okx-swap",
+            "quote_age_seconds": -14.445,
+            "quote_volume_24h": 1059343.9,
+            "reason": "LOW_QUOTE_VOLUME",
+            "stage": "quote"
+          }
+        ],
+        "symbol": "GRT"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 4,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 8.598835,
+        "provider": "okx-swap",
+        "quote_age_seconds": -4.844,
+        "quote_volume_24h": 9959773.55,
+        "record_id": "LAB-31864",
+        "side": "LONG",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 8.598835,
+            "provider": "okx-swap",
+            "quote_age_seconds": -4.844,
+            "quote_volume_24h": 9959773.55,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 4,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31864",
+            "side": "LONG",
+            "stage": "entry",
+            "strategy": "RSITREND-v1"
+          }
+        ],
+        "strategy": "RSITREND-v1",
+        "symbol": "POL"
+      },
+      {
+        "candidate_count": 3,
+        "confirmed_arms": [
+          "RANGE-v1",
+          "RSI-v1",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 4.842932,
+        "provider": "okx-swap",
+        "quote_age_seconds": -14.452,
+        "quote_volume_24h": 4886920.22,
+        "record_id": "LAB-31883",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 4.842932,
+            "provider": "okx-swap",
+            "quote_age_seconds": -14.452,
+            "quote_volume_24h": 4886920.22,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 3,
+            "confirmed_arms": [
+              "RANGE-v1",
+              "RSI-v1",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31883",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "RENDER"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "FB-v3"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 2,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.009674,
+        "provider": "okx-swap",
+        "quote_age_seconds": -15.351,
+        "quote_volume_24h": 3647393.76,
+        "record_id": "LAB-31884",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.009674,
+            "provider": "okx-swap",
+            "quote_age_seconds": -15.351,
+            "quote_volume_24h": 3647393.76,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "FB-v3"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 2,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31884",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "FB-v3"
+          }
+        ],
+        "strategy": "FB-v3",
+        "symbol": "STX"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "FB-v3"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 4,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": -2.5878,
+        "provider": "okx-swap",
+        "quote_age_seconds": -15.65,
+        "quote_volume_24h": 20461845.55,
+        "record_id": "LAB-31872",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": -2.5878,
+            "provider": "okx-swap",
+            "quote_age_seconds": -15.65,
+            "quote_volume_24h": 20461845.55,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "FB-v3"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 4,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31872",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "CTRL-v1"
+          }
+        ],
+        "strategy": "CTRL-v1",
+        "symbol": "TIA"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 8,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 2.026667,
+        "provider": "okx-swap",
+        "quote_age_seconds": -15.643,
+        "quote_volume_24h": 6773527.44,
+        "record_id": "LAB-31873",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 2.026667,
+            "provider": "okx-swap",
+            "quote_age_seconds": -15.643,
+            "quote_volume_24h": 6773527.44,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 8,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31873",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "JTO"
+      },
+      {
+        "candidate_count": 3,
+        "confirmed_arms": [
+          "FB-v3",
+          "LS-v3",
+          "RSITREND-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 1,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": -2.443009,
+        "provider": "okx-swap",
+        "quote_age_seconds": -4.748,
+        "quote_volume_24h": 3436498.65,
+        "record_id": "LAB-31862",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": -2.443009,
+            "provider": "okx-swap",
+            "quote_age_seconds": -4.748,
+            "quote_volume_24h": 3436498.65,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 3,
+            "confirmed_arms": [
+              "FB-v3",
+              "LS-v3",
+              "RSITREND-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 1,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31862",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "FB-v3"
+          }
+        ],
+        "strategy": "FB-v3",
+        "symbol": "IMX"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "RSI-v1"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 12,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.018808,
+        "provider": "okx-swap",
+        "quote_age_seconds": -6.544,
+        "quote_volume_24h": 7685906.32,
+        "record_id": "LAB-31866",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.018808,
+            "provider": "okx-swap",
+            "quote_age_seconds": -6.544,
+            "quote_volume_24h": 7685906.32,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "RSI-v1"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 12,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31866",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "RSI-v1"
+          }
+        ],
+        "strategy": "RSI-v1",
+        "symbol": "PYTH"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "FB-v3"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 24,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 3.599756,
+        "provider": "okx-swap",
+        "quote_age_seconds": -7.143,
+        "quote_volume_24h": 8079152.6,
+        "record_id": "LAB-31890",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 3.599756,
+            "provider": "okx-swap",
+            "quote_age_seconds": -7.143,
+            "quote_volume_24h": 8079152.6,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "FB-v3"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 24,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31890",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "FB-v3"
+          }
+        ],
+        "strategy": "FB-v3",
+        "symbol": "LDO"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 2,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 7.602957,
+        "provider": "okx-swap",
+        "quote_age_seconds": -16.135,
+        "quote_volume_24h": 158393721.95,
+        "record_id": "LAB-31863",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 7.602957,
+            "provider": "okx-swap",
+            "quote_age_seconds": -16.135,
+            "quote_volume_24h": 158393721.95,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 2,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31863",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "MR-proxy-v1"
+          }
+        ],
+        "strategy": "MR-proxy-v1",
+        "symbol": "WLD"
+      },
+      {
+        "candidate_count": 0,
+        "confirmed_arms": [],
+        "decision": "NO_SIGNAL_NOT_SAMPLED",
+        "last_stage": "sampling",
+        "market_type": "perpetual",
+        "pct24h": 9.242144,
+        "provider": "okx-swap",
+        "quote_age_seconds": -5.644,
+        "quote_volume_24h": 133272725.94,
+        "reason": "predeclared_20_percent_control_sampling",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 9.242144,
+            "provider": "okx-swap",
+            "quote_age_seconds": -5.644,
+            "quote_volume_24h": 133272725.94,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 0,
+            "confirmed_arms": [],
+            "outcome": "VALID_NO_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "outcome": "NO_SIGNAL_NOT_SAMPLED",
+            "reason": "predeclared_20_percent_control_sampling",
+            "stage": "sampling"
+          }
+        ],
+        "symbol": "ENA"
+      },
+      {
+        "candidate_count": 1,
+        "confirmed_arms": [
+          "LS-v3"
+        ],
+        "decision": "PAPER_OPEN_CREATED",
+        "horizon_hours": 8,
+        "last_stage": "entry",
+        "market_type": "perpetual",
+        "pct24h": 1.246679,
+        "provider": "okx-swap",
+        "quote_age_seconds": -15.549,
+        "quote_volume_24h": 2536245.38,
+        "record_id": "LAB-31870",
+        "side": "SHORT",
+        "stages": [
+          {
+            "market_type": "perpetual",
+            "outcome": "ELIGIBLE_QUOTE",
+            "pct24h": 1.246679,
+            "provider": "okx-swap",
+            "quote_age_seconds": -15.549,
+            "quote_volume_24h": 2536245.38,
+            "stage": "quote"
+          },
+          {
+            "candidate_count": 1,
+            "confirmed_arms": [
+              "LS-v3"
+            ],
+            "outcome": "CONFIRMED_SIGNAL",
+            "stage": "signal"
+          },
+          {
+            "horizon_hours": 8,
+            "outcome": "PAPER_OPEN_CREATED",
+            "record_id": "LAB-31870",
+            "side": "SHORT",
+            "stage": "entry",
+            "strategy": "LS-v3"
+          }
+        ],
+        "strategy": "LS-v3",
+        "symbol": "ENS"
+      }
+    ],
     "training_only_negative_arms_v1": [
       "ATRCHAN-v1",
       "BANDSWEEP-v1",
@@ -2922,8 +4952,8 @@
     ],
     "training_or_monitoring_returns_used": false,
     "unavailable_confirmed_candle_slots": 0,
-    "utc_day_opens_before_tick": 1750,
-    "utc_day_quota_remaining_before_tick": 0,
+    "utc_day_opens_before_tick": 0,
+    "utc_day_quota_remaining_before_tick": 1750,
     "version": "confirmed-entry-opportunity-v1"
   },
   "entry_safety_policy": {
@@ -2940,8 +4970,8 @@
   },
   "evidence_quality": {
     "distinct_utc_days": 23,
-    "eligible_share_of_all_closes": 0.9417,
-    "eligible_timely_perpetual_closes": 29544,
+    "eligible_share_of_all_closes": 0.9418,
+    "eligible_timely_perpetual_closes": 29555,
     "market_breadth": {
       "days_with_all_four_utc_dayparts": 14,
       "days_with_both_up_and_down_regimes": 23,
@@ -3155,7 +5185,7 @@
         {
           "distinct_frozen_strata": 24,
           "distinct_sectors": 9,
-          "eligible_closes": 1335,
+          "eligible_closes": 1346,
           "entry_regimes": [
             "24h_down",
             "24h_up"
@@ -3173,7 +5203,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-10-30T23:57:10.280769+00:00",
+      "as_of_utc": "2026-10-31T00:07:10.621087+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 0,
@@ -3183,7 +5213,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 16,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 9,
@@ -3203,8 +5233,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 720,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 685,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -3429,8 +5459,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 403,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 348,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 16,
@@ -3447,7 +5477,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 12,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 2,
@@ -3629,8 +5659,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 86,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 82,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 9,
@@ -3647,7 +5677,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 12,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 4,
@@ -3834,8 +5864,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 151,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 141,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 8,
@@ -3852,7 +5882,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 23,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 14,
@@ -3860,24 +5890,24 @@
           "distinct_entry_utc_days": 23,
           "distinct_iso_weeks": 4,
           "distinct_weekdays": 7,
-          "effective_equally_weighted_day_clusters_upper_bound": 16.72,
-          "eligible_closes": 4604,
+          "effective_equally_weighted_day_clusters_upper_bound": 16.73,
+          "eligible_closes": 4605,
           "first_entry_utc_day": "2026-10-08",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
-          "largest_single_day_trade_share": 0.0954,
+          "largest_single_day_trade_share": 0.0953,
           "latest_entry_utc_day": "2026-10-30",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [],
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 2787,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 2349,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 4604,
+            "eligible_closes": 4605,
             "observed_entry_utc_days": 23
           },
           "recent_30_observed_entry_days": [
@@ -4176,7 +6206,7 @@
               "utc_day": "2026-10-29"
             },
             {
-              "eligible_closes": 192,
+              "eligible_closes": 193,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -4192,8 +6222,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1123,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 956,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 23,
@@ -4210,7 +6240,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 23,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 9,
@@ -4230,8 +6260,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 371,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 361,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -4537,8 +6567,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 236,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 196,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 19,
@@ -4555,7 +6585,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 13,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 7,
@@ -4757,8 +6787,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 163,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 131,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 11,
@@ -4775,7 +6805,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 16,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 6,
@@ -4795,8 +6825,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 325,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 318,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -5012,8 +7042,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 193,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 153,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 14,
@@ -5030,7 +7060,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 20,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 4,
@@ -5050,8 +7080,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 260,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 248,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -5295,8 +7325,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 151,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 148,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 15,
@@ -5313,7 +7343,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 23,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 13,
@@ -5322,7 +7352,7 @@
           "distinct_iso_weeks": 4,
           "distinct_weekdays": 7,
           "effective_equally_weighted_day_clusters_upper_bound": 19.52,
-          "eligible_closes": 5823,
+          "eligible_closes": 5825,
           "first_entry_utc_day": "2026-10-08",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
@@ -5333,12 +7363,12 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 4114,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 3721,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 5823,
+            "eligible_closes": 5825,
             "observed_entry_utc_days": 23
           },
           "recent_30_observed_entry_days": [
@@ -5635,7 +7665,7 @@
               "utc_day": "2026-10-29"
             },
             {
-              "eligible_closes": 247,
+              "eligible_closes": 249,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -5651,8 +7681,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1994,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 1698,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 21,
@@ -5669,7 +7699,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 16,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 9,
@@ -5689,8 +7719,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 387,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 377,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -5912,8 +7942,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 250,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 211,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 15,
@@ -5930,7 +7960,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 12,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 7,
@@ -6121,8 +8151,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 187,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 129,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 11,
@@ -6139,7 +8169,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 22,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 11,
@@ -6148,23 +8178,23 @@
           "distinct_iso_weeks": 4,
           "distinct_weekdays": 7,
           "effective_equally_weighted_day_clusters_upper_bound": 16.69,
-          "eligible_closes": 657,
+          "eligible_closes": 658,
           "first_entry_utc_day": "2026-10-09",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
-          "largest_single_day_trade_share": 0.0913,
+          "largest_single_day_trade_share": 0.0912,
           "latest_entry_utc_day": "2026-10-30",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [],
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 547,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 530,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 657,
+            "eligible_closes": 658,
             "observed_entry_utc_days": 22
           },
           "recent_30_observed_entry_days": [
@@ -6441,7 +8471,7 @@
               "utc_day": "2026-10-29"
             },
             {
-              "eligible_closes": 38,
+              "eligible_closes": 39,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -6457,8 +8487,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 329,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 293,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 21,
@@ -6475,7 +8505,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 12,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 4,
@@ -6659,8 +8689,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 77,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 52,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 10,
@@ -6677,7 +8707,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 16,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 8,
@@ -6697,8 +8727,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 478,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 470,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -6920,8 +8950,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 270,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 231,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 15,
@@ -6938,7 +8968,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 22,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 11,
@@ -6958,8 +8988,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 849,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 817,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -7260,8 +9290,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 443,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 383,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 21,
@@ -7278,7 +9308,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 23,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 14,
@@ -7287,7 +9317,7 @@
           "distinct_iso_weeks": 4,
           "distinct_weekdays": 7,
           "effective_equally_weighted_day_clusters_upper_bound": 16.72,
-          "eligible_closes": 4525,
+          "eligible_closes": 4528,
           "first_entry_utc_day": "2026-10-08",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
@@ -7298,12 +9328,12 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 2764,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 2334,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 4525,
+            "eligible_closes": 4528,
             "observed_entry_utc_days": 23
           },
           "recent_30_observed_entry_days": [
@@ -7602,7 +9632,7 @@
               "utc_day": "2026-10-29"
             },
             {
-              "eligible_closes": 206,
+              "eligible_closes": 209,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -7618,8 +9648,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1133,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 972,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 22,
@@ -7636,7 +9666,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 23,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 7,
@@ -7656,8 +9686,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 712,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 687,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -7964,8 +9994,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 383,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 353,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 20,
@@ -7982,7 +10012,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 23,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 8,
@@ -8002,8 +10032,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 567,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 548,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -8301,8 +10331,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 321,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 304,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 20,
@@ -8319,7 +10349,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 22,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 10,
@@ -8328,23 +10358,23 @@
           "distinct_iso_weeks": 4,
           "distinct_weekdays": 7,
           "effective_equally_weighted_day_clusters_upper_bound": 11.97,
-          "eligible_closes": 1440,
+          "eligible_closes": 1442,
           "first_entry_utc_day": "2026-10-09",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
-          "largest_single_day_trade_share": 0.1583,
+          "largest_single_day_trade_share": 0.1581,
           "latest_entry_utc_day": "2026-10-30",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [],
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 1194,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 1147,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 1440,
+            "eligible_closes": 1442,
             "observed_entry_utc_days": 22
           },
           "recent_30_observed_entry_days": [
@@ -8621,7 +10651,7 @@
               "utc_day": "2026-10-29"
             },
             {
-              "eligible_closes": 133,
+              "eligible_closes": 135,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -8637,8 +10667,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 751,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 525,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 20,
@@ -8655,7 +10685,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 15,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 10,
@@ -8675,8 +10705,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 540,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 522,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -8888,8 +10918,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 332,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 295,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 15,
@@ -8906,7 +10936,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 16,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 9,
@@ -8926,8 +10956,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 2012,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 1887,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -9152,8 +11182,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1023,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 852,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 16,
@@ -9170,7 +11200,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 22,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 8,
@@ -9190,8 +11220,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 398,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 371,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -9484,8 +11514,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 247,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 200,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 17,
@@ -9502,7 +11532,7 @@
           "bidirectional_regime_breadth_ready": false,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 13,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 6,
@@ -9702,8 +11732,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 165,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 146,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 11,
@@ -9720,7 +11750,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 16,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 4,
@@ -9740,8 +11770,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 237,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 226,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -9952,8 +11982,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 135,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 128,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 11,
@@ -9970,7 +12000,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 22,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 8,
@@ -9978,24 +12008,24 @@
           "distinct_entry_utc_days": 22,
           "distinct_iso_weeks": 4,
           "distinct_weekdays": 7,
-          "effective_equally_weighted_day_clusters_upper_bound": 12.33,
-          "eligible_closes": 498,
+          "effective_equally_weighted_day_clusters_upper_bound": 12.35,
+          "eligible_closes": 500,
           "first_entry_utc_day": "2026-10-09",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
-          "largest_single_day_trade_share": 0.1888,
+          "largest_single_day_trade_share": 0.188,
           "latest_entry_utc_day": "2026-10-30",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [],
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 420,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 411,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 498,
+            "eligible_closes": 500,
             "observed_entry_utc_days": 22
           },
           "recent_30_observed_entry_days": [
@@ -10267,7 +12297,7 @@
               "utc_day": "2026-10-29"
             },
             {
-              "eligible_closes": 31,
+              "eligible_closes": 33,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -10282,8 +12312,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 195,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 146,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 20,
@@ -10300,7 +12330,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 21,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 4,
@@ -10320,8 +12350,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 244,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 242,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -10591,8 +12621,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 156,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 140,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 16,
@@ -10609,7 +12639,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 15,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 5,
@@ -10629,8 +12659,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 274,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 267,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -10835,8 +12865,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 136,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 118,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 15,
@@ -10853,7 +12883,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 23,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": true,
           "days_covering_all_four_six_hour_bins": 10,
@@ -10873,8 +12903,8 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 541,
-            "observed_entry_utc_days": 14
+            "eligible_closes": 517,
+            "observed_entry_utc_days": 13
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
@@ -11183,8 +13213,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 316,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 300,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 21,
@@ -11201,7 +13231,7 @@
           "bidirectional_regime_breadth_ready": true,
           "bidirectional_regime_breadth_target_days": 10,
           "calendar_span_days": 12,
-          "completed_utc_day_yesterday": "2026-10-29",
+          "completed_utc_day_yesterday": "2026-10-30",
           "completed_utc_day_yesterday_has_eligible_close": true,
           "data_maturity_ready": false,
           "days_covering_all_four_six_hour_bins": 6,
@@ -11391,8 +13421,8 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 124,
-            "observed_entry_utc_days": 7
+            "eligible_closes": 103,
+            "observed_entry_utc_days": 6
           },
           "six_hour_bin_day_coverage": {
             "00-05_UTC": 11,
@@ -11418,7 +13448,7 @@
         "bidirectional_regime_breadth_ready": true,
         "bidirectional_regime_breadth_target_days": 10,
         "calendar_span_days": 23,
-        "completed_utc_day_yesterday": "2026-10-29",
+        "completed_utc_day_yesterday": "2026-10-30",
         "completed_utc_day_yesterday_has_eligible_close": true,
         "data_maturity_ready": true,
         "days_covering_all_four_six_hour_bins": 14,
@@ -11426,8 +13456,8 @@
         "distinct_entry_utc_days": 23,
         "distinct_iso_weeks": 4,
         "distinct_weekdays": 7,
-        "effective_equally_weighted_day_clusters_upper_bound": 19.07,
-        "eligible_closes": 29544,
+        "effective_equally_weighted_day_clusters_upper_bound": 19.08,
+        "eligible_closes": 29555,
         "first_entry_utc_day": "2026-10-08",
         "four_daypart_breadth_ready": true,
         "four_daypart_breadth_target_days": 6,
@@ -11438,12 +13468,12 @@
         "observed_entry_days_last_7_completed_utc_days": 7,
         "recent_14_calendar_days": {
           "calendar_window_days": 14,
-          "eligible_closes": 22510,
-          "observed_entry_utc_days": 14
+          "eligible_closes": 20804,
+          "observed_entry_utc_days": 13
         },
         "recent_30_calendar_days": {
           "calendar_window_days": 30,
-          "eligible_closes": 29544,
+          "eligible_closes": 29555,
           "observed_entry_utc_days": 23
         },
         "recent_30_observed_entry_days": [
@@ -11744,7 +13774,7 @@
             "utc_day": "2026-10-29"
           },
           {
-            "eligible_closes": 1335,
+            "eligible_closes": 1346,
             "frozen_entry_regimes": [
               "24h_down",
               "24h_up"
@@ -11760,8 +13790,8 @@
         ],
         "recent_7_calendar_days": {
           "calendar_window_days": 7,
-          "eligible_closes": 11473,
-          "observed_entry_utc_days": 7
+          "eligible_closes": 9734,
+          "observed_entry_utc_days": 6
         },
         "six_hour_bin_day_coverage": {
           "00-05_UTC": 23,
@@ -11777,87 +13807,87 @@
   },
   "fixed_horizon_outcomes": {
     "due_unresolved": 0,
-    "eligible_timely_perpetual_closures": 29544,
+    "eligible_timely_perpetual_closures": 29555,
     "entry_regime": {
       "24h_down": {
-        "active": 347,
+        "active": 342,
         "breakeven": 0,
-        "closed": 18965,
-        "closed_expectancy_R": -0.0756,
-        "closed_net_R": -1433.76482,
-        "closed_net_usd": -215064.72,
-        "eligible_after_friction_day_cluster_lcb_R": -0.145837,
-        "eligible_after_friction_expectancy_R": -0.13981,
-        "eligible_after_friction_net_R": -2516.5133,
+        "closed": 18975,
+        "closed_expectancy_R": -0.07481,
+        "closed_net_R": -1419.52896,
+        "closed_net_usd": -212929.34,
+        "eligible_after_friction_day_cluster_lcb_R": -0.145522,
+        "eligible_after_friction_expectancy_R": -0.13899,
+        "eligible_after_friction_net_R": -2503.11594,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 17999,
-        "eligible_timely_perpetual_expectancy_R": -0.07223,
-        "eligible_timely_perpetual_net_R": -1300.07859,
+        "eligible_timely_perpetual_closed": 18009,
+        "eligible_timely_perpetual_expectancy_R": -0.0714,
+        "eligible_timely_perpetual_net_R": -1285.84273,
         "eligible_timely_perpetual_share": 0.9491,
-        "eligible_timely_perpetual_win_rate": 0.4645,
+        "eligible_timely_perpetual_win_rate": 0.4647,
         "late_closes": 966,
         "late_share_of_closed": 0.0509,
-        "losses": 10136,
-        "opened": 19312,
-        "timely_closes": 17999,
-        "win_rate": 0.4655,
-        "wins": 8829
+        "losses": 10138,
+        "opened": 19317,
+        "timely_closes": 18009,
+        "win_rate": 0.4657,
+        "wins": 8837
       },
       "24h_up": {
-        "active": 27,
+        "active": 52,
         "breakeven": 0,
-        "closed": 12407,
-        "closed_expectancy_R": -0.10723,
-        "closed_net_R": -1330.41727,
-        "closed_net_usd": -199562.59,
-        "eligible_after_friction_day_cluster_lcb_R": -0.203983,
-        "eligible_after_friction_expectancy_R": -0.17314,
-        "eligible_after_friction_net_R": -1998.93084,
+        "closed": 12408,
+        "closed_expectancy_R": -0.10736,
+        "closed_net_R": -1332.18044,
+        "closed_net_usd": -199827.07,
+        "eligible_after_friction_day_cluster_lcb_R": -0.204952,
+        "eligible_after_friction_expectancy_R": -0.17329,
+        "eligible_after_friction_net_R": -2000.76184,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 11545,
-        "eligible_timely_perpetual_expectancy_R": -0.10758,
-        "eligible_timely_perpetual_net_R": -1241.99769,
+        "eligible_timely_perpetual_closed": 11546,
+        "eligible_timely_perpetual_expectancy_R": -0.10772,
+        "eligible_timely_perpetual_net_R": -1243.76086,
         "eligible_timely_perpetual_share": 0.9305,
         "eligible_timely_perpetual_win_rate": 0.4491,
         "late_closes": 862,
         "late_share_of_closed": 0.0695,
-        "losses": 6839,
-        "opened": 12434,
-        "timely_closes": 11545,
-        "win_rate": 0.4488,
+        "losses": 6840,
+        "opened": 12460,
+        "timely_closes": 11546,
+        "win_rate": 0.4487,
         "wins": 5568
       }
     },
     "entry_utc_daypart": {
       "00-05 UTC": {
-        "active": 59,
+        "active": 86,
         "breakeven": 0,
-        "closed": 10394,
-        "closed_expectancy_R": -0.06382,
-        "closed_net_R": -663.30176,
-        "closed_net_usd": -99495.26,
-        "eligible_after_friction_day_cluster_lcb_R": -0.157456,
-        "eligible_after_friction_expectancy_R": -0.12646,
-        "eligible_after_friction_net_R": -1224.3895,
+        "closed": 10398,
+        "closed_expectancy_R": -0.06303,
+        "closed_net_R": -655.33947,
+        "closed_net_usd": -98300.92,
+        "eligible_after_friction_day_cluster_lcb_R": -0.156951,
+        "eligible_after_friction_expectancy_R": -0.12562,
+        "eligible_after_friction_net_R": -1216.70722,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 9682,
-        "eligible_timely_perpetual_expectancy_R": -0.06025,
-        "eligible_timely_perpetual_net_R": -583.32495,
+        "eligible_timely_perpetual_closed": 9686,
+        "eligible_timely_perpetual_expectancy_R": -0.0594,
+        "eligible_timely_perpetual_net_R": -575.36265,
         "eligible_timely_perpetual_share": 0.9315,
-        "eligible_timely_perpetual_win_rate": 0.4621,
+        "eligible_timely_perpetual_win_rate": 0.4622,
         "late_closes": 712,
         "late_share_of_closed": 0.0685,
-        "losses": 5579,
-        "opened": 10453,
-        "timely_closes": 9682,
-        "win_rate": 0.4632,
-        "wins": 4815
+        "losses": 5580,
+        "opened": 10484,
+        "timely_closes": 9686,
+        "win_rate": 0.4634,
+        "wins": 4818
       },
       "06-11 UTC": {
         "active": 79,
@@ -11886,65 +13916,65 @@
         "wins": 4949
       },
       "12-17 UTC": {
-        "active": 191,
+        "active": 188,
         "breakeven": 0,
-        "closed": 7085,
-        "closed_expectancy_R": -0.11914,
-        "closed_net_R": -844.12114,
-        "closed_net_usd": -126618.17,
-        "eligible_after_friction_day_cluster_lcb_R": -0.164493,
-        "eligible_after_friction_expectancy_R": -0.18911,
-        "eligible_after_friction_net_R": -1261.20237,
+        "closed": 7088,
+        "closed_expectancy_R": -0.11813,
+        "closed_net_R": -837.29665,
+        "closed_net_usd": -125594.5,
+        "eligible_after_friction_day_cluster_lcb_R": -0.163766,
+        "eligible_after_friction_expectancy_R": -0.18805,
+        "eligible_after_friction_net_R": -1254.69862,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 20,
-        "eligible_timely_perpetual_closed": 6669,
-        "eligible_timely_perpetual_expectancy_R": -0.12199,
-        "eligible_timely_perpetual_net_R": -813.57072,
+        "eligible_timely_perpetual_closed": 6672,
+        "eligible_timely_perpetual_expectancy_R": -0.12092,
+        "eligible_timely_perpetual_net_R": -806.74624,
         "eligible_timely_perpetual_share": 0.9413,
-        "eligible_timely_perpetual_win_rate": 0.4575,
+        "eligible_timely_perpetual_win_rate": 0.4577,
         "late_closes": 416,
         "late_share_of_closed": 0.0587,
         "losses": 3841,
         "opened": 7276,
-        "timely_closes": 6669,
-        "win_rate": 0.4579,
-        "wins": 3244
+        "timely_closes": 6672,
+        "win_rate": 0.4581,
+        "wins": 3247
       },
       "18-23 UTC": {
-        "active": 45,
+        "active": 41,
         "breakeven": 0,
-        "closed": 3086,
-        "closed_expectancy_R": -0.06767,
-        "closed_net_R": -208.83292,
-        "closed_net_usd": -31324.94,
-        "eligible_after_friction_day_cluster_lcb_R": -0.164188,
-        "eligible_after_friction_expectancy_R": -0.14275,
-        "eligible_after_friction_net_R": -415.13077,
+        "closed": 3090,
+        "closed_expectancy_R": -0.06833,
+        "closed_net_R": -211.147,
+        "closed_net_usd": -31672.05,
+        "eligible_after_friction_day_cluster_lcb_R": -0.165273,
+        "eligible_after_friction_expectancy_R": -0.14346,
+        "eligible_after_friction_net_R": -417.75044,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 14,
-        "eligible_timely_perpetual_closed": 2908,
-        "eligible_timely_perpetual_expectancy_R": -0.07645,
-        "eligible_timely_perpetual_net_R": -222.32965,
-        "eligible_timely_perpetual_share": 0.9423,
-        "eligible_timely_perpetual_win_rate": 0.4484,
+        "eligible_timely_perpetual_closed": 2912,
+        "eligible_timely_perpetual_expectancy_R": -0.07714,
+        "eligible_timely_perpetual_net_R": -224.64372,
+        "eligible_timely_perpetual_share": 0.9424,
+        "eligible_timely_perpetual_win_rate": 0.4485,
         "late_closes": 178,
-        "late_share_of_closed": 0.0577,
-        "losses": 1697,
+        "late_share_of_closed": 0.0576,
+        "losses": 1699,
         "opened": 3131,
-        "timely_closes": 2908,
-        "win_rate": 0.4501,
-        "wins": 1389
+        "timely_closes": 2912,
+        "win_rate": 0.4502,
+        "wins": 1391
       }
     },
-    "evaluation_next_24_hours": 374,
-    "evaluation_next_hour": 47,
+    "evaluation_next_24_hours": 391,
+    "evaluation_next_hour": 36,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
       "1": {
-        "active": 0,
+        "active": 9,
         "breakeven": 0,
         "closed": 7568,
         "closed_expectancy_R": -0.06114,
@@ -11964,39 +13994,39 @@
         "late_closes": 425,
         "late_share_of_closed": 0.0562,
         "losses": 4267,
-        "opened": 7568,
+        "opened": 7577,
         "timely_closes": 7143,
         "win_rate": 0.4362,
         "wins": 3301
       },
       "12": {
-        "active": 111,
+        "active": 116,
         "breakeven": 0,
-        "closed": 4308,
-        "closed_expectancy_R": -0.1194,
-        "closed_net_R": -514.36735,
-        "closed_net_usd": -77155.1,
-        "eligible_after_friction_day_cluster_lcb_R": -0.192114,
-        "eligible_after_friction_expectancy_R": -0.19306,
-        "eligible_after_friction_net_R": -785.15574,
+        "closed": 4310,
+        "closed_expectancy_R": -0.11795,
+        "closed_net_R": -508.38323,
+        "closed_net_usd": -76257.48,
+        "eligible_after_friction_day_cluster_lcb_R": -0.191135,
+        "eligible_after_friction_expectancy_R": -0.19155,
+        "eligible_after_friction_net_R": -779.4089,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 4067,
-        "eligible_timely_perpetual_expectancy_R": -0.12615,
-        "eligible_timely_perpetual_net_R": -513.05314,
+        "eligible_timely_perpetual_closed": 4069,
+        "eligible_timely_perpetual_expectancy_R": -0.12462,
+        "eligible_timely_perpetual_net_R": -507.06902,
         "eligible_timely_perpetual_share": 0.9441,
-        "eligible_timely_perpetual_win_rate": 0.4637,
+        "eligible_timely_perpetual_win_rate": 0.464,
         "late_closes": 241,
         "late_share_of_closed": 0.0559,
         "losses": 2302,
-        "opened": 4419,
-        "timely_closes": 4067,
-        "win_rate": 0.4656,
-        "wins": 2006
+        "opened": 4426,
+        "timely_closes": 4069,
+        "win_rate": 0.4659,
+        "wins": 2008
       },
       "2": {
-        "active": 0,
+        "active": 5,
         "breakeven": 0,
         "closed": 5936,
         "closed_expectancy_R": -0.0668,
@@ -12016,116 +14046,116 @@
         "late_closes": 429,
         "late_share_of_closed": 0.0723,
         "losses": 3238,
-        "opened": 5936,
+        "opened": 5941,
         "timely_closes": 5507,
         "win_rate": 0.4545,
         "wins": 2698
       },
       "24": {
-        "active": 230,
+        "active": 229,
         "breakeven": 0,
-        "closed": 3769,
-        "closed_expectancy_R": -0.14736,
-        "closed_net_R": -555.40172,
-        "closed_net_usd": -83310.26,
-        "eligible_after_friction_day_cluster_lcb_R": -0.277221,
-        "eligible_after_friction_expectancy_R": -0.19359,
-        "eligible_after_friction_net_R": -696.90755,
+        "closed": 3773,
+        "closed_expectancy_R": -0.14509,
+        "closed_net_R": -547.43943,
+        "closed_net_usd": -82115.91,
+        "eligible_after_friction_day_cluster_lcb_R": -0.259557,
+        "eligible_after_friction_expectancy_R": -0.19124,
+        "eligible_after_friction_net_R": -689.22527,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
-        "eligible_distinct_entry_utc_days": 22,
-        "eligible_timely_perpetual_closed": 3600,
-        "eligible_timely_perpetual_expectancy_R": -0.12687,
-        "eligible_timely_perpetual_net_R": -456.72424,
+        "eligible_distinct_entry_utc_days": 23,
+        "eligible_timely_perpetual_closed": 3604,
+        "eligible_timely_perpetual_expectancy_R": -0.12452,
+        "eligible_timely_perpetual_net_R": -448.76195,
         "eligible_timely_perpetual_share": 0.9552,
-        "eligible_timely_perpetual_win_rate": 0.4783,
+        "eligible_timely_perpetual_win_rate": 0.4786,
         "late_closes": 169,
         "late_share_of_closed": 0.0448,
-        "losses": 1979,
-        "opened": 3999,
-        "timely_closes": 3600,
-        "win_rate": 0.4749,
-        "wins": 1790
+        "losses": 1980,
+        "opened": 4002,
+        "timely_closes": 3604,
+        "win_rate": 0.4752,
+        "wins": 1793
       },
       "4": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
-        "closed": 5146,
-        "closed_expectancy_R": -0.0828,
-        "closed_net_R": -426.0706,
-        "closed_net_usd": -63910.59,
-        "eligible_after_friction_day_cluster_lcb_R": -0.15752,
-        "eligible_after_friction_expectancy_R": -0.14066,
-        "eligible_after_friction_net_R": -679.38862,
+        "closed": 5150,
+        "closed_expectancy_R": -0.08318,
+        "closed_net_R": -428.38467,
+        "closed_net_usd": -64257.7,
+        "eligible_after_friction_day_cluster_lcb_R": -0.157768,
+        "eligible_after_friction_expectancy_R": -0.14109,
+        "eligible_after_friction_net_R": -682.00829,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 22,
-        "eligible_timely_perpetual_closed": 4830,
-        "eligible_timely_perpetual_expectancy_R": -0.07425,
-        "eligible_timely_perpetual_net_R": -358.60653,
+        "eligible_timely_perpetual_closed": 4834,
+        "eligible_timely_perpetual_expectancy_R": -0.07466,
+        "eligible_timely_perpetual_net_R": -360.92061,
         "eligible_timely_perpetual_share": 0.9386,
         "eligible_timely_perpetual_win_rate": 0.4683,
         "late_closes": 316,
         "late_share_of_closed": 0.0614,
-        "losses": 2744,
-        "opened": 5151,
-        "timely_closes": 4830,
+        "losses": 2746,
+        "opened": 5156,
+        "timely_closes": 4834,
         "win_rate": 0.4668,
-        "wins": 2402
+        "wins": 2404
       },
       "8": {
-        "active": 28,
+        "active": 29,
         "breakeven": 0,
-        "closed": 4645,
-        "closed_expectancy_R": -0.08808,
-        "closed_net_R": -409.12958,
-        "closed_net_usd": -61369.44,
-        "eligible_after_friction_day_cluster_lcb_R": -0.179251,
-        "eligible_after_friction_expectancy_R": -0.1603,
-        "eligible_after_friction_net_R": -704.84715,
+        "closed": 4646,
+        "closed_expectancy_R": -0.08788,
+        "closed_net_R": -408.28922,
+        "closed_net_usd": -61243.38,
+        "eligible_after_friction_day_cluster_lcb_R": -0.179119,
+        "eligible_after_friction_expectancy_R": -0.16009,
+        "eligible_after_friction_net_R": -704.09024,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 4397,
-        "eligible_timely_perpetual_expectancy_R": -0.09349,
-        "eligible_timely_perpetual_net_R": -411.06774,
+        "eligible_timely_perpetual_closed": 4398,
+        "eligible_timely_perpetual_expectancy_R": -0.09328,
+        "eligible_timely_perpetual_net_R": -410.22738,
         "eligible_timely_perpetual_share": 0.9466,
-        "eligible_timely_perpetual_win_rate": 0.4715,
+        "eligible_timely_perpetual_win_rate": 0.4716,
         "late_closes": 248,
         "late_share_of_closed": 0.0534,
         "losses": 2445,
-        "opened": 4673,
-        "timely_closes": 4397,
-        "win_rate": 0.4736,
-        "wins": 2200
+        "opened": 4675,
+        "timely_closes": 4398,
+        "win_rate": 0.4737,
+        "wins": 2201
       }
     },
     "market_type": {
       "perpetual": {
-        "active": 374,
+        "active": 394,
         "breakeven": 0,
-        "closed": 31372,
-        "closed_expectancy_R": -0.08811,
-        "closed_net_R": -2764.1821,
-        "closed_net_usd": -414627.31,
-        "eligible_after_friction_day_cluster_lcb_R": -0.149021,
-        "eligible_after_friction_expectancy_R": -0.15284,
-        "eligible_after_friction_net_R": -4515.44414,
+        "closed": 31383,
+        "closed_expectancy_R": -0.08768,
+        "closed_net_R": -2751.7094,
+        "closed_net_usd": -412756.41,
+        "eligible_after_friction_day_cluster_lcb_R": -0.148791,
+        "eligible_after_friction_expectancy_R": -0.15239,
+        "eligible_after_friction_net_R": -4503.87778,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 29544,
-        "eligible_timely_perpetual_expectancy_R": -0.08604,
-        "eligible_timely_perpetual_net_R": -2542.07629,
-        "eligible_timely_perpetual_share": 0.9417,
-        "eligible_timely_perpetual_win_rate": 0.4585,
+        "eligible_timely_perpetual_closed": 29555,
+        "eligible_timely_perpetual_expectancy_R": -0.08559,
+        "eligible_timely_perpetual_net_R": -2529.60359,
+        "eligible_timely_perpetual_share": 0.9418,
+        "eligible_timely_perpetual_win_rate": 0.4586,
         "late_closes": 1828,
-        "late_share_of_closed": 0.0583,
-        "losses": 16975,
-        "opened": 31746,
-        "timely_closes": 29544,
-        "win_rate": 0.4589,
-        "wins": 14397
+        "late_share_of_closed": 0.0582,
+        "losses": 16978,
+        "opened": 31777,
+        "timely_closes": 29555,
+        "win_rate": 0.459,
+        "wins": 14405
       }
     },
     "method": "fixed_horizon_v4",
@@ -12133,59 +14163,59 @@
     "selection_note": "Regime/daypart labels frozen at entry, descriptive and correlated. Post-friction scores include frozen stress when present, otherwise a predeclared 0.12% extra-cost legacy haircut. Day-cluster LCB uses clipped day-mean R; positive screening cannot promote an edge.",
     "side": {
       "LONG": {
-        "active": 175,
+        "active": 173,
         "breakeven": 0,
-        "closed": 15707,
-        "closed_expectancy_R": -0.2358,
-        "closed_net_R": -3703.64442,
-        "closed_net_usd": -555546.66,
-        "eligible_after_friction_day_cluster_lcb_R": -0.457388,
-        "eligible_after_friction_expectancy_R": -0.28367,
-        "eligible_after_friction_net_R": -4184.10599,
+        "closed": 15715,
+        "closed_expectancy_R": -0.23443,
+        "closed_net_R": -3684.13176,
+        "closed_net_usd": -552619.76,
+        "eligible_after_friction_day_cluster_lcb_R": -0.457034,
+        "eligible_after_friction_expectancy_R": -0.28224,
+        "eligible_after_friction_net_R": -4165.24198,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 14750,
-        "eligible_timely_perpetual_expectancy_R": -0.21665,
-        "eligible_timely_perpetual_net_R": -3195.59387,
+        "eligible_timely_perpetual_closed": 14758,
+        "eligible_timely_perpetual_expectancy_R": -0.21521,
+        "eligible_timely_perpetual_net_R": -3176.08122,
         "eligible_timely_perpetual_share": 0.9391,
-        "eligible_timely_perpetual_win_rate": 0.4207,
+        "eligible_timely_perpetual_win_rate": 0.421,
         "late_closes": 957,
         "late_share_of_closed": 0.0609,
         "losses": 9157,
-        "opened": 15882,
-        "timely_closes": 14750,
-        "win_rate": 0.417,
-        "wins": 6550
+        "opened": 15888,
+        "timely_closes": 14758,
+        "win_rate": 0.4173,
+        "wins": 6558
       },
       "SHORT": {
-        "active": 199,
+        "active": 221,
         "breakeven": 0,
-        "closed": 15665,
-        "closed_expectancy_R": 0.05997,
-        "closed_net_R": 939.46232,
-        "closed_net_usd": 140919.35,
-        "eligible_after_friction_day_cluster_lcb_R": -0.203803,
-        "eligible_after_friction_expectancy_R": -0.0224,
-        "eligible_after_friction_net_R": -331.33815,
+        "closed": 15668,
+        "closed_expectancy_R": 0.05951,
+        "closed_net_R": 932.42237,
+        "closed_net_usd": 139863.35,
+        "eligible_after_friction_day_cluster_lcb_R": -0.204345,
+        "eligible_after_friction_expectancy_R": -0.02289,
+        "eligible_after_friction_net_R": -338.6358,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 14794,
-        "eligible_timely_perpetual_expectancy_R": 0.04417,
-        "eligible_timely_perpetual_net_R": 653.51758,
+        "eligible_timely_perpetual_closed": 14797,
+        "eligible_timely_perpetual_expectancy_R": 0.04369,
+        "eligible_timely_perpetual_net_R": 646.47763,
         "eligible_timely_perpetual_share": 0.9444,
-        "eligible_timely_perpetual_win_rate": 0.4962,
+        "eligible_timely_perpetual_win_rate": 0.4961,
         "late_closes": 871,
         "late_share_of_closed": 0.0556,
-        "losses": 7818,
-        "opened": 15864,
-        "timely_closes": 14794,
-        "win_rate": 0.5009,
+        "losses": 7821,
+        "opened": 15889,
+        "timely_closes": 14797,
+        "win_rate": 0.5008,
         "wins": 7847
       }
     },
-    "simultaneous_open_research_notional_usd": 3740000.0,
+    "simultaneous_open_research_notional_usd": 3940000.0,
     "strategy": {
       "ATRCHAN-v1": {
         "active": 9,
@@ -12266,33 +14296,33 @@
         "wins": 111
       },
       "BR-proxy-v1": {
-        "active": 48,
+        "active": 47,
         "breakeven": 0,
-        "closed": 5036,
-        "closed_expectancy_R": -0.14874,
-        "closed_net_R": -749.04073,
-        "closed_net_usd": -112356.11,
-        "eligible_after_friction_day_cluster_lcb_R": -0.265293,
-        "eligible_after_friction_expectancy_R": -0.20495,
-        "eligible_after_friction_net_R": -943.60322,
+        "closed": 5037,
+        "closed_expectancy_R": -0.14919,
+        "closed_net_R": -751.45198,
+        "closed_net_usd": -112717.8,
+        "eligible_after_friction_day_cluster_lcb_R": -0.266049,
+        "eligible_after_friction_expectancy_R": -0.20546,
+        "eligible_after_friction_net_R": -946.1389,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 4604,
-        "eligible_timely_perpetual_expectancy_R": -0.1383,
-        "eligible_timely_perpetual_net_R": -636.73286,
+        "eligible_timely_perpetual_closed": 4605,
+        "eligible_timely_perpetual_expectancy_R": -0.13879,
+        "eligible_timely_perpetual_net_R": -639.14412,
         "eligible_timely_perpetual_share": 0.9142,
-        "eligible_timely_perpetual_win_rate": 0.4663,
+        "eligible_timely_perpetual_win_rate": 0.4662,
         "late_closes": 432,
         "late_share_of_closed": 0.0858,
-        "losses": 2677,
+        "losses": 2678,
         "opened": 5084,
-        "timely_closes": 4604,
-        "win_rate": 0.4684,
+        "timely_closes": 4605,
+        "win_rate": 0.4683,
         "wins": 2359
       },
       "BR-v3": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 536,
         "closed_expectancy_R": -0.19549,
@@ -12312,7 +14342,7 @@
         "late_closes": 30,
         "late_share_of_closed": 0.056,
         "losses": 286,
-        "opened": 541,
+        "opened": 542,
         "timely_closes": 506,
         "win_rate": 0.4664,
         "wins": 250
@@ -12396,30 +14426,30 @@
         "wins": 126
       },
       "CTRL-v1": {
-        "active": 56,
+        "active": 62,
         "breakeven": 0,
-        "closed": 6256,
-        "closed_expectancy_R": -0.03959,
-        "closed_net_R": -247.6476,
-        "closed_net_usd": -37147.14,
-        "eligible_after_friction_day_cluster_lcb_R": -0.235207,
-        "eligible_after_friction_expectancy_R": -0.10586,
-        "eligible_after_friction_net_R": -616.42726,
+        "closed": 6258,
+        "closed_expectancy_R": -0.03918,
+        "closed_net_R": -245.19719,
+        "closed_net_usd": -36779.58,
+        "eligible_after_friction_day_cluster_lcb_R": -0.234968,
+        "eligible_after_friction_expectancy_R": -0.10543,
+        "eligible_after_friction_net_R": -614.15133,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 5823,
-        "eligible_timely_perpetual_expectancy_R": -0.03934,
-        "eligible_timely_perpetual_net_R": -229.09501,
+        "eligible_timely_perpetual_closed": 5825,
+        "eligible_timely_perpetual_expectancy_R": -0.03891,
+        "eligible_timely_perpetual_net_R": -226.6446,
         "eligible_timely_perpetual_share": 0.9308,
-        "eligible_timely_perpetual_win_rate": 0.4695,
+        "eligible_timely_perpetual_win_rate": 0.4697,
         "late_closes": 433,
         "late_share_of_closed": 0.0692,
         "losses": 3319,
-        "opened": 6312,
-        "timely_closes": 5823,
-        "win_rate": 0.4695,
-        "wins": 2937
+        "opened": 6320,
+        "timely_closes": 5825,
+        "win_rate": 0.4696,
+        "wins": 2939
       },
       "DC-v1": {
         "active": 4,
@@ -12474,30 +14504,30 @@
         "wins": 161
       },
       "FB-v3": {
-        "active": 18,
+        "active": 23,
         "breakeven": 0,
-        "closed": 690,
-        "closed_expectancy_R": 0.16842,
-        "closed_net_R": 116.20646,
-        "closed_net_usd": 17430.97,
-        "eligible_after_friction_day_cluster_lcb_R": -0.114097,
-        "eligible_after_friction_expectancy_R": 0.12689,
-        "eligible_after_friction_net_R": 83.36388,
+        "closed": 691,
+        "closed_expectancy_R": 0.17528,
+        "closed_net_R": 121.11918,
+        "closed_net_usd": 18167.88,
+        "eligible_after_friction_day_cluster_lcb_R": -0.110877,
+        "eligible_after_friction_expectancy_R": 0.13397,
+        "eligible_after_friction_net_R": 88.152,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 22,
-        "eligible_timely_perpetual_closed": 657,
-        "eligible_timely_perpetual_expectancy_R": 0.19215,
-        "eligible_timely_perpetual_net_R": 126.24155,
+        "eligible_timely_perpetual_closed": 658,
+        "eligible_timely_perpetual_expectancy_R": 0.19932,
+        "eligible_timely_perpetual_net_R": 131.15428,
         "eligible_timely_perpetual_share": 0.9522,
-        "eligible_timely_perpetual_win_rate": 0.5327,
+        "eligible_timely_perpetual_win_rate": 0.5334,
         "late_closes": 33,
         "late_share_of_closed": 0.0478,
         "losses": 324,
-        "opened": 708,
-        "timely_closes": 657,
-        "win_rate": 0.5304,
-        "wins": 366
+        "opened": 714,
+        "timely_closes": 658,
+        "win_rate": 0.5311,
+        "wins": 367
       },
       "IBREAK-v1": {
         "active": 3,
@@ -12552,7 +14582,7 @@
         "wins": 255
       },
       "LS-v3": {
-        "active": 11,
+        "active": 13,
         "breakeven": 0,
         "closed": 1044,
         "closed_expectancy_R": 0.11356,
@@ -12572,36 +14602,36 @@
         "late_closes": 57,
         "late_share_of_closed": 0.0546,
         "losses": 519,
-        "opened": 1055,
+        "opened": 1057,
         "timely_closes": 987,
         "win_rate": 0.5029,
         "wins": 525
       },
       "MR-proxy-v1": {
-        "active": 45,
+        "active": 44,
         "breakeven": 0,
-        "closed": 4986,
-        "closed_expectancy_R": 0.00166,
-        "closed_net_R": 8.29906,
-        "closed_net_usd": 1244.86,
-        "eligible_after_friction_day_cluster_lcb_R": -0.178226,
-        "eligible_after_friction_expectancy_R": -0.06634,
-        "eligible_after_friction_net_R": -300.17017,
+        "closed": 4989,
+        "closed_expectancy_R": 0.00149,
+        "closed_net_R": 7.44044,
+        "closed_net_usd": 1116.07,
+        "eligible_after_friction_day_cluster_lcb_R": -0.178513,
+        "eligible_after_friction_expectancy_R": -0.06651,
+        "eligible_after_friction_net_R": -301.15617,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 4525,
-        "eligible_timely_perpetual_expectancy_R": 0.00069,
-        "eligible_timely_perpetual_net_R": 3.1344,
-        "eligible_timely_perpetual_share": 0.9075,
-        "eligible_timely_perpetual_win_rate": 0.4453,
+        "eligible_timely_perpetual_closed": 4528,
+        "eligible_timely_perpetual_expectancy_R": 0.0005,
+        "eligible_timely_perpetual_net_R": 2.27578,
+        "eligible_timely_perpetual_share": 0.9076,
+        "eligible_timely_perpetual_win_rate": 0.4455,
         "late_closes": 461,
-        "late_share_of_closed": 0.0925,
-        "losses": 2766,
-        "opened": 5031,
-        "timely_closes": 4525,
-        "win_rate": 0.4452,
-        "wins": 2220
+        "late_share_of_closed": 0.0924,
+        "losses": 2767,
+        "opened": 5033,
+        "timely_closes": 4528,
+        "win_rate": 0.4454,
+        "wins": 2222
       },
       "MR-v3": {
         "active": 9,
@@ -12630,7 +14660,7 @@
         "wins": 508
       },
       "RANGE-v1": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 698,
         "closed_expectancy_R": 0.14665,
@@ -12650,36 +14680,36 @@
         "late_closes": 29,
         "late_share_of_closed": 0.0415,
         "losses": 331,
-        "opened": 703,
+        "opened": 704,
         "timely_closes": 669,
         "win_rate": 0.5258,
         "wins": 367
       },
       "RSI-v1": {
-        "active": 25,
+        "active": 31,
         "breakeven": 0,
-        "closed": 1494,
-        "closed_expectancy_R": -0.05006,
-        "closed_net_R": -74.787,
-        "closed_net_usd": -11218.05,
-        "eligible_after_friction_day_cluster_lcb_R": -0.378617,
-        "eligible_after_friction_expectancy_R": -0.1157,
-        "eligible_after_friction_net_R": -166.6091,
+        "closed": 1496,
+        "closed_expectancy_R": -0.04319,
+        "closed_net_R": -64.61342,
+        "closed_net_usd": -9692.01,
+        "eligible_after_friction_day_cluster_lcb_R": -0.376855,
+        "eligible_after_friction_expectancy_R": -0.10861,
+        "eligible_after_friction_net_R": -156.61286,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 22,
-        "eligible_timely_perpetual_closed": 1440,
-        "eligible_timely_perpetual_expectancy_R": -0.04816,
-        "eligible_timely_perpetual_net_R": -69.35141,
+        "eligible_timely_perpetual_closed": 1442,
+        "eligible_timely_perpetual_expectancy_R": -0.04104,
+        "eligible_timely_perpetual_net_R": -59.17783,
         "eligible_timely_perpetual_share": 0.9639,
-        "eligible_timely_perpetual_win_rate": 0.4528,
+        "eligible_timely_perpetual_win_rate": 0.4535,
         "late_closes": 54,
         "late_share_of_closed": 0.0361,
         "losses": 813,
-        "opened": 1519,
-        "timely_closes": 1440,
-        "win_rate": 0.4558,
-        "wins": 681
+        "opened": 1527,
+        "timely_closes": 1442,
+        "win_rate": 0.4566,
+        "wins": 683
       },
       "RSIREC-v1": {
         "active": 5,
@@ -12708,7 +14738,7 @@
         "wins": 317
       },
       "RSITREND-v1": {
-        "active": 26,
+        "active": 29,
         "breakeven": 0,
         "closed": 2221,
         "closed_expectancy_R": -0.32144,
@@ -12728,7 +14758,7 @@
         "late_closes": 37,
         "late_share_of_closed": 0.0167,
         "losses": 1284,
-        "opened": 2247,
+        "opened": 2250,
         "timely_closes": 2184,
         "win_rate": 0.4219,
         "wins": 937
@@ -12812,30 +14842,30 @@
         "wins": 120
       },
       "TREND-v1": {
-        "active": 11,
+        "active": 9,
         "breakeven": 0,
-        "closed": 520,
-        "closed_expectancy_R": -0.24867,
-        "closed_net_R": -129.3076,
-        "closed_net_usd": -19396.14,
-        "eligible_after_friction_day_cluster_lcb_R": -0.626456,
-        "eligible_after_friction_expectancy_R": -0.33568,
-        "eligible_after_friction_net_R": -167.16668,
+        "closed": 522,
+        "closed_expectancy_R": -0.25115,
+        "closed_net_R": -131.10173,
+        "closed_net_usd": -19665.26,
+        "eligible_after_friction_day_cluster_lcb_R": -0.627825,
+        "eligible_after_friction_expectancy_R": -0.33828,
+        "eligible_after_friction_net_R": -169.13894,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 22,
-        "eligible_timely_perpetual_closed": 498,
-        "eligible_timely_perpetual_expectancy_R": -0.26502,
-        "eligible_timely_perpetual_net_R": -131.982,
-        "eligible_timely_perpetual_share": 0.9577,
-        "eligible_timely_perpetual_win_rate": 0.4398,
+        "eligible_timely_perpetual_closed": 500,
+        "eligible_timely_perpetual_expectancy_R": -0.26755,
+        "eligible_timely_perpetual_net_R": -133.77613,
+        "eligible_timely_perpetual_share": 0.9579,
+        "eligible_timely_perpetual_win_rate": 0.44,
         "late_closes": 22,
-        "late_share_of_closed": 0.0423,
-        "losses": 290,
+        "late_share_of_closed": 0.0421,
+        "losses": 291,
         "opened": 531,
-        "timely_closes": 498,
-        "win_rate": 0.4423,
-        "wins": 230
+        "timely_closes": 500,
+        "win_rate": 0.4425,
+        "wins": 231
       },
       "VOL-v1": {
         "active": 3,
@@ -12944,7 +14974,7 @@
     },
     "symbol": {
       "AAVE": {
-        "active": 9,
+        "active": 10,
         "breakeven": 0,
         "closed": 792,
         "closed_expectancy_R": -0.07914,
@@ -12964,7 +14994,7 @@
         "late_closes": 46,
         "late_share_of_closed": 0.0581,
         "losses": 421,
-        "opened": 801,
+        "opened": 802,
         "timely_closes": 746,
         "win_rate": 0.4684,
         "wins": 371
@@ -12996,7 +15026,7 @@
         "wins": 315
       },
       "ALGO": {
-        "active": 6,
+        "active": 7,
         "breakeven": 0,
         "closed": 594,
         "closed_expectancy_R": -0.07871,
@@ -13016,7 +15046,7 @@
         "late_closes": 47,
         "late_share_of_closed": 0.0791,
         "losses": 321,
-        "opened": 600,
+        "opened": 601,
         "timely_closes": 547,
         "win_rate": 0.4596,
         "wins": 273
@@ -13048,7 +15078,7 @@
         "wins": 345
       },
       "ARB": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 831,
         "closed_expectancy_R": -0.10779,
@@ -13068,13 +15098,13 @@
         "late_closes": 46,
         "late_share_of_closed": 0.0554,
         "losses": 451,
-        "opened": 836,
+        "opened": 837,
         "timely_closes": 785,
         "win_rate": 0.4573,
         "wins": 380
       },
       "ATOM": {
-        "active": 7,
+        "active": 8,
         "breakeven": 0,
         "closed": 739,
         "closed_expectancy_R": -0.07241,
@@ -13094,13 +15124,13 @@
         "late_closes": 69,
         "late_share_of_closed": 0.0934,
         "losses": 390,
-        "opened": 746,
+        "opened": 747,
         "timely_closes": 670,
         "win_rate": 0.4723,
         "wins": 349
       },
       "AVAX": {
-        "active": 7,
+        "active": 8,
         "breakeven": 0,
         "closed": 703,
         "closed_expectancy_R": -0.01826,
@@ -13120,13 +15150,13 @@
         "late_closes": 30,
         "late_share_of_closed": 0.0427,
         "losses": 373,
-        "opened": 710,
+        "opened": 711,
         "timely_closes": 673,
         "win_rate": 0.4694,
         "wins": 330
       },
       "BCH": {
-        "active": 11,
+        "active": 12,
         "breakeven": 0,
         "closed": 801,
         "closed_expectancy_R": -0.08529,
@@ -13146,7 +15176,7 @@
         "late_closes": 66,
         "late_share_of_closed": 0.0824,
         "losses": 408,
-        "opened": 812,
+        "opened": 813,
         "timely_closes": 735,
         "win_rate": 0.4906,
         "wins": 393
@@ -13178,33 +15208,33 @@
         "wins": 295
       },
       "BTC": {
-        "active": 7,
+        "active": 6,
         "breakeven": 0,
-        "closed": 689,
-        "closed_expectancy_R": -0.07915,
-        "closed_net_R": -54.5372,
-        "closed_net_usd": -8180.58,
-        "eligible_after_friction_day_cluster_lcb_R": -0.125635,
-        "eligible_after_friction_expectancy_R": -0.09034,
-        "eligible_after_friction_net_R": -59.35161,
+        "closed": 690,
+        "closed_expectancy_R": -0.07868,
+        "closed_net_R": -54.2869,
+        "closed_net_usd": -8143.04,
+        "eligible_after_friction_day_cluster_lcb_R": -0.125419,
+        "eligible_after_friction_expectancy_R": -0.08985,
+        "eligible_after_friction_net_R": -59.12362,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 657,
-        "eligible_timely_perpetual_expectancy_R": -0.07522,
-        "eligible_timely_perpetual_net_R": -49.42197,
+        "eligible_timely_perpetual_closed": 658,
+        "eligible_timely_perpetual_expectancy_R": -0.07473,
+        "eligible_timely_perpetual_net_R": -49.17167,
         "eligible_timely_perpetual_share": 0.9536,
-        "eligible_timely_perpetual_win_rate": 0.4247,
+        "eligible_timely_perpetual_win_rate": 0.4255,
         "late_closes": 32,
         "late_share_of_closed": 0.0464,
         "losses": 401,
         "opened": 696,
-        "timely_closes": 657,
-        "win_rate": 0.418,
-        "wins": 288
+        "timely_closes": 658,
+        "win_rate": 0.4188,
+        "wins": 289
       },
       "CRV": {
-        "active": 9,
+        "active": 10,
         "breakeven": 0,
         "closed": 806,
         "closed_expectancy_R": -0.15351,
@@ -13224,7 +15254,7 @@
         "late_closes": 47,
         "late_share_of_closed": 0.0583,
         "losses": 433,
-        "opened": 815,
+        "opened": 816,
         "timely_closes": 759,
         "win_rate": 0.4628,
         "wins": 373
@@ -13282,33 +15312,33 @@
         "wins": 327
       },
       "ENA": {
-        "active": 11,
+        "active": 10,
         "breakeven": 0,
-        "closed": 611,
-        "closed_expectancy_R": -0.03045,
-        "closed_net_R": -18.60684,
-        "closed_net_usd": -2791.03,
-        "eligible_after_friction_day_cluster_lcb_R": -0.130603,
-        "eligible_after_friction_expectancy_R": -0.08433,
-        "eligible_after_friction_net_R": -50.0922,
+        "closed": 612,
+        "closed_expectancy_R": -0.02015,
+        "closed_net_R": -12.33074,
+        "closed_net_usd": -1849.61,
+        "eligible_after_friction_day_cluster_lcb_R": -0.12279,
+        "eligible_after_friction_expectancy_R": -0.07379,
+        "eligible_after_friction_net_R": -43.90362,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 15,
-        "eligible_timely_perpetual_closed": 594,
-        "eligible_timely_perpetual_expectancy_R": -0.02837,
-        "eligible_timely_perpetual_net_R": -16.85157,
+        "eligible_timely_perpetual_closed": 595,
+        "eligible_timely_perpetual_expectancy_R": -0.01777,
+        "eligible_timely_perpetual_net_R": -10.57546,
         "eligible_timely_perpetual_share": 0.9722,
-        "eligible_timely_perpetual_win_rate": 0.4798,
+        "eligible_timely_perpetual_win_rate": 0.4807,
         "late_closes": 17,
         "late_share_of_closed": 0.0278,
         "losses": 317,
         "opened": 622,
-        "timely_closes": 594,
-        "win_rate": 0.4812,
-        "wins": 294
+        "timely_closes": 595,
+        "win_rate": 0.482,
+        "wins": 295
       },
       "ENS": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 28,
         "closed_expectancy_R": 0.05322,
@@ -13328,13 +15358,13 @@
         "late_closes": 2,
         "late_share_of_closed": 0.0714,
         "losses": 14,
-        "opened": 32,
+        "opened": 33,
         "timely_closes": 26,
         "win_rate": 0.5,
         "wins": 14
       },
       "ETC": {
-        "active": 10,
+        "active": 11,
         "breakeven": 0,
         "closed": 714,
         "closed_expectancy_R": -0.09789,
@@ -13354,7 +15384,7 @@
         "late_closes": 31,
         "late_share_of_closed": 0.0434,
         "losses": 392,
-        "opened": 724,
+        "opened": 725,
         "timely_closes": 683,
         "win_rate": 0.451,
         "wins": 322
@@ -13440,57 +15470,57 @@
       "ICP": {
         "active": 9,
         "breakeven": 0,
-        "closed": 844,
-        "closed_expectancy_R": -0.16369,
-        "closed_net_R": -138.15754,
-        "closed_net_usd": -20723.63,
-        "eligible_after_friction_day_cluster_lcb_R": -0.307584,
-        "eligible_after_friction_expectancy_R": -0.25924,
-        "eligible_after_friction_net_R": -201.68681,
+        "closed": 845,
+        "closed_expectancy_R": -0.16251,
+        "closed_net_R": -137.31717,
+        "closed_net_usd": -20597.58,
+        "eligible_after_friction_day_cluster_lcb_R": -0.306356,
+        "eligible_after_friction_expectancy_R": -0.25793,
+        "eligible_after_friction_net_R": -200.9299,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 22,
-        "eligible_timely_perpetual_closed": 778,
-        "eligible_timely_perpetual_expectancy_R": -0.17492,
-        "eligible_timely_perpetual_net_R": -136.08788,
-        "eligible_timely_perpetual_share": 0.9218,
-        "eligible_timely_perpetual_win_rate": 0.464,
+        "eligible_timely_perpetual_closed": 779,
+        "eligible_timely_perpetual_expectancy_R": -0.17362,
+        "eligible_timely_perpetual_net_R": -135.24752,
+        "eligible_timely_perpetual_share": 0.9219,
+        "eligible_timely_perpetual_win_rate": 0.4647,
         "late_closes": 66,
-        "late_share_of_closed": 0.0782,
+        "late_share_of_closed": 0.0781,
         "losses": 453,
-        "opened": 853,
-        "timely_closes": 778,
-        "win_rate": 0.4633,
-        "wins": 391
+        "opened": 854,
+        "timely_closes": 779,
+        "win_rate": 0.4639,
+        "wins": 392
       },
       "IMX": {
         "active": 9,
         "breakeven": 0,
-        "closed": 29,
-        "closed_expectancy_R": -0.46934,
-        "closed_net_R": -13.61085,
-        "closed_net_usd": -2041.63,
+        "closed": 30,
+        "closed_expectancy_R": -0.53407,
+        "closed_net_R": -16.0221,
+        "closed_net_usd": -2403.32,
         "eligible_after_friction_day_cluster_lcb_R": null,
-        "eligible_after_friction_expectancy_R": -0.59624,
-        "eligible_after_friction_net_R": -17.29084,
+        "eligible_after_friction_expectancy_R": -0.66088,
+        "eligible_after_friction_net_R": -19.82651,
         "eligible_after_friction_research_status": "insufficient_distinct_days",
         "eligible_day_breadth_ready": false,
         "eligible_distinct_entry_utc_days": 1,
-        "eligible_timely_perpetual_closed": 29,
-        "eligible_timely_perpetual_expectancy_R": -0.46934,
-        "eligible_timely_perpetual_net_R": -13.61085,
+        "eligible_timely_perpetual_closed": 30,
+        "eligible_timely_perpetual_expectancy_R": -0.53407,
+        "eligible_timely_perpetual_net_R": -16.0221,
         "eligible_timely_perpetual_share": 1.0,
-        "eligible_timely_perpetual_win_rate": 0.4483,
+        "eligible_timely_perpetual_win_rate": 0.4333,
         "late_closes": 0,
         "late_share_of_closed": 0.0,
-        "losses": 16,
-        "opened": 38,
-        "timely_closes": 29,
-        "win_rate": 0.4483,
+        "losses": 17,
+        "opened": 39,
+        "timely_closes": 30,
+        "win_rate": 0.4333,
         "wins": 13
       },
       "INJ": {
-        "active": 8,
+        "active": 9,
         "breakeven": 0,
         "closed": 837,
         "closed_expectancy_R": -0.09919,
@@ -13510,13 +15540,13 @@
         "late_closes": 70,
         "late_share_of_closed": 0.0836,
         "losses": 443,
-        "opened": 845,
+        "opened": 846,
         "timely_closes": 767,
         "win_rate": 0.4707,
         "wins": 394
       },
       "JTO": {
-        "active": 10,
+        "active": 11,
         "breakeven": 0,
         "closed": 577,
         "closed_expectancy_R": 0.01877,
@@ -13536,13 +15566,13 @@
         "late_closes": 12,
         "late_share_of_closed": 0.0208,
         "losses": 294,
-        "opened": 587,
+        "opened": 588,
         "timely_closes": 565,
         "win_rate": 0.4905,
         "wins": 283
       },
       "JUP": {
-        "active": 8,
+        "active": 9,
         "breakeven": 0,
         "closed": 818,
         "closed_expectancy_R": -0.12478,
@@ -13562,7 +15592,7 @@
         "late_closes": 60,
         "late_share_of_closed": 0.0733,
         "losses": 457,
-        "opened": 826,
+        "opened": 827,
         "timely_closes": 758,
         "win_rate": 0.4413,
         "wins": 361
@@ -13570,31 +15600,31 @@
       "LDO": {
         "active": 7,
         "breakeven": 0,
-        "closed": 580,
-        "closed_expectancy_R": -0.22781,
-        "closed_net_R": -132.13028,
-        "closed_net_usd": -19819.54,
-        "eligible_after_friction_day_cluster_lcb_R": -0.37847,
-        "eligible_after_friction_expectancy_R": -0.31071,
-        "eligible_after_friction_net_R": -176.79316,
+        "closed": 581,
+        "closed_expectancy_R": -0.22557,
+        "closed_net_R": -131.05888,
+        "closed_net_usd": -19658.83,
+        "eligible_after_friction_day_cluster_lcb_R": -0.378363,
+        "eligible_after_friction_expectancy_R": -0.30848,
+        "eligible_after_friction_net_R": -175.83443,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 15,
-        "eligible_timely_perpetual_closed": 569,
-        "eligible_timely_perpetual_expectancy_R": -0.2243,
-        "eligible_timely_perpetual_net_R": -127.62557,
-        "eligible_timely_perpetual_share": 0.981,
-        "eligible_timely_perpetual_win_rate": 0.4306,
+        "eligible_timely_perpetual_closed": 570,
+        "eligible_timely_perpetual_expectancy_R": -0.22202,
+        "eligible_timely_perpetual_net_R": -126.55417,
+        "eligible_timely_perpetual_share": 0.9811,
+        "eligible_timely_perpetual_win_rate": 0.4316,
         "late_closes": 11,
-        "late_share_of_closed": 0.019,
+        "late_share_of_closed": 0.0189,
         "losses": 332,
-        "opened": 587,
-        "timely_closes": 569,
-        "win_rate": 0.4276,
-        "wins": 248
+        "opened": 588,
+        "timely_closes": 570,
+        "win_rate": 0.4286,
+        "wins": 249
       },
       "LINK": {
-        "active": 10,
+        "active": 11,
         "breakeven": 0,
         "closed": 908,
         "closed_expectancy_R": -0.03718,
@@ -13614,13 +15644,13 @@
         "late_closes": 94,
         "late_share_of_closed": 0.1035,
         "losses": 469,
-        "opened": 918,
+        "opened": 919,
         "timely_closes": 814,
         "win_rate": 0.4835,
         "wins": 439
       },
       "LTC": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 729,
         "closed_expectancy_R": -0.05142,
@@ -13640,39 +15670,39 @@
         "late_closes": 37,
         "late_share_of_closed": 0.0508,
         "losses": 400,
-        "opened": 734,
+        "opened": 735,
         "timely_closes": 692,
         "win_rate": 0.4513,
         "wins": 329
       },
       "NEAR": {
-        "active": 10,
+        "active": 9,
         "breakeven": 0,
-        "closed": 731,
-        "closed_expectancy_R": -0.08962,
-        "closed_net_R": -65.51345,
-        "closed_net_usd": -9827.02,
-        "eligible_after_friction_day_cluster_lcb_R": -0.52934,
-        "eligible_after_friction_expectancy_R": -0.19621,
-        "eligible_after_friction_net_R": -137.93859,
+        "closed": 732,
+        "closed_expectancy_R": -0.08417,
+        "closed_net_R": -61.61598,
+        "closed_net_usd": -9242.4,
+        "eligible_after_friction_day_cluster_lcb_R": -0.525129,
+        "eligible_after_friction_expectancy_R": -0.19053,
+        "eligible_after_friction_net_R": -134.13092,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 703,
-        "eligible_timely_perpetual_expectancy_R": -0.13259,
-        "eligible_timely_perpetual_net_R": -93.21321,
+        "eligible_timely_perpetual_closed": 704,
+        "eligible_timely_perpetual_expectancy_R": -0.12687,
+        "eligible_timely_perpetual_net_R": -89.31574,
         "eligible_timely_perpetual_share": 0.9617,
-        "eligible_timely_perpetual_win_rate": 0.458,
+        "eligible_timely_perpetual_win_rate": 0.4588,
         "late_closes": 28,
         "late_share_of_closed": 0.0383,
         "losses": 392,
         "opened": 741,
-        "timely_closes": 703,
-        "win_rate": 0.4637,
-        "wins": 339
+        "timely_closes": 704,
+        "win_rate": 0.4645,
+        "wins": 340
       },
       "OP": {
-        "active": 18,
+        "active": 19,
         "breakeven": 0,
         "closed": 805,
         "closed_expectancy_R": -0.10642,
@@ -13692,7 +15722,7 @@
         "late_closes": 52,
         "late_share_of_closed": 0.0646,
         "losses": 423,
-        "opened": 823,
+        "opened": 824,
         "timely_closes": 753,
         "win_rate": 0.4745,
         "wins": 382
@@ -13726,57 +15756,57 @@
       "POL": {
         "active": 8,
         "breakeven": 0,
-        "closed": 848,
-        "closed_expectancy_R": -0.03345,
-        "closed_net_R": -28.36868,
-        "closed_net_usd": -4255.3,
-        "eligible_after_friction_day_cluster_lcb_R": -0.208664,
-        "eligible_after_friction_expectancy_R": -0.09427,
-        "eligible_after_friction_net_R": -72.68436,
+        "closed": 849,
+        "closed_expectancy_R": -0.03549,
+        "closed_net_R": -30.13184,
+        "closed_net_usd": -4519.78,
+        "eligible_after_friction_day_cluster_lcb_R": -0.208894,
+        "eligible_after_friction_expectancy_R": -0.09652,
+        "eligible_after_friction_net_R": -74.51536,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 771,
-        "eligible_timely_perpetual_expectancy_R": -0.0212,
-        "eligible_timely_perpetual_net_R": -16.3475,
-        "eligible_timely_perpetual_share": 0.9092,
-        "eligible_timely_perpetual_win_rate": 0.4799,
+        "eligible_timely_perpetual_closed": 772,
+        "eligible_timely_perpetual_expectancy_R": -0.02346,
+        "eligible_timely_perpetual_net_R": -18.11066,
+        "eligible_timely_perpetual_share": 0.9093,
+        "eligible_timely_perpetual_win_rate": 0.4793,
         "late_closes": 77,
-        "late_share_of_closed": 0.0908,
-        "losses": 444,
-        "opened": 856,
-        "timely_closes": 771,
-        "win_rate": 0.4764,
+        "late_share_of_closed": 0.0907,
+        "losses": 445,
+        "opened": 857,
+        "timely_closes": 772,
+        "win_rate": 0.4759,
         "wins": 404
       },
       "PYTH": {
         "active": 9,
         "breakeven": 0,
-        "closed": 605,
-        "closed_expectancy_R": 0.06753,
-        "closed_net_R": 40.85733,
-        "closed_net_usd": 6128.6,
-        "eligible_after_friction_day_cluster_lcb_R": -0.20246,
-        "eligible_after_friction_expectancy_R": -0.01363,
-        "eligible_after_friction_net_R": -8.13462,
+        "closed": 606,
+        "closed_expectancy_R": 0.07553,
+        "closed_net_R": 45.77006,
+        "closed_net_usd": 6865.51,
+        "eligible_after_friction_day_cluster_lcb_R": -0.198708,
+        "eligible_after_friction_expectancy_R": -0.0056,
+        "eligible_after_friction_net_R": -3.3465,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 15,
-        "eligible_timely_perpetual_closed": 597,
-        "eligible_timely_perpetual_expectancy_R": 0.07125,
-        "eligible_timely_perpetual_net_R": 42.53647,
+        "eligible_timely_perpetual_closed": 598,
+        "eligible_timely_perpetual_expectancy_R": 0.07935,
+        "eligible_timely_perpetual_net_R": 47.44919,
         "eligible_timely_perpetual_share": 0.9868,
-        "eligible_timely_perpetual_win_rate": 0.4807,
+        "eligible_timely_perpetual_win_rate": 0.4816,
         "late_closes": 8,
         "late_share_of_closed": 0.0132,
         "losses": 314,
-        "opened": 614,
-        "timely_closes": 597,
-        "win_rate": 0.481,
-        "wins": 291
+        "opened": 615,
+        "timely_closes": 598,
+        "win_rate": 0.4818,
+        "wins": 292
       },
       "RENDER": {
-        "active": 10,
+        "active": 11,
         "breakeven": 0,
         "closed": 526,
         "closed_expectancy_R": -0.11982,
@@ -13796,7 +15826,7 @@
         "late_closes": 16,
         "late_share_of_closed": 0.0304,
         "losses": 281,
-        "opened": 536,
+        "opened": 537,
         "timely_closes": 510,
         "win_rate": 0.4658,
         "wins": 245
@@ -13804,31 +15834,31 @@
       "SEI": {
         "active": 10,
         "breakeven": 0,
-        "closed": 648,
-        "closed_expectancy_R": -0.08,
-        "closed_net_R": -51.8379,
-        "closed_net_usd": -7775.68,
-        "eligible_after_friction_day_cluster_lcb_R": -0.237521,
-        "eligible_after_friction_expectancy_R": -0.18029,
-        "eligible_after_friction_net_R": -111.06148,
+        "closed": 649,
+        "closed_expectancy_R": -0.07739,
+        "closed_net_R": -50.22785,
+        "closed_net_usd": -7534.18,
+        "eligible_after_friction_day_cluster_lcb_R": -0.234844,
+        "eligible_after_friction_expectancy_R": -0.17754,
+        "eligible_after_friction_net_R": -109.54246,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 21,
-        "eligible_timely_perpetual_closed": 616,
-        "eligible_timely_perpetual_expectancy_R": -0.09507,
-        "eligible_timely_perpetual_net_R": -58.56172,
-        "eligible_timely_perpetual_share": 0.9506,
-        "eligible_timely_perpetual_win_rate": 0.4692,
+        "eligible_timely_perpetual_closed": 617,
+        "eligible_timely_perpetual_expectancy_R": -0.0923,
+        "eligible_timely_perpetual_net_R": -56.95167,
+        "eligible_timely_perpetual_share": 0.9507,
+        "eligible_timely_perpetual_win_rate": 0.47,
         "late_closes": 32,
-        "late_share_of_closed": 0.0494,
+        "late_share_of_closed": 0.0493,
         "losses": 340,
-        "opened": 658,
-        "timely_closes": 616,
-        "win_rate": 0.4753,
-        "wins": 308
+        "opened": 659,
+        "timely_closes": 617,
+        "win_rate": 0.4761,
+        "wins": 309
       },
       "SHIB": {
-        "active": 7,
+        "active": 8,
         "breakeven": 0,
         "closed": 803,
         "closed_expectancy_R": -0.13292,
@@ -13848,7 +15878,7 @@
         "late_closes": 56,
         "late_share_of_closed": 0.0697,
         "losses": 458,
-        "opened": 810,
+        "opened": 811,
         "timely_closes": 747,
         "win_rate": 0.4296,
         "wins": 345
@@ -13856,31 +15886,31 @@
       "SOL": {
         "active": 12,
         "breakeven": 0,
-        "closed": 803,
-        "closed_expectancy_R": -0.11821,
-        "closed_net_R": -94.92375,
-        "closed_net_usd": -14238.56,
-        "eligible_after_friction_day_cluster_lcb_R": -0.196072,
-        "eligible_after_friction_expectancy_R": -0.13725,
-        "eligible_after_friction_net_R": -102.80378,
+        "closed": 804,
+        "closed_expectancy_R": -0.11725,
+        "closed_net_R": -94.26951,
+        "closed_net_usd": -14140.43,
+        "eligible_after_friction_day_cluster_lcb_R": -0.194741,
+        "eligible_after_friction_expectancy_R": -0.13625,
+        "eligible_after_friction_net_R": -102.18677,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 749,
-        "eligible_timely_perpetual_expectancy_R": -0.11289,
-        "eligible_timely_perpetual_net_R": -84.55543,
+        "eligible_timely_perpetual_closed": 750,
+        "eligible_timely_perpetual_expectancy_R": -0.11187,
+        "eligible_timely_perpetual_net_R": -83.90119,
         "eligible_timely_perpetual_share": 0.9328,
-        "eligible_timely_perpetual_win_rate": 0.4272,
+        "eligible_timely_perpetual_win_rate": 0.428,
         "late_closes": 54,
         "late_share_of_closed": 0.0672,
         "losses": 456,
-        "opened": 815,
-        "timely_closes": 749,
-        "win_rate": 0.4321,
-        "wins": 347
+        "opened": 816,
+        "timely_closes": 750,
+        "win_rate": 0.4328,
+        "wins": 348
       },
       "STX": {
-        "active": 8,
+        "active": 9,
         "breakeven": 0,
         "closed": 592,
         "closed_expectancy_R": -0.17532,
@@ -13900,7 +15930,7 @@
         "late_closes": 7,
         "late_share_of_closed": 0.0118,
         "losses": 330,
-        "opened": 600,
+        "opened": 601,
         "timely_closes": 585,
         "win_rate": 0.4426,
         "wins": 262
@@ -13908,31 +15938,31 @@
       "SUI": {
         "active": 7,
         "breakeven": 0,
-        "closed": 707,
-        "closed_expectancy_R": -0.09241,
-        "closed_net_R": -65.33693,
-        "closed_net_usd": -9800.54,
-        "eligible_after_friction_day_cluster_lcb_R": -0.273835,
-        "eligible_after_friction_expectancy_R": -0.13519,
-        "eligible_after_friction_net_R": -90.57489,
+        "closed": 708,
+        "closed_expectancy_R": -0.09633,
+        "closed_net_R": -68.20246,
+        "closed_net_usd": -10230.37,
+        "eligible_after_friction_day_cluster_lcb_R": -0.277955,
+        "eligible_after_friction_expectancy_R": -0.13935,
+        "eligible_after_friction_net_R": -93.50587,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 23,
-        "eligible_timely_perpetual_closed": 670,
-        "eligible_timely_perpetual_expectancy_R": -0.0818,
-        "eligible_timely_perpetual_net_R": -54.80775,
+        "eligible_timely_perpetual_closed": 671,
+        "eligible_timely_perpetual_expectancy_R": -0.08595,
+        "eligible_timely_perpetual_net_R": -57.67328,
         "eligible_timely_perpetual_share": 0.9477,
-        "eligible_timely_perpetual_win_rate": 0.4582,
+        "eligible_timely_perpetual_win_rate": 0.4575,
         "late_closes": 37,
         "late_share_of_closed": 0.0523,
-        "losses": 386,
-        "opened": 714,
-        "timely_closes": 670,
-        "win_rate": 0.454,
+        "losses": 387,
+        "opened": 715,
+        "timely_closes": 671,
+        "win_rate": 0.4534,
         "wins": 321
       },
       "TIA": {
-        "active": 9,
+        "active": 10,
         "breakeven": 0,
         "closed": 596,
         "closed_expectancy_R": -0.13727,
@@ -13952,13 +15982,13 @@
         "late_closes": 14,
         "late_share_of_closed": 0.0235,
         "losses": 325,
-        "opened": 605,
+        "opened": 606,
         "timely_closes": 582,
         "win_rate": 0.4547,
         "wins": 271
       },
       "TRX": {
-        "active": 5,
+        "active": 6,
         "breakeven": 0,
         "closed": 551,
         "closed_expectancy_R": -0.08948,
@@ -13978,13 +16008,13 @@
         "late_closes": 32,
         "late_share_of_closed": 0.0581,
         "losses": 353,
-        "opened": 556,
+        "opened": 557,
         "timely_closes": 519,
         "win_rate": 0.3593,
         "wins": 198
       },
       "UNI": {
-        "active": 4,
+        "active": 5,
         "breakeven": 0,
         "closed": 808,
         "closed_expectancy_R": -0.14966,
@@ -14004,7 +16034,7 @@
         "late_closes": 57,
         "late_share_of_closed": 0.0705,
         "losses": 442,
-        "opened": 812,
+        "opened": 813,
         "timely_closes": 751,
         "win_rate": 0.453,
         "wins": 366
@@ -14036,7 +16066,7 @@
         "wins": 341
       },
       "WLD": {
-        "active": 10,
+        "active": 11,
         "breakeven": 0,
         "closed": 607,
         "closed_expectancy_R": -0.1269,
@@ -14056,13 +16086,13 @@
         "late_closes": 9,
         "late_share_of_closed": 0.0148,
         "losses": 321,
-        "opened": 617,
+        "opened": 618,
         "timely_closes": 598,
         "win_rate": 0.4712,
         "wins": 286
       },
       "XLM": {
-        "active": 3,
+        "active": 4,
         "breakeven": 0,
         "closed": 808,
         "closed_expectancy_R": -0.04855,
@@ -14082,7 +16112,7 @@
         "late_closes": 50,
         "late_share_of_closed": 0.0619,
         "losses": 440,
-        "opened": 811,
+        "opened": 812,
         "timely_closes": 758,
         "win_rate": 0.4554,
         "wins": 368
@@ -14114,18 +16144,18 @@
         "wins": 354
       }
     },
-    "total_research_notional_usd": 317460000.0
+    "total_research_notional_usd": 317770000.0
   },
   "friction_stress_scenario": {
-    "additional_assumed_cost_usd": 313464.06,
+    "additional_assumed_cost_usd": 313600.01,
     "assumption": "entry bid-ask crossing plus hypothetical impact; not observed fills",
-    "modeled_closes": 31324,
-    "net_R": -4843.07839,
-    "net_pnl_usd": -726461.76
+    "modeled_closes": 31335,
+    "net_R": -4831.51203,
+    "net_pnl_usd": -724726.8
   },
   "late_closed_this_run": 0,
   "late_closures": 1828,
-  "ledger_tip_sha256": "e746d917ef63469352bd19ec6aa73836d3ada17b63f61826e48c4c7292a04dfd",
+  "ledger_tip_sha256": "0857b5d8fc752ff135f8563dce84230e731955d21b176a721ab6c47d877cbdc7",
   "limitations": [
     "Correlated trades are not independent evidence of edge",
     "Fixed-horizon only; NO stop-loss, take-profit or interim exit; delayed observations excluded from eligible sample",
@@ -14137,19 +16167,20 @@
     "note": "Fresh validated public snapshots only. Spot proxies do not count toward perpetual strategy evidence.",
     "real_perpetual_quote_available_this_tick": true,
     "successful_sources": [
+      "kraken-spot-proxy",
       "okx-swap"
     ],
-    "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 2,
-    "validated_real_public_quotes": 2,
-    "validated_spot_proxy_quotes": 0
+    "unavailable_symbol_source_requests": 4,
+    "validated_perpetual_quotes": 46,
+    "validated_real_public_quotes": 48,
+    "validated_spot_proxy_quotes": 2
   },
-  "losses": 16975,
+  "losses": 16978,
   "max_closed_equity_drawdown_usd": 419153.3,
   "missed_due_snapshots": 0,
-  "net_R": -2764.1821,
-  "net_expectancy_R": -0.08811,
-  "net_pnl_usd": -414627.31,
+  "net_R": -2751.7094,
+  "net_expectancy_R": -0.08768,
+  "net_pnl_usd": -412756.41,
   "observation_heartbeat": {
     "attempted_symbols": [],
     "attested_by_real_quote": false,
@@ -14158,18 +16189,18 @@
     "observed_at": null,
     "provider": null
   },
-  "open": 374,
+  "open": 394,
   "opportunity_history": {
     "append_only": true,
-    "head_sha256": "7ccd634b1f1d2c94163b7560386153fd9386c0c73debc030e6a61a0f92742d57",
+    "head_sha256": "892906545664a0239b53c4251ff99496f5b6c19cac69d836cbea6db1c1691b5f",
     "individual_opportunities_not_reconstructed": true,
     "path": "data/opportunity_history.jsonl",
-    "rows": 428,
+    "rows": 429,
     "version": "opportunity-history-hash-chain-v1"
   },
   "pending": 0,
-  "profit_factor": 0.8404,
-  "provider_observations": 2,
+  "profit_factor": 0.8411,
+  "provider_observations": 48,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -14180,7 +16211,7 @@
       24
     ],
     "clean_future_10m_intervals_to_reach_90pct": 0,
-    "clean_future_10m_intervals_to_reach_95pct": 46,
+    "clean_future_10m_intervals_to_reach_95pct": 45,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -14196,9 +16227,8 @@
     "near_duplicate_fast_intervals": 2,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.005,
+    "prior_observation_gap_minutes": 10.006,
     "recent_observation_gaps_minutes": [
-      10.005,
       10.005,
       10.006,
       10.005,
@@ -14269,7 +16299,8 @@
       10.004,
       10.004,
       10.004,
-      10.005
+      10.005,
+      10.006
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -14278,9 +16309,16 @@
     "throttle_applies_to": "new OPEN only; existing due exits still attempted"
   },
   "schema_version": 8,
-  "source_errors": {},
+  "source_errors": {
+    "PROVIDER_BLOCKED:binance-futures": "HTTP 451",
+    "PROVIDER_BLOCKED:bybit-linear": "HTTP 403",
+    "RUNE:okx-swap": "OKX missing ticker",
+    "TON:binance-futures": "HTTP 451",
+    "TON:bybit-linear": "HTTP 403",
+    "TON:okx-swap": "OKX missing ticker"
+  },
   "spot_proxy_closures": 0,
-  "status": "NO_NEW_SIGNALS",
+  "status": "OK",
   "strategy_horizon": {
     "ATRCHAN-v1 / 12h": {
       "evidence": "multi-regime validation needed",
@@ -14416,9 +16454,9 @@
     },
     "BR-proxy-v1 / 4h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.12256,
-      "n": 837,
-      "net_R": -102.58329
+      "expectancy_R": -0.12529,
+      "n": 838,
+      "net_R": -104.99454
     },
     "BR-proxy-v1 / 8h": {
       "evidence": "multi-regime validation needed",
@@ -14596,15 +16634,15 @@
     },
     "CTRL-v1 / 4h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.02327,
-      "n": 1088,
-      "net_R": -25.32092
+      "expectancy_R": -0.02177,
+      "n": 1089,
+      "net_R": -23.71087
     },
     "CTRL-v1 / 8h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.07207,
-      "n": 894,
-      "net_R": -64.42951
+      "expectancy_R": -0.07105,
+      "n": 895,
+      "net_R": -63.58915
     },
     "DC-v1 / 12h": {
       "evidence": "multi-regime validation needed",
@@ -14680,9 +16718,9 @@
     },
     "FB-v3 / 12h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": 0.19976,
-      "n": 111,
-      "net_R": 22.17321
+      "expectancy_R": 0.24184,
+      "n": 112,
+      "net_R": 27.08593
     },
     "FB-v3 / 1h": {
       "evidence": "multi-regime validation needed",
@@ -14836,9 +16874,9 @@
     },
     "MR-proxy-v1 / 24h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": 0.34919,
-      "n": 488,
-      "net_R": 170.40483
+      "expectancy_R": 0.34981,
+      "n": 489,
+      "net_R": 171.05907
     },
     "MR-proxy-v1 / 2h": {
       "evidence": "multi-regime validation needed",
@@ -14848,9 +16886,9 @@
     },
     "MR-proxy-v1 / 4h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.10689,
-      "n": 796,
-      "net_R": -85.08833
+      "expectancy_R": -0.10852,
+      "n": 798,
+      "net_R": -86.6012
     },
     "MR-proxy-v1 / 8h": {
       "evidence": "multi-regime validation needed",
@@ -14944,9 +16982,9 @@
     },
     "RSI-v1 / 24h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.46871,
-      "n": 195,
-      "net_R": -91.39863
+      "expectancy_R": -0.41231,
+      "n": 197,
+      "net_R": -81.22505
     },
     "RSI-v1 / 2h": {
       "evidence": "multi-regime validation needed",
@@ -15148,9 +17186,9 @@
     },
     "TREND-v1 / 12h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.34405,
-      "n": 71,
-      "net_R": -24.42783
+      "expectancy_R": -0.32439,
+      "n": 72,
+      "net_R": -23.35643
     },
     "TREND-v1 / 1h": {
       "evidence": "multi-regime validation needed",
@@ -15160,9 +17198,9 @@
     },
     "TREND-v1 / 24h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.57096,
-      "n": 88,
-      "net_R": -50.24431
+      "expectancy_R": -0.59674,
+      "n": 89,
+      "net_R": -53.10984
     },
     "TREND-v1 / 2h": {
       "evidence": "multi-regime validation needed",
@@ -15327,12 +17365,12 @@
       "net_R": -10.89753
     }
   },
-  "timestamp": "2026-10-30T23:57:10.280769Z",
-  "total_round_trip_fees_usd": 313720.0,
+  "timestamp": "2026-10-31T00:07:10.621087Z",
+  "total_round_trip_fees_usd": 313830.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
-  "verified_events": 63118,
-  "win_rate": 0.4589,
-  "wins": 14397,
+  "verified_events": 63160,
+  "win_rate": 0.459,
+  "wins": 14405,
   "workflow_interval_note": "GitHub scheduled triggers are best-effort"
 }
