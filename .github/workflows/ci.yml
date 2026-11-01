@@ -44,4 +44,12 @@ jobs:
       - run: python -m py_compile stock_lab/__init__.py stock_lab/source.py stock_lab/strategies.py stock_lab/engine.py stock_lab/research.py
       - run: python -m v2.legacy_audit --verify-main > /tmp/v2-legacy-fee-and-exposure-audit.json
       - run: python audit.py
+      - run: python ml_dataset.py --output /tmp/ml_dataset_v1.jsonl --report /tmp/ml_dataset_v1_report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ml-dataset-v1
+          path: |
+            /tmp/ml_dataset_v1.jsonl
+            /tmp/ml_dataset_v1_report.json
+          if-no-files-found: error
       - run: python engine.py --verify-only
