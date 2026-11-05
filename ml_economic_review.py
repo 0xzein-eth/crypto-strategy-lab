@@ -14,11 +14,11 @@ def summarize(rows):
     pnl = [float(r["net_pnl_usd"]) for r in rows]
     gains = sum(x for x in pnl if x > 0)
     losses = -sum(x for x in pnl if x < 0)
-    equity = peak = drawdown = 0.0
-    for value in pnl:
-        equity += value
-        peak = max(peak, equity)
-        drawdown = max(drawdown, peak - equity)
+    equity_r = peak_r = drawdown_r = 0.0
+    for row in rows:
+        equity_r += float(row["normalized_R"])
+        peak_r = max(peak_r, equity_r)
+        drawdown_r = max(drawdown_r, peak_r - equity_r)
     return {
         "n": n,
         "win_rate": sum(int(r["label_net_profit"]) for r in rows) / n,
@@ -30,7 +30,7 @@ def summarize(rows):
         "expectancy_R": round(sum(float(r["normalized_R"]) for r in rows) / n, 8),
         "net_R": round(sum(float(r["normalized_R"]) for r in rows), 8),
         "profit_factor": round(gains / losses, 8) if losses else None,
-        "max_drawdown_R": round(drawdown / 10000.0, 8),
+        "max_drawdown_R": round(drawdown_r, 8),
     }
 
 
