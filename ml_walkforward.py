@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Expanding walk-forward shadow predictions using only already-matured labels.
+"""Rolling walk-forward shadow predictions using only already-matured labels.
 
 This is a historical walk-forward simulation, not an immutable live prediction
 ledger. A weekly model snapshot predicts that week's OPEN rows using only
@@ -87,7 +87,7 @@ def run(rows):
     predictions.sort(key=lambda r: (r["entry_at"], r["horizon_hours"], r["sample_id"]))
     return {
         "version": MODEL_VERSION,
-        "method": "weekly_expanding_walkforward; train labels exit_observed_at strictly before prediction-week start",
+        "method": "weekly_rolling_walkforward; train labels exit_observed_at strictly before prediction-week start",
         "feature_policy": "OPEN_TIME_ONLY",
         "numeric_features": list(NUMERIC),
         "hyperparameters": {"epochs": EPOCHS, "learning_rate": LEARNING_RATE, "l2": L2, "max_matured_training_rows": MAX_TRAIN_ROWS},
