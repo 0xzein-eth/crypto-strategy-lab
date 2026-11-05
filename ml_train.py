@@ -54,11 +54,11 @@ def metrics(probabilities, labels):
     }
 
 
-def encode_fit(train):
+def encode_fit(train, numeric_fields=NUMERIC):
     """Fit imputation/scaling and one-hot vocabulary on training rows only."""
     numeric_stats = {}
     categories = {}
-    for key in NUMERIC:
+    for key in numeric_fields:
         values = [float(r["features"][key]) for r in train
                   if isinstance(r["features"].get(key), (int, float))
                   and math.isfinite(float(r["features"][key]))]
@@ -70,18 +70,18 @@ def encode_fit(train):
         categories[key] = sorted({str(r["features"].get(key) or "__MISSING__")
                                   for r in train})
     columns = ["intercept"]
-    columns += [key for key in NUMERIC]
-    columns += [key + "__missing" for key in NUMERIC]
+    columns += [key for key in numeric_fields]
+    columns += [key + "__missing" for key in numeric_fields]
     for key in CATEGORICAL:
         columns += [key + "=" + value for value in categories[key]]
         columns += [key + "=__UNKNOWN__"]
-    return {"numeric": numeric_stats, "categories": categories, "columns": columns}
+    return {"numeric": numeric_stats, "numeric_feature_names": list(numeric_fields), "categories": categories, "columns": columns}
 
 
-def encode(row, schema):
+def encode(row, schema, numeric_fields=None):
     features = row["features"]
     vector = [1.0]
-    for key in NUMERIC:
+    for key in (numeric_fields if numeric_fields is not None else schema.get("numeric_feature_names", NUMERIC)):
         value = features.get(key)
         missing = not isinstance(value, (int, float)) or not math.isfinite(float(value))
         mean, scale = schema["numeric"][key]
@@ -142,7 +142,7 @@ def split_chronologically(rows, purge_hours=24):
     return train, validation, test
 
 
-def train_horizon(rows, horizon):
+def train_horizon(rows, horizon, numeric_fields=NUMERIC):
     cohort = [r for r in rows if r["features"].get("horizon_hours") == horizon]
     split = split_chronologically(cohort)
     if split is None:
@@ -158,12 +158,12 @@ def train_horizon(rows, horizon):
     if len(set(y_train)) < 2:
         return {"horizon_hours": horizon, "status": "INSUFFICIENT_DATA",
                 "n_total": len(cohort), "reason": "training labels contain one class"}
-    schema = encode_fit(train)
-    weights = fit_logistic([encode(r, schema) for r in train], y_train)
+    schema = encode_fit(train, numeric_fields)
+    weights = fit_logistic([encode(r, schema, numeric_fields) for r in train], y_train)
     y_valid = [int(r["labels"]["net_profit"]) for r in validation]
     y_test = [int(r["labels"]["net_profit"]) for r in test]
-    p_valid = predict([encode(r, schema) for r in validation], weights)
-    p_test = predict([encode(r, schema) for r in test], weights)
+    p_valid = predict([encode(r, schema, numeric_fields) for r in validation], weights)
+    p_test = predict([encode(r, schema, numeric_fields) for r in test], weights)
     # A no-skill baseline uses training prevalence; no threshold is optimized.
     prevalence = sum(y_train)/len(y_train)
     base_valid = [prevalence] * len(y_valid)
