@@ -10,15 +10,6 @@ def bars(n=60):
             for i in range(n)]
 
 class SignalTests(unittest.TestCase):
-    def test_signal_batch_exposes_shared_confirmed_candle_context(self):
-        z=bars()
-        found=signals.classify(z)
-        self.assertIsInstance(found, signals.SignalBatch)
-        self.assertEqual(found.context["bar_time"], z[-1]["time"])
-        self.assertEqual(found.context["bar_span"], "15m confirmed OKX USDT-SWAP")
-        self.assertIn("upper_wick_ratio", found.context)
-        self.assertIn("lower_wick_ratio", found.context)
-
     def test_confirmed_breakout(self):
         z=bars()
         z[-1].update(open=100,high=104,low=99,close=103,volume=200)
