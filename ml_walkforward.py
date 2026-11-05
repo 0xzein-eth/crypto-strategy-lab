@@ -16,7 +16,8 @@ NUMERIC = tuple(dict.fromkeys(
     ml_train.NUMERIC + tuple(k for group in ml_features.FEATURE_GROUPS.values()
                              for k in group)))
 MODEL_VERSION = "walkforward-logistic-shadow-v1"
-EPOCHS = 250
+MAX_TRAIN_ROWS = 1500
+EPOCHS = 120
 LEARNING_RATE = 0.03
 L2 = 0.01
 
@@ -51,7 +52,7 @@ def run(rows):
         weeks = sorted({week_start(r["entry_at"]) for r in cohort})
         for cutoff in weeks:
             batch = [r for r in cohort if week_start(r["entry_at"]) == cutoff]
-            train = matured_training_rows(cohort, horizon, cutoff)
+            train = matured_training_rows(cohort, horizon, cutoff)[-MAX_TRAIN_ROWS:]
             labels = [int(r["labels"]["net_profit"]) for r in train]
             if len(train) < 50 or len(set(labels)) < 2:
                 skipped.append({"horizon_hours": horizon, "week_start": cutoff.isoformat(),
@@ -89,7 +90,7 @@ def run(rows):
         "method": "weekly_expanding_walkforward; train labels exit_observed_at strictly before prediction-week start",
         "feature_policy": "OPEN_TIME_ONLY",
         "numeric_features": list(NUMERIC),
-        "hyperparameters": {"epochs": EPOCHS, "learning_rate": LEARNING_RATE, "l2": L2},
+        "hyperparameters": {"epochs": EPOCHS, "learning_rate": LEARNING_RATE, "l2": L2, "max_matured_training_rows": MAX_TRAIN_ROWS},
         "prediction_count": len(predictions),
         "skipped_batches": skipped,
         "predictions": predictions,
