@@ -10,6 +10,13 @@ import diverse_confirmed
 import band_hypotheses
 
 BAR_MINUTES = 15
+
+
+class SignalBatch(list):
+    """Signal list with shared confirmed-candle context for every sampled arm."""
+    def __init__(self, signals, context):
+        super().__init__(signals)
+        self.context = dict(context)
 MIN_BARS = 60
 MAX_LATEST_AGE_MINUTES = 25  # Reject reuse of a >25m old confirmed candle
 
@@ -238,7 +245,13 @@ def classify(bars, diagnostics=None):
     band_candidates, band_funnel = band_hypotheses.evaluate(bars, f)
     if diagnostics is not None:
         diagnostics.update(band_funnel)
-    return events + diverse_confirmed.detect(bars, f) + band_candidates
+    shared_context = dict(f)
+    shared_context.update(upper_wick_ratio=round(upper_wick, 5),
+                          lower_wick_ratio=round(lower_wick, 5),
+                          source_version="confirmed-15m-v1",
+                          signal_rule="shared confirmed 15m OPEN-time context")
+    return SignalBatch(events + diverse_confirmed.detect(bars, f) + band_candidates,
+                       shared_context)
 
 
 def from_okx(symbol, market_snapshot, requester, clock, diagnostics=None):
