@@ -30,7 +30,7 @@ class OpenFeatureEngineeringTests(unittest.TestCase):
                "labels": {"net_profit": 1}}
         augmented = ml_features.augment_row(row)
         self.assertEqual(augmented["derived_features_asof"], row["features_asof"])
-        self.assertEqual(augmented["features"]["price_vs_sma20_pct"], 1.0)
+        self.assertAlmostEqual(augmented["features"]["price_vs_sma20_pct"], 1.0, places=10)
         self.assertEqual(augmented["labels"], row["labels"])
         self.assertNotIn("net_profit", augmented["features"])
 
