@@ -266,7 +266,7 @@ class LearningTests(unittest.TestCase):
             day=(dt.date(2026,2,1)+dt.timedelta(days=i)).isoformat()
             rows.extend([trade("BR-v3",day,-3,horizon=24,side="LONG")]*500)
             rows.extend([trade("CTRL-v1",day,0,horizon=24,side="LONG")]*500)
-        profile=learner.analysis(rows)
+        profile=learner.analysis(rows, include_cells=True)
         self.assertNotIn("BR-v3|LONG|24h",
                          profile["training_only_underperforming_cells"])
 
