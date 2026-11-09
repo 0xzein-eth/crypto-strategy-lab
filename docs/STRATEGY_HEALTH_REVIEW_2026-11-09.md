@@ -2,7 +2,7 @@
 
 ## Scope and observation age
 
-Snapshot from the canonical v8 paper ledger and report at **2026-11-09 11:26:51 UTC**. The first verified OPEN in the ledger is **2026-10-08 03:18:06 UTC**, so the prospective paper experiment had been running for approximately **32 days 8 hours (4.6 weeks)**.
+Snapshot from the canonical v8 paper ledger and report at **2026-11-09 11:36:51 UTC**. The first verified OPEN in the ledger is **2026-10-08 03:18:04.667 UTC**, so the prospective paper experiment had been running for approximately **32 days 8 hours (4.6 weeks)**.
 
 This is an unfunded PAPER-only research ledger. The USD figures below are hypothetical notional P&L, not exchange-account losses, wallet equity or investable portfolio drawdown.
 
@@ -10,9 +10,9 @@ This is an unfunded PAPER-only research ledger. The USD figures below are hypoth
 
 | Metric | Snapshot |
 |---|---:|
-| Verified events | 94,029 |
+| Verified events | 94,069 |
 | Closed experiments | 46,764 |
-| Still open | 501 |
+| Still open | 541 |
 | Wins / losses | 21,395 / 25,368 |
 | Win rate | 45.75% |
 | Gross price P&L before fees | -$142,377.05 |
