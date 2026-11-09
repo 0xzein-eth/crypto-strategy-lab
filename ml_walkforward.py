@@ -29,7 +29,7 @@ def week_start(value):
 
 
 def matured_training_rows(rows, horizon, cutoff):
-    cutoff = ml_train.parse_time(cutoff)
+    cutoff = cutoff if isinstance(cutoff, dt.datetime) else ml_train.parse_time(cutoff)
     selected = []
     for row in rows:
         if row["features"].get("horizon_hours") != horizon:
