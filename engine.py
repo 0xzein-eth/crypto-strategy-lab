@@ -516,9 +516,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     # Only a strict multi-day TRAINING signal can attenuate an arm. The
     # frozen monitoring/holdout portion is never used to select next OPENs.
     # Do not call this on pure offline proxy fixtures without candle signals.
-    learning_profile = learner.analysis(records) if advanced is not None else {}
+    learning_profile = learner.analysis(records, include_cells=True) if advanced is not None else {}
     underperformers = learning_profile.get("training_only_underperformers", [])
-    negative_cells = learning_profile.get("training_only_underperforming_cells", [])
+    negative_cells = learning_profile.get("training_negative_cells_v1", [])
     selection_profile = {
         "entry_exposure_counts_v1": exposure_counts,
         "train_negative_arms_v1": [name for name in underperformers
