@@ -216,7 +216,7 @@ class LearningTests(unittest.TestCase):
                     trade("CTRL-v1",day,0.0,horizon=2,side="LONG"),
                     trade("BR-v3",day,1.0,horizon=2,side="LONG"),
                 ])
-        profile=learner.analysis(rows)
+        profile=learner.analysis(rows, include_cells=True)
         key="BR-v3|LONG|24h"
         self.assertIn(key,profile["training_only_underperforming_cells"])
         self.assertNotIn("BR-v3|SHORT|24h",
@@ -238,7 +238,7 @@ class LearningTests(unittest.TestCase):
                     trade("BR-v3",day,-1.0,horizon=24,side="LONG"),
                     trade("MR-v3",day,1.0,horizon=24,side="LONG"),
                 ])
-        profile=learner.analysis(rows)
+        profile=learner.analysis(rows, include_cells=True)
         self.assertIn("BR-v3|LONG|24h",
                       profile["training_only_underperforming_cells"])
         options=[{"strategy":"BR-v3","side":"LONG"},
@@ -254,7 +254,7 @@ class LearningTests(unittest.TestCase):
             if x["strategy"]=="BR-v3" and learner.stable_bucket(
                     "holdout:"+learner.day_of(x),5)==0:
                 x["normalized_R"]=3.0
-        profile2=learner.analysis(changed)
+        profile2=learner.analysis(changed, include_cells=True)
         self.assertEqual(profile["training_only_underperforming_cells"],
                          profile2["training_only_underperforming_cells"])
         self.assertEqual(picks,[learner.choose(options,changed,"BTC",24,k,0,profile2)
@@ -280,7 +280,7 @@ class LearningTests(unittest.TestCase):
                 trade("CTRL-v1",day,0.0,horizon=24,side="LONG",
                       provider="bybit-linear"),
             ])
-        profile=learner.analysis(rows)
+        profile=learner.analysis(rows, include_cells=True)
         self.assertNotIn("BR-v3|LONG|24h",
                          profile["training_only_underperforming_cells"])
         self.assertEqual(
