@@ -104,15 +104,20 @@ def sigmoid(value):
 
 
 def fit_logistic(matrix, labels, learning_rate=0.05, epochs=1200, l2=0.01):
-    """Full-batch gradient descent with fixed, predeclared hyperparameters."""
+    """Full-batch gradient descent over active features; hyperparameters stay fixed."""
     width = len(matrix[0])
     weights = [0.0] * width
     n = len(labels)
+    # One-hot categorical columns make these vectors sparse. Precompute active
+    # coordinates once so each epoch avoids scanning hundreds of zero columns.
+    sparse_matrix = [[(j, value) for j, value in enumerate(row) if value != 0.0]
+                     for row in matrix]
     for _ in range(epochs):
         gradient = [0.0] * width
-        for row, target in zip(matrix, labels):
-            error = sigmoid(sum(w*x for w, x in zip(weights, row))) - target
-            for j, value in enumerate(row):
+        for active, target in zip(sparse_matrix, labels):
+            score = sum(weights[j] * value for j, value in active)
+            error = sigmoid(score) - target
+            for j, value in active:
                 gradient[j] += error * value
         for j in range(width):
             gradient[j] = gradient[j]/n + (l2*weights[j] if j else 0.0)
@@ -121,7 +126,11 @@ def fit_logistic(matrix, labels, learning_rate=0.05, epochs=1200, l2=0.01):
 
 
 def predict(matrix, weights):
-    return [sigmoid(sum(w*x for w, x in zip(weights, row))) for row in matrix]
+    result = []
+    for row in matrix:
+        score = sum(weights[j] * value for j, value in enumerate(row) if value != 0.0)
+        result.append(sigmoid(score))
+    return result
 
 
 def split_chronologically(rows, purge_hours=24.5):
