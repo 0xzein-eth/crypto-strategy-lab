@@ -159,7 +159,8 @@ def analysis(records):
             arm_train_avg is not None and
             arm_train_avg < ctrl_avg-REDUCE_WORSE_THAN_CONTROL_R)
         summary[arm]={
-            "n":len(rows),"train_n":len(train),"holdout_n":len(test),
+            "provider":matched_provider,
+                        "n":len(rows),"train_n":len(train),"holdout_n":len(test),
             "train_days":train_days,"holdout_days":test_days,
             "train_net_R":train_net,"holdout_net_R":test_net,
             "train_cluster_lcb_R":t_lcb,
@@ -182,14 +183,17 @@ def analysis(records):
         side=r.get("side")
         horizon=r.get("horizon_hours")
         if side in ("LONG","SHORT") and horizon in HORIZONS:
-            cell_groups[(r["strategy"],side,horizon)].append(r)
+            cell_groups[(r["strategy"],side,horizon,r.get("provider"))].append(r)
     cell_summary={}
     negative_cells=[]
+    # Advanced confirmed-candle arms are currently sourced only from OKX;
+    # compare them with the OKX CTRL cohort, not a cross-venue pooled control.
+    matched_provider="okx-swap"
     for arm in ADVANCED:
         for side in ("LONG","SHORT"):
             for horizon in HORIZONS:
-                rows=cell_groups[(arm,side,horizon)]
-                control=cell_groups[("CTRL-v1",side,horizon)]
+                rows=cell_groups[(arm,side,horizon,matched_provider)]
+                control=cell_groups[("CTRL-v1",side,horizon,matched_provider)]
                 train=[r for r in rows if stable_bucket("holdout:"+day_of(r),5)!=0]
                 control_train=[r for r in control
                                if stable_bucket("holdout:"+day_of(r),5)!=0]
