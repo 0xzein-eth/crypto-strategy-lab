@@ -4,9 +4,11 @@ import unittest
 import learner
 
 
-def trade(arm,day,r_value,market_type="perpetual",late=False,horizon=2):
+def trade(arm,day,r_value,market_type="perpetual",late=False,horizon=2,side="LONG",provider="okx-swap"):
     return {
         "strategy":arm,
+        "side":side,
+        "provider":provider,
         "created_at":day+"T03:00:00Z",
         "status":"CLOSED",
         "market_type":market_type,
@@ -198,6 +200,91 @@ class LearningTests(unittest.TestCase):
         baselines=[x for x in options if x["strategy"] in learner.BASELINES]
         self.assertTrue(all(learner.choose(baselines,[],"BTC",4,k,0,profile)[0]
                             in baselines for k in range(50)))
+
+
+    def test_direction_and_horizon_losses_are_isolated(self):
+        days=[(dt.date(2026,1,1)+dt.timedelta(days=i)).isoformat()
+              for i in range(100)]
+        rows=[]
+        for day in days:
+            for _ in range(2):
+                rows.extend([
+                    trade("CTRL-v1",day,0.0,horizon=24,side="LONG"),
+                    trade("BR-v3",day,-1.0,horizon=24,side="LONG"),
+                    trade("CTRL-v1",day,0.0,horizon=24,side="SHORT"),
+                    trade("BR-v3",day,1.0,horizon=24,side="SHORT"),
+                    trade("CTRL-v1",day,0.0,horizon=2,side="LONG"),
+                    trade("BR-v3",day,1.0,horizon=2,side="LONG"),
+                ])
+        profile=learner.analysis(rows, include_cells=True)
+        key="BR-v3|LONG|24h"
+        self.assertIn(key,profile["training_only_underperforming_cells"])
+        self.assertNotIn("BR-v3|SHORT|24h",
+                         profile["training_only_underperforming_cells"])
+        self.assertNotIn("BR-v3|LONG|2h",
+                         profile["training_only_underperforming_cells"])
+        cell=profile["directional_horizon_cells"][key]
+        self.assertGreaterEqual(cell["train_n"],50)
+        self.assertLess(cell["train_cluster_ucb_R"],-0.05)
+
+    def test_cell_downweighting_preserves_samples_and_ignores_holdout(self):
+        days=[(dt.date(2026,1,1)+dt.timedelta(days=i)).isoformat()
+              for i in range(100)]
+        rows=[]
+        for day in days:
+            for _ in range(2):
+                rows.extend([
+                    trade("CTRL-v1",day,0.0,horizon=24,side="LONG"),
+                    trade("BR-v3",day,-1.0,horizon=24,side="LONG"),
+                    trade("MR-v3",day,1.0,horizon=24,side="LONG"),
+                ])
+        profile=learner.analysis(rows, include_cells=True)
+        self.assertIn("BR-v3|LONG|24h",
+                      profile["training_only_underperforming_cells"])
+        options=[{"strategy":"BR-v3","side":"LONG"},
+                 {"strategy":"MR-v3","side":"LONG"}]
+        picks=[learner.choose(options,rows,"BTC",24,k,0,profile)
+               for k in range(2000)]
+        br=sum(p[0]["strategy"]=="BR-v3" for p in picks)
+        mr=sum(p[0]["strategy"]=="MR-v3" for p in picks)
+        self.assertGreater(br,0)  # Never erase an exploratory arm.
+        self.assertGreater(mr,br*2)
+        changed=[dict(x) for x in rows]
+        for x in changed:
+            if x["strategy"]=="BR-v3" and learner.stable_bucket(
+                    "holdout:"+learner.day_of(x),5)==0:
+                x["normalized_R"]=3.0
+        profile2=learner.analysis(changed, include_cells=True)
+        self.assertEqual(profile["training_only_underperforming_cells"],
+                         profile2["training_only_underperforming_cells"])
+        self.assertEqual(picks,[learner.choose(options,changed,"BTC",24,k,0,profile2)
+                                for k in range(2000)])
+
+    def test_cell_downweighting_requires_matched_control_and_day_breadth(self):
+        rows=[]
+        for i in range(3):
+            day=(dt.date(2026,2,1)+dt.timedelta(days=i)).isoformat()
+            rows.extend([trade("BR-v3",day,-3,horizon=24,side="LONG")]*500)
+            rows.extend([trade("CTRL-v1",day,0,horizon=24,side="LONG")]*500)
+        profile=learner.analysis(rows, include_cells=True)
+        self.assertNotIn("BR-v3|LONG|24h",
+                         profile["training_only_underperforming_cells"])
+
+
+    def test_cell_downweighting_requires_same_venue_control(self):
+        rows=[]
+        for i in range(100):
+            day=(dt.date(2026,3,1)+dt.timedelta(days=i)).isoformat()
+            rows.extend([
+                trade("BR-v3",day,-1.0,horizon=24,side="LONG"),
+                trade("CTRL-v1",day,0.0,horizon=24,side="LONG",
+                      provider="bybit-linear"),
+            ])
+        profile=learner.analysis(rows, include_cells=True)
+        self.assertNotIn("BR-v3|LONG|24h",
+                         profile["training_only_underperforming_cells"])
+        self.assertEqual(
+            profile["directional_horizon_cells"]["BR-v3|LONG|24h"]["control_train_n"],0)
 
     def test_unconfirmed_advanced_never_selected(self):
         options=[{"strategy":"BR-proxy-v1","side":"SHORT"},

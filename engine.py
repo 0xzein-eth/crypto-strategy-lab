@@ -513,20 +513,23 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     if opportunity_audit is not None:
         opportunity_audit.update(entry_sampling.make_opportunity_audit(requested))
         opportunity_audit["recent_7d_confirmed_open_counts"] = exposure_counts
-    # Only a strict multi-day TRAINING signal can attenuate an arm. The
+    # Only a strict multi-day TRAINING signal can attenuate a matched cell. The
     # frozen monitoring/holdout portion is never used to select next OPENs.
     # Do not call this on pure offline proxy fixtures without candle signals.
-    underperformers = (learner.analysis(records)["training_only_underperformers"]
-                       if advanced is not None else [])
+    learning_profile = learner.analysis(records, include_cells=True) if advanced is not None else {}
+    underperformers = learning_profile.get("training_only_underperformers", [])
+    negative_cells = learning_profile.get("training_negative_cells_v1", [])
     selection_profile = {
         "entry_exposure_counts_v1": exposure_counts,
         "train_negative_arms_v1": [name for name in underperformers
                                    if name in learner.ADVANCED],
-        "training_negative_policy_version": "day-cluster-training-only-v1",
+        "training_negative_policy_version": "side-horizon-training-only-v1",
+        "training_negative_cells_v1": negative_cells,
     }
     if opportunity_audit is not None:
         opportunity_audit["training_only_negative_arms_v1"] = (
             selection_profile["train_negative_arms_v1"])
+        opportunity_audit["training_only_negative_cells_v1"] = negative_cells
     # UTC-day budgets bound public CI/storage use and avoid accidental flood
     # from repeated manual dispatches. Existing full event history remains intact.
     utc_day = moment.date()

@@ -39,6 +39,14 @@ REDUCED_EXPLORATION_WEIGHT=1
 # Historical v8 closes without a frozen friction scenario remain eligible
 # with a transparent, conservative extra 0.12%-of-notional roundtrip haircut.
 LEGACY_EXTRA_COST_PCT=0.12
+HORIZONS=(1,2,4,8,12,24)
+
+
+def cell_key(strategy, side, horizon):
+    """Stable key for a strategy × direction × fixed-horizon research cell."""
+    if side not in ("LONG", "SHORT") or horizon not in HORIZONS:
+        raise ValueError("invalid strategy research cell")
+    return "%s|%s|%sh"%(strategy,side,horizon)
 
 def research_R(record):
     if "stress_normalized_R" in record:
@@ -97,7 +105,7 @@ def weighted_exploration(names, underperformers, key):
     return slots[stable_bucket(key,len(slots))]
 
 
-def analysis(records):
+def analysis(records, include_cells=False):
     """Summarize ONLY past eligible CLOSE records; frozen 20% day holdout."""
     if isinstance(records,dict):
         records=records.values()
@@ -164,6 +172,63 @@ def analysis(records):
             "preferential":bool(nominated),
             "allocation_train_only":bool(train_only_ready),
         }
+
+    cell_summary={}
+    negative_cells=[]
+    if include_cells:
+        # A strategy-wide average can hide a losing direction or horizon. Build
+        # matched cells using only timely CLOSED perpetual outcomes, and compare
+        # each advanced cell with CTRL on the SAME side and horizon. The 20% day
+        # holdout is never consulted for this prospective research throttle.
+        cell_groups=defaultdict(list)
+        for r in all_eligible:
+            side=r.get("side")
+            horizon=r.get("horizon_hours")
+            if side in ("LONG","SHORT") and horizon in HORIZONS:
+                cell_groups[(r["strategy"],side,horizon,r.get("provider"))].append(r)
+        cell_summary={}
+        negative_cells=[]
+        # Advanced confirmed-candle arms are currently sourced only from OKX;
+        # compare them with the OKX CTRL cohort, not a cross-venue pooled control.
+        matched_provider="okx-swap"
+        for arm in ADVANCED:
+            for side in ("LONG","SHORT"):
+                for horizon in HORIZONS:
+                    rows=cell_groups[(arm,side,horizon,matched_provider)]
+                    control=cell_groups[("CTRL-v1",side,horizon,matched_provider)]
+                    train=[r for r in rows if stable_bucket("holdout:"+day_of(r),5)!=0]
+                    control_train=[r for r in control
+                                   if stable_bucket("holdout:"+day_of(r),5)!=0]
+                    train_days=len({day_of(r) for r in train})
+                    control_days=len({day_of(r) for r in control_train})
+                    lower,upper=_daily_interval(train)
+                    arm_avg=mean([research_R(r) for r in train]) if train else None
+                    control_avg=(mean([research_R(r) for r in control_train])
+                                 if control_train else None)
+                    sufficiently_observed=(len(train)>=REDUCE_TRAIN_N and
+                                           train_days>=REDUCE_TRAIN_DAYS and
+                                           len(control_train)>=REDUCE_TRAIN_N and
+                                           control_days>=REDUCE_TRAIN_DAYS)
+                    underperforming=bool(
+                        sufficiently_observed and upper is not None and
+                        upper<REDUCE_UCB_R and arm_avg is not None and
+                        control_avg is not None and
+                        arm_avg<control_avg-REDUCE_WORSE_THAN_CONTROL_R)
+                    key=cell_key(arm,side,horizon)
+                    if rows:
+                        cell_summary[key]={
+                            "provider":matched_provider,
+                            "n":len(rows),"train_n":len(train),
+                            "control_train_n":len(control_train),
+                            "train_days":train_days,"control_train_days":control_days,
+                            "train_expectancy_R":round(arm_avg,6) if arm_avg is not None else None,
+                            "matched_control_expectancy_R":round(control_avg,6) if control_avg is not None else None,
+                            "train_cluster_lcb_R":lower,"train_cluster_ucb_R":upper,
+                            "underperformer_train_only":underperforming,
+                        }
+                    if underperforming:
+                        negative_cells.append(key)
+
     reduced=[name for name,stats in summary.items()
              if stats["underperformer_train_only"]]
     allocation_candidates=[name for name,stats in summary.items()
@@ -173,7 +238,7 @@ def analysis(records):
     candidates=[k for k,v in summary.items() if v["preferential"]]
     candidates.sort(key=lambda name:(-(summary[name]["holdout_cluster_lcb_R"] or 0),
                                      -(summary[name]["train_cluster_lcb_R"] or 0),name))
-    return {
+    result = {
         "method":"v4-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
                    "; training-only allocation; 20% day monitoring withheld from selection; clustered daily lower bound",
         "eligible_closed":len(all_eligible),
@@ -194,6 +259,15 @@ def analysis(records):
                    "so it is not an untouched final holdout. "
                    "Selection remains observational, multi-tested and correlated.")
     }
+    if include_cells:
+        result.update({
+            "directional_horizon_cells":cell_summary,
+            "training_only_underperforming_cells":sorted(negative_cells),
+            "training_negative_cells_v1":sorted(negative_cells),
+            "cell_downweight_policy_version":"side-horizon-training-only-v1",
+            "training_negative_policy_version":"side-horizon-training-only-v1",
+        })
+    return result
 
 
 def choose(options,records,symbol,horizon,slot,rank,profile=None):
@@ -246,7 +320,7 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
     # The separately published analysis remains descriptive/read-only.
     if bucket<90 and advanced:
         # Bounded adaptive RESEARCH throttle, never a reward-based promotion.
-        # Only canonical TRAINING day-cluster underperformers may receive 1/4
+        # Only canonical TRAINING day-cluster side-horizon cells may receive 1/4
         # exploratory weight. The 20%-CTRL hash band and 35%-coverage band
         # remain unchanged; underperforming arms are still sampled.
         # Monitoring/holdout metrics and provisional leaderboards are ignored.
@@ -254,12 +328,30 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
                    if isinstance(profile,dict) and
                    profile.get("training_negative_policy_version") ==
                    "day-cluster-training-only-v1" else ())
-        negative = (set(flagged).intersection(advanced)
-                    if isinstance(flagged,(tuple,list)) else set())
-        pick=weighted_exploration(advanced,negative,
+        cell_flagged = (profile.get("training_negative_cells_v1")
+                        if isinstance(profile,dict) and
+                        profile.get("training_negative_policy_version") ==
+                        "side-horizon-training-only-v1" else ())
+        cell_options={cell_key(available[name]["strategy"],
+                               available[name]["side"],horizon):available[name]
+                      for name in advanced}
+        negative_cells=(set(cell_flagged).intersection(cell_options)
+                        if isinstance(cell_flagged,(tuple,list)) else set())
+        if cell_options and profile is not None and "training_negative_cells_v1" in profile:
+            pick=weighted_exploration(
+                list(cell_options),negative_cells,
+                "advanced-cell:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
+            return cell_options[pick],(
+                "confirmed_signal_side_horizon_training_negative_downweighted"
+                if negative_cells else
+                "confirmed_signal_side_horizon_neutral_exploration")
+        # Compatibility for older callers/profiles: arm-level diagnostics are
+        # retained, but the current engine supplies the stricter cell policy.
+        legacy_negative=set(flagged).intersection(advanced) if isinstance(flagged,(tuple,list)) else set()
+        pick=weighted_exploration(advanced,legacy_negative,
                                   "advanced:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
         return available[pick],("confirmed_signal_training_negative_downweighted"
-                                if negative else "confirmed_signal_neutral_exploration")
+                                if legacy_negative else "confirmed_signal_neutral_exploration")
     if bucket<95 and baselines:
         pick=weighted_exploration(baselines,set(),
                                   "baseline:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
