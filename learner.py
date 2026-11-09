@@ -159,8 +159,7 @@ def analysis(records):
             arm_train_avg is not None and
             arm_train_avg < ctrl_avg-REDUCE_WORSE_THAN_CONTROL_R)
         summary[arm]={
-            "provider":matched_provider,
-                        "n":len(rows),"train_n":len(train),"holdout_n":len(test),
+            "n":len(rows),"train_n":len(train),"holdout_n":len(test),
             "train_days":train_days,"holdout_days":test_days,
             "train_net_R":train_net,"holdout_net_R":test_net,
             "train_cluster_lcb_R":t_lcb,
@@ -215,6 +214,7 @@ def analysis(records):
                 key=cell_key(arm,side,horizon)
                 if rows:
                     cell_summary[key]={
+                        "provider":matched_provider,
                         "n":len(rows),"train_n":len(train),
                         "control_train_n":len(control_train),
                         "train_days":train_days,"control_train_days":control_days,
