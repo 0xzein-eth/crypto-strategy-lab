@@ -243,6 +243,7 @@ def analysis(records):
         "directional_horizon_cells":cell_summary,
         "training_only_underperforming_cells":sorted(negative_cells),
         "cell_downweight_policy_version":"side-horizon-training-only-v1",
+        "training_negative_policy_version":"side-horizon-training-only-v1",
         "underperformer_policy":(
             ">=50 eligible training closes and >=7 training UTC days, "
             "clipped daily upper bound < -0.05R, training mean >0.05R "
