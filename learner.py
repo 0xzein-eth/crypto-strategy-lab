@@ -246,6 +246,7 @@ def analysis(records):
         "training_only_underperformers":sorted(reduced),
         "directional_horizon_cells":cell_summary,
         "training_only_underperforming_cells":sorted(negative_cells),
+        "training_negative_cells_v1":sorted(negative_cells),
         "cell_downweight_policy_version":"side-horizon-training-only-v1",
         "training_negative_policy_version":"side-horizon-training-only-v1",
         "underperformer_policy":(
