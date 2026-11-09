@@ -4,11 +4,11 @@ import unittest
 import learner
 
 
-def trade(arm,day,r_value,market_type="perpetual",late=False,horizon=2,side="LONG"):
+def trade(arm,day,r_value,market_type="perpetual",late=False,horizon=2,side="LONG",provider="okx-swap"):
     return {
         "strategy":arm,
         "side":side,
-        "provider":"okx-swap",
+        "provider":provider,
         "created_at":day+"T03:00:00Z",
         "status":"CLOSED",
         "market_type":market_type,
