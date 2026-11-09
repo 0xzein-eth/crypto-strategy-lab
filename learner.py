@@ -320,7 +320,7 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
     # The separately published analysis remains descriptive/read-only.
     if bucket<90 and advanced:
         # Bounded adaptive RESEARCH throttle, never a reward-based promotion.
-        # Only canonical TRAINING day-cluster underperformers may receive 1/4
+        # Only canonical TRAINING day-cluster side-horizon cells may receive 1/4
         # exploratory weight. The 20%-CTRL hash band and 35%-coverage band
         # remain unchanged; underperforming arms are still sampled.
         # Monitoring/holdout metrics and provisional leaderboards are ignored.
