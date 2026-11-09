@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic, standard-library logistic regression baseline for ML dataset v1.
 
-Chronological holdout with a 24h purge gap. Each horizon is trained separately.
+Chronological holdout with a 24h30m purge gap. Each horizon is trained separately.
 Features are OPEN-time only. Model is research/shadow output, never an allocator.
 """
 import argparse
@@ -124,8 +124,13 @@ def predict(matrix, weights):
     return [sigmoid(sum(w*x for w, x in zip(weights, row))) for row in matrix]
 
 
-def split_chronologically(rows, purge_hours=24):
-    """60% train, 20% validation, 20% test; purge 24h at each boundary."""
+def split_chronologically(rows, purge_hours=24.5):
+    """60% train, 20% validation, 20% test; purge 24h30m at each boundary.
+
+    The extra 30 minutes covers the maximum permitted timely-observation delay
+    after the fixed 24h horizon, preventing the latest training labels from
+    maturing inside validation/test prediction windows.
+    """
     ordered = sorted(rows, key=lambda r: (parse_time(r["entry_at"]), r["sample_id"]))
     n = len(ordered)
     train_end = int(n * 0.60)
@@ -172,7 +177,7 @@ def train_horizon(rows, horizon, numeric_fields=NUMERIC):
         "horizon_hours": horizon, "status": "TRAINED_SHADOW_BASELINE",
         "n_total": len(cohort), "n_train": len(train),
         "n_validation": len(validation), "n_test": len(test),
-        "purge_gap_hours": 24,
+        "purge_gap_hours": 24.5,
         "feature_columns": schema["columns"],
         "training_prevalence": prevalence,
         "validation": {"model": metrics(p_valid, y_valid),
@@ -190,7 +195,7 @@ def run(rows):
     results = [train_horizon(rows, horizon) for horizon in HORIZONS]
     return {
         "model_version": "logistic-baseline-v1",
-        "method": "chronological_60_20_20_with_24h_boundary_purge",
+        "method": "chronological_60_20_20_with_24h30m_boundary_purge",
         "target": "net_profit_after_recorded_fees",
         "feature_policy": "OPEN_TIME_ONLY",
         "hyperparameters_predeclared": True,
