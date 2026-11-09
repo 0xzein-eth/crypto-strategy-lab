@@ -74,8 +74,8 @@ This is a strong warning against promoting a strategy based on its training lead
 The existing v8 learner grouped evidence mainly by strategy name. That aggregation can conceal a weak LONG cell behind a better SHORT cell, or a weak 24h cohort behind better short-horizon results.
 
 This PR adds a prospective **strategy × side × horizon** diagnostic:
-- only timely CLOSED same-venue perpetual records are eligible;
-- each advanced cell is compared with CTRL for the same direction and horizon;
+- only timely CLOSED same-venue perpetual records are eligible; the advanced candle arms are matched against OKX CTRL, not pooled cross-venue controls;
+- each advanced cell is compared with the OKX CTRL cohort for the same direction and horizon;
 - both the candidate and matched control require at least 50 training closes over at least 7 UTC days;
 - a cell is downweighted to 1:4 only when its training day-cluster upper bound is below -0.05 R and its mean is at least 0.05 R worse than matched CTRL;
 - the 20% CTRL control band, confirmed-signal source-coverage exploration, total entry budget, and all six fixed horizons remain intact;
