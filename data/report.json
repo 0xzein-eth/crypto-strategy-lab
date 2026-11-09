@@ -60,14 +60,14 @@
         "holdout_days": 4,
         "holdout_n": 826,
         "holdout_net_R": -253.72562,
-        "n": 6398,
+        "n": 6400,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.247197,
-        "train_cluster_ucb_R": -0.071364,
+        "train_cluster_lcb_R": -0.248622,
+        "train_cluster_ucb_R": -0.072236,
         "train_days": 29,
-        "train_n": 5572,
-        "train_net_R": -1113.33574,
+        "train_n": 5574,
+        "train_net_R": -1117.59421,
         "underperformer_train_only": true
       },
       "BR-v3": {
@@ -145,14 +145,14 @@
         "holdout_days": 4,
         "holdout_n": 1172,
         "holdout_net_R": -194.71805,
-        "n": 8359,
+        "n": 8360,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.206368,
-        "train_cluster_ucb_R": -0.07057,
+        "train_cluster_lcb_R": -0.206192,
+        "train_cluster_ucb_R": -0.070143,
         "train_days": 29,
-        "train_n": 7187,
-        "train_net_R": -734.08251,
+        "train_n": 7188,
+        "train_net_R": -732.89984,
         "underperformer_train_only": false
       },
       "DC-v1": {
@@ -230,15 +230,15 @@
         "holdout_days": 3,
         "holdout_n": 130,
         "holdout_net_R": 13.74105,
-        "n": 887,
+        "n": 889,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.328491,
-        "train_cluster_ucb_R": -0.060195,
+        "train_cluster_lcb_R": -0.31606,
+        "train_cluster_ucb_R": -0.029881,
         "train_days": 23,
-        "train_n": 757,
-        "train_net_R": -139.07689,
-        "underperformer_train_only": true
+        "train_n": 759,
+        "train_net_R": -129.39794,
+        "underperformer_train_only": false
       },
       "LS-v3": {
         "allocation_train_only": false,
@@ -315,14 +315,14 @@
         "holdout_days": 4,
         "holdout_n": 474,
         "holdout_net_R": 48.69281,
-        "n": 2111,
+        "n": 2112,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.369468,
-        "train_cluster_ucb_R": -0.048768,
+        "train_cluster_lcb_R": -0.369737,
+        "train_cluster_ucb_R": -0.049023,
         "train_days": 28,
-        "train_n": 1637,
-        "train_net_R": -352.13925,
+        "train_n": 1638,
+        "train_net_R": -352.55687,
         "underperformer_train_only": false
       },
       "RSIREC-v1": {
@@ -349,14 +349,14 @@
         "holdout_days": 3,
         "holdout_n": 418,
         "holdout_net_R": -365.00743,
-        "n": 3276,
+        "n": 3278,
         "preferential": false,
         "stage": "collect",
-        "train_cluster_lcb_R": -0.380266,
-        "train_cluster_ucb_R": -0.123619,
+        "train_cluster_lcb_R": -0.378234,
+        "train_cluster_ucb_R": -0.119304,
         "train_days": 23,
-        "train_n": 2858,
-        "train_net_R": -738.11832,
+        "train_n": 2860,
+        "train_net_R": -734.94993,
         "underperformer_train_only": true
       },
       "TP-v3": {
@@ -497,7 +497,7 @@
       }
     },
     "champion": null,
-    "eligible_closed": 43918,
+    "eligible_closed": 43926,
     "eligible_days": 33,
     "method": "v4-e0b1c674; training-only allocation; 20% day monitoring withheld from selection; clustered daily lower bound",
     "provisional_leaders": [],
@@ -507,7 +507,6 @@
       "BR-v3",
       "BRREG-v1",
       "EFFTREND-v1",
-      "IMPULSE-v1",
       "RSITREND-v1",
       "TPREG-v1",
       "VOLFADE-v1"
@@ -515,7 +514,7 @@
     "underperformer_policy": ">=50 eligible training closes and >=7 training UTC days, clipped daily upper bound < -0.05R, training mean >0.05R worse than CTRL; only 4:1 exploration reweight, never disable; monitoring outcomes excluded",
     "warning": "No strategy has demonstrated a reliable tradable edge. Training-only allocations never access monitoring results. Historical monitoring was previously used for allocations, so it is not an untouched final holdout. Selection remains observational, multi-tested and correlated."
   },
-  "added": 32,
+  "added": 0,
   "blocked_market_providers": {
     "binance-futures": 451,
     "bybit-linear": 403
@@ -527,29 +526,29 @@
     "max_open_per_symbol": 50,
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
-  "closed": 47112,
-  "closed_this_run": 6,
+  "closed": 47120,
+  "closed_this_run": 8,
   "cohort_diagnostics": {
     "by_source_provenance": {
       "confirmed_15m_candle": {
-        "fees_usd": 228760.0,
-        "gross_before_fee_usd": -146630.91,
-        "mean_net_usd_per_hypothesis": -16.4098,
-        "n": 22876,
-        "net_fee_only_usd": -375390.91,
+        "fees_usd": 228810.0,
+        "gross_before_fee_usd": -144668.08,
+        "mean_net_usd_per_hypothesis": -16.3226,
+        "n": 22881,
+        "net_fee_only_usd": -373478.08,
         "observed_distinct_utc_entry_days": 33,
-        "stress_model_covered": 22874,
-        "stress_model_net_usd": -604160.85
+        "stress_model_covered": 22879,
+        "stress_model_net_usd": -602296.39
       },
       "direction_proxy_or_neutral_control": {
-        "fees_usd": 210420.0,
-        "gross_before_fee_usd": 34800.45,
-        "mean_net_usd_per_hypothesis": -8.3461,
-        "n": 21042,
-        "net_fee_only_usd": -175619.55,
+        "fees_usd": 210450.0,
+        "gross_before_fee_usd": 34403.04,
+        "mean_net_usd_per_hypothesis": -8.3653,
+        "n": 21045,
+        "net_fee_only_usd": -176046.96,
         "observed_distinct_utc_entry_days": 33,
-        "stress_model_covered": 21037,
-        "stress_model_net_usd": -385666.09
+        "stress_model_covered": 21040,
+        "stress_model_net_usd": -386127.46
       }
     },
     "by_strategy_horizon_provenance": [
@@ -840,17 +839,17 @@
         "stress_model_net_usd": -30622.1
       },
       {
-        "fees_usd": 8020.0,
-        "gross_before_fee_usd": -23928.8,
+        "fees_usd": 8040.0,
+        "gross_before_fee_usd": -24521.82,
         "horizon_hours": 12,
-        "mean_net_usd_per_hypothesis": -39.8364,
-        "n": 802,
-        "net_fee_only_usd": -31948.8,
+        "mean_net_usd_per_hypothesis": -40.4998,
+        "n": 804,
+        "net_fee_only_usd": -32561.82,
         "observed_distinct_utc_entry_days": 32,
         "signal_provenance": "direction_proxy_or_neutral_control",
         "strategy": "BR-proxy-v1",
-        "stress_model_covered": 802,
-        "stress_model_net_usd": -39914.01
+        "stress_model_covered": 804,
+        "stress_model_net_usd": -40552.78
       },
       {
         "fees_usd": 6390.0,
@@ -1204,17 +1203,17 @@
         "stress_model_net_usd": -25786.02
       },
       {
-        "fees_usd": 14400.0,
-        "gross_before_fee_usd": 10359.69,
+        "fees_usd": 14410.0,
+        "gross_before_fee_usd": 10555.3,
         "horizon_hours": 4,
-        "mean_net_usd_per_hypothesis": -2.8058,
-        "n": 1440,
-        "net_fee_only_usd": -4040.31,
+        "mean_net_usd_per_hypothesis": -2.675,
+        "n": 1441,
+        "net_fee_only_usd": -3854.7,
         "observed_distinct_utc_entry_days": 32,
         "signal_provenance": "direction_proxy_or_neutral_control",
         "strategy": "CTRL-v1",
-        "stress_model_covered": 1440,
-        "stress_model_net_usd": -18371.02
+        "stress_model_covered": 1441,
+        "stress_model_net_usd": -18193.62
       },
       {
         "fees_usd": 12030.0,
@@ -1594,17 +1593,17 @@
         "stress_model_net_usd": -329.54
       },
       {
-        "fees_usd": 1410.0,
-        "gross_before_fee_usd": 489.05,
+        "fees_usd": 1430.0,
+        "gross_before_fee_usd": 1981.46,
         "horizon_hours": 4,
-        "mean_net_usd_per_hypothesis": -6.5315,
-        "n": 141,
-        "net_fee_only_usd": -920.95,
+        "mean_net_usd_per_hypothesis": 3.8563,
+        "n": 143,
+        "net_fee_only_usd": 551.46,
         "observed_distinct_utc_entry_days": 26,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "IMPULSE-v1",
-        "stress_model_covered": 141,
-        "stress_model_net_usd": -2313.24
+        "stress_model_covered": 143,
+        "stress_model_net_usd": -861.4
       },
       {
         "fees_usd": 1420.0,
@@ -1984,17 +1983,17 @@
         "stress_model_net_usd": -6299.09
       },
       {
-        "fees_usd": 3550.0,
-        "gross_before_fee_usd": 581.31,
+        "fees_usd": 3560.0,
+        "gross_before_fee_usd": 535.83,
         "horizon_hours": 4,
-        "mean_net_usd_per_hypothesis": -8.3625,
-        "n": 355,
-        "net_fee_only_usd": -2968.69,
+        "mean_net_usd_per_hypothesis": -8.4948,
+        "n": 356,
+        "net_fee_only_usd": -3024.17,
         "observed_distinct_utc_entry_days": 31,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "RSI-v1",
-        "stress_model_covered": 355,
-        "stress_model_net_usd": -6643.94
+        "stress_model_covered": 356,
+        "stress_model_net_usd": -6706.58
       },
       {
         "fees_usd": 3380.0,
@@ -2140,17 +2139,17 @@
         "stress_model_net_usd": -13113.17
       },
       {
-        "fees_usd": 5110.0,
-        "gross_before_fee_usd": -7154.19,
+        "fees_usd": 5120.0,
+        "gross_before_fee_usd": -6943.31,
         "horizon_hours": 4,
-        "mean_net_usd_per_hypothesis": -24.0004,
-        "n": 511,
-        "net_fee_only_usd": -12264.19,
+        "mean_net_usd_per_hypothesis": -23.5612,
+        "n": 512,
+        "net_fee_only_usd": -12063.31,
         "observed_distinct_utc_entry_days": 26,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "RSITREND-v1",
-        "stress_model_covered": 511,
-        "stress_model_net_usd": -17433.65
+        "stress_model_covered": 512,
+        "stress_model_net_usd": -17242.38
       },
       {
         "fees_usd": 4940.0,
@@ -2166,17 +2165,17 @@
         "stress_model_net_usd": -36156.96
       },
       {
-        "fees_usd": 4990.0,
-        "gross_before_fee_usd": -30794.53,
+        "fees_usd": 5000.0,
+        "gross_before_fee_usd": -30489.5,
         "horizon_hours": 12,
-        "mean_net_usd_per_hypothesis": -71.7125,
-        "n": 499,
-        "net_fee_only_usd": -35784.53,
+        "mean_net_usd_per_hypothesis": -70.979,
+        "n": 500,
+        "net_fee_only_usd": -35489.5,
         "observed_distinct_utc_entry_days": 26,
         "signal_provenance": "confirmed_15m_candle",
         "strategy": "RSITREND-v1",
-        "stress_model_covered": 499,
-        "stress_model_net_usd": -40786.38
+        "stress_model_covered": 500,
+        "stress_model_net_usd": -40502.4
       },
       {
         "fees_usd": 4150.0,
@@ -2817,20 +2816,20 @@
       }
     ],
     "closed_partition": {
-      "all_closed": 47112,
-      "eligible_confirmed_15m_candle": 22876,
-      "eligible_direction_proxy_or_neutral_control": 21042,
-      "eligible_timely_perpetual_closed": 43918,
+      "all_closed": 47120,
+      "eligible_confirmed_15m_candle": 22881,
+      "eligible_direction_proxy_or_neutral_control": 21045,
+      "eligible_timely_perpetual_closed": 43926,
       "late_perpetual_closed": 3194
     },
     "eligible_cost_reconciliation": {
-      "fees_usd": 439180.0,
-      "gross_before_fee_usd": -111830.46,
-      "mean_net_usd_per_hypothesis": -12.5463,
-      "n": 43918,
-      "net_fee_only_usd": -551010.46,
-      "stress_model_covered": 43911,
-      "stress_model_net_usd": -989826.94
+      "fees_usd": 439260.0,
+      "gross_before_fee_usd": -110265.03,
+      "mean_net_usd_per_hypothesis": -12.5102,
+      "n": 43926,
+      "net_fee_only_usd": -549525.03,
+      "stress_model_covered": 43919,
+      "stress_model_net_usd": -988423.85
     },
     "not_a_funded_wallet": true,
     "not_independent_trials": true,
@@ -2845,22 +2844,22 @@
   "economic_reconciliation": {
     "cumulative_drawdown_not_investable_account_drawdown": true,
     "fee_only_break_even_pct_per_entry": 0.1,
-    "gross_before_fee_price_pnl_usd": -142620.25,
-    "net_fee_only_pnl_usd": -613740.25,
+    "gross_before_fee_price_pnl_usd": -141054.82,
+    "net_fee_only_pnl_usd": -612254.82,
     "not_wallet_equity": true,
     "real_spread_funding_and_impact_unproven": true,
-    "roundtrip_fee_usd": 471120.0
+    "roundtrip_fee_usd": 471200.0
   },
   "eligible_perpetual_timely": {
-    "expectancy_R": -0.08364,
-    "n": 43918,
-    "net_R": -3673.40307
+    "expectancy_R": -0.0834,
+    "n": 43926,
+    "net_R": -3663.50023
   },
   "entry_mode": "legacy-explore",
   "entry_opportunity_audit": {
-    "advanced_source_checks": 44,
+    "advanced_source_checks": 12,
     "band_signal_gate_counts": {
-      "band_previous_std_positive": 44,
+      "band_previous_std_positive": 12,
       "bandrev_complete_long": 0,
       "bandrev_complete_short": 0,
       "bandrev_current_reentry_long": 0,
@@ -2868,59 +2867,32 @@
       "bandrev_directional_recovery_long": 0,
       "bandrev_directional_recovery_short": 0,
       "bandrev_previous_outside_long": 0,
-      "bandrev_previous_outside_short": 3,
+      "bandrev_previous_outside_short": 0,
       "bandsweep_confirmed_long": 0,
       "bandsweep_confirmed_short": 0
     },
-    "concurrent_open_before_tick": 623,
-    "concurrent_open_remaining_before_tick": 427,
-    "confirmed_arm_opportunities": {
-      "ATRCHAN-v1": 13,
-      "BR-v3": 2,
-      "BRREG-v1": 1,
-      "CROSS-v1": 1,
-      "DC-v1": 2,
-      "EFFTREND-v1": 1,
-      "IBREAK-v1": 1,
-      "LS-v3": 16,
-      "RANGE-v1": 5,
-      "RSI-v1": 13,
-      "RSITREND-v1": 25,
-      "TREND-v1": 4,
-      "VOLFADE-v1": 1
-    },
+    "concurrent_open_before_tick": 647,
+    "concurrent_open_remaining_before_tick": 403,
+    "confirmed_arm_opportunities": {},
     "daily_new_entry_quota": 1750,
     "effective_new_slots_before_signal_checks": 44,
     "eligible_quote_symbols": 44,
     "entry_mode": "legacy-explore",
     "fresh_entry_quote_rejections": 0,
-    "new_paper_opens_by_arm": {
-      "ATRCHAN-v1": 4,
-      "BR-proxy-v1": 1,
-      "BR-v3": 1,
-      "BRREG-v1": 1,
-      "CTRL-v1": 2,
-      "LS-v3": 5,
-      "MR-proxy-v1": 4,
-      "RANGE-v1": 3,
-      "RSI-v1": 5,
-      "RSITREND-v1": 3,
-      "TREND-v1": 2,
-      "VOLFADE-v1": 1
-    },
-    "no_confirmed_signal_baseline_probes_allowed": 2,
+    "new_paper_opens_by_arm": {},
+    "no_confirmed_signal_baseline_probes_allowed": 0,
     "no_confirmed_signal_proxy_slots_skipped": 12,
-    "no_new_entry_reason": null,
+    "no_new_entry_reason": "NO_CONFIRMED_SIGNAL_AND_SPARSE_PROBES_GATED",
     "no_signal_baseline_probe_percent": 20,
     "note": "Counts ONLY inspected real opportunities. Missing/failed OKX candles are excluded and never counted as genuine no-signal. A 20%-of-unique-symbol-slot fallback probe is permitted after valid candles with NO confirmed signal; monitoring and other CLOSE outcomes never drive fallback inclusion. Strategy evidence still requires independent forward validation.",
     "paper_only": true,
-    "quiet_24h_quotes_admitted": 6,
+    "quiet_24h_quotes_admitted": 4,
     "recent_7d_confirmed_open_counts": {
-      "ATRCHAN-v1": 370,
-      "BANDREV-v1": 122,
-      "BANDSWEEP-v1": 132,
-      "BR-v3": 179,
-      "BRREG-v1": 173,
+      "ATRCHAN-v1": 374,
+      "BANDREV-v1": 121,
+      "BANDSWEEP-v1": 131,
+      "BR-v3": 180,
+      "BRREG-v1": 174,
       "COMPBR-v1": 164,
       "CROSS-v1": 134,
       "DC-v1": 210,
@@ -2928,552 +2900,324 @@
       "FB-v3": 275,
       "IBREAK-v1": 71,
       "IMPULSE-v1": 258,
-      "LS-v3": 435,
-      "MR-v3": 425,
-      "RANGE-v1": 295,
-      "RSI-v1": 568,
+      "LS-v3": 439,
+      "MR-v3": 424,
+      "RANGE-v1": 298,
+      "RSI-v1": 573,
       "RSIREC-v1": 267,
-      "RSITREND-v1": 925,
-      "TP-v3": 257,
+      "RSITREND-v1": 927,
+      "TP-v3": 255,
       "TPREG-v1": 202,
       "TRECLAIM-v1": 139,
-      "TREND-v1": 178,
+      "TREND-v1": 180,
       "VOL-v1": 154,
-      "VOLFADE-v1": 131,
-      "VWAP-v1": 269,
+      "VOLFADE-v1": 132,
+      "VWAP-v1": 268,
       "VWAPTR-v1": 116
     },
     "requested_new_slots": 44,
     "scope": "real fresh market quote, distinct unsampled instrument/15m slot, within quota",
-    "screened_symbol_slots": 44,
-    "skipped_by_symbol_slot_or_capacity": 0,
-    "slots_with_any_confirmed_signal": 30,
-    "slots_with_no_confirmed_signal": 14,
+    "screened_symbol_slots": 12,
+    "skipped_by_symbol_slot_or_capacity": 32,
+    "slots_with_any_confirmed_signal": 0,
+    "slots_with_no_confirmed_signal": 12,
     "symbol_decision_schema": "per-symbol-opportunity-v1",
     "symbol_decisions": [
       {
-        "candidate_count": 4,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "IBREAK-v1",
-          "RANGE-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 2,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -1.083259,
+        "pct24h": -0.879496,
         "provider": "okx-swap",
-        "quote_age_seconds": -12.221,
-        "quote_volume_24h": 7345987457.19,
-        "record_id": "LAB-47870",
-        "side": "LONG",
+        "quote_age_seconds": -12.651,
+        "quote_volume_24h": 7457535263.08,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -1.083259,
+            "pct24h": -0.879496,
             "provider": "okx-swap",
-            "quote_age_seconds": -12.221,
-            "quote_volume_24h": 7345987457.19,
+            "quote_age_seconds": -12.651,
+            "quote_volume_24h": 7457535263.08,
             "stage": "quote"
           },
           {
-            "candidate_count": 4,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "IBREAK-v1",
-              "RANGE-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 2,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47870",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "ATRCHAN-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "ATRCHAN-v1",
         "symbol": "BTC"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "CROSS-v1",
-          "LS-v3",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 2,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -4.612705,
+        "pct24h": -4.38629,
         "provider": "okx-swap",
-        "quote_age_seconds": -13.024,
-        "quote_volume_24h": 8337367153.2,
-        "record_id": "LAB-47855",
-        "side": "SHORT",
+        "quote_age_seconds": -12.387,
+        "quote_volume_24h": 8434423328.51,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -4.612705,
+            "pct24h": -4.38629,
             "provider": "okx-swap",
-            "quote_age_seconds": -13.024,
-            "quote_volume_24h": 8337367153.2,
+            "quote_age_seconds": -12.387,
+            "quote_volume_24h": 8434423328.51,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "CROSS-v1",
-              "LS-v3",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 2,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47855",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "LS-v3"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "LS-v3",
         "symbol": "ETH"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "LS-v3",
-          "RANGE-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -2.275516,
+        "pct24h": -2.108434,
         "provider": "okx-swap",
-        "quote_age_seconds": -13.214,
-        "quote_volume_24h": 1035364470.3,
-        "record_id": "LAB-47861",
-        "side": "SHORT",
+        "quote_age_seconds": -12.246,
+        "quote_volume_24h": 1039260506.89,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -2.275516,
+            "pct24h": -2.108434,
             "provider": "okx-swap",
-            "quote_age_seconds": -13.214,
-            "quote_volume_24h": 1035364470.3,
+            "quote_age_seconds": -12.246,
+            "quote_volume_24h": 1039260506.89,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "LS-v3",
-              "RANGE-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47861",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RANGE-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RANGE-v1",
         "symbol": "SOL"
       },
       {
-        "candidate_count": 4,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "LS-v3",
-          "RANGE-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 24,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -0.863194,
+        "pct24h": -1.051802,
         "provider": "okx-swap",
-        "quote_age_seconds": -13.329,
-        "quote_volume_24h": 55986667.29,
-        "record_id": "LAB-47875",
-        "side": "LONG",
+        "quote_age_seconds": -12.851,
+        "quote_volume_24h": 56177380.14,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -0.863194,
+            "pct24h": -1.051802,
             "provider": "okx-swap",
-            "quote_age_seconds": -13.329,
-            "quote_volume_24h": 55986667.29,
+            "quote_age_seconds": -12.851,
+            "quote_volume_24h": 56177380.14,
             "stage": "quote"
           },
           {
-            "candidate_count": 4,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "LS-v3",
-              "RANGE-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 24,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47875",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "CTRL-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "CTRL-v1",
         "symbol": "BNB"
       },
       {
-        "candidate_count": 1,
-        "confirmed_arms": [
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -4.563921,
+        "pct24h": -3.945319,
         "provider": "okx-swap",
-        "quote_age_seconds": -13.119,
-        "quote_volume_24h": 414707270.25,
-        "record_id": "LAB-47859",
-        "side": "LONG",
+        "quote_age_seconds": -13.053,
+        "quote_volume_24h": 418667881.7,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -4.563921,
+            "pct24h": -3.945319,
             "provider": "okx-swap",
-            "quote_age_seconds": -13.119,
-            "quote_volume_24h": 414707270.25,
+            "quote_age_seconds": -13.053,
+            "quote_volume_24h": 418667881.7,
             "stage": "quote"
           },
           {
-            "candidate_count": 1,
-            "confirmed_arms": [
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47859",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "RSITREND-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSITREND-v1",
         "symbol": "XRP"
       },
       {
-        "candidate_count": 2,
-        "confirmed_arms": [
-          "RSI-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.720621,
+        "pct24h": 0.775194,
         "provider": "okx-swap",
-        "quote_age_seconds": -13.169,
-        "quote_volume_24h": 40474387.26,
-        "record_id": "LAB-47882",
-        "side": "SHORT",
+        "quote_age_seconds": -13.351,
+        "quote_volume_24h": 40906214.44,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.720621,
+            "pct24h": 0.775194,
             "provider": "okx-swap",
-            "quote_age_seconds": -13.169,
-            "quote_volume_24h": 40474387.26,
+            "quote_age_seconds": -13.351,
+            "quote_volume_24h": 40906214.44,
             "stage": "quote"
           },
           {
-            "candidate_count": 2,
-            "confirmed_arms": [
-              "RSI-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47882",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RSI-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSI-v1",
         "symbol": "ADA"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "LS-v3",
-          "RSI-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 2,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -1.304165,
+        "pct24h": -1.121233,
         "provider": "okx-swap",
-        "quote_age_seconds": -13.928,
-        "quote_volume_24h": 241492187.19,
-        "record_id": "LAB-47863",
-        "side": "SHORT",
+        "quote_age_seconds": -13.553,
+        "quote_volume_24h": 243508895.63,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -1.304165,
+            "pct24h": -1.121233,
             "provider": "okx-swap",
-            "quote_age_seconds": -13.928,
-            "quote_volume_24h": 241492187.19,
+            "quote_age_seconds": -13.553,
+            "quote_volume_24h": 243508895.63,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "LS-v3",
-              "RSI-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 2,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47863",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RSI-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSI-v1",
         "symbol": "DOGE"
       },
       {
-        "candidate_count": 1,
-        "confirmed_arms": [
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.177305,
+        "pct24h": 0.223568,
         "provider": "okx-swap",
-        "quote_age_seconds": -13.926,
-        "quote_volume_24h": 55705264.39,
-        "record_id": "LAB-47853",
-        "side": "LONG",
+        "quote_age_seconds": -13.463,
+        "quote_volume_24h": 56066559.5,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.177305,
+            "pct24h": 0.223568,
             "provider": "okx-swap",
-            "quote_age_seconds": -13.926,
-            "quote_volume_24h": 55705264.39,
+            "quote_age_seconds": -13.463,
+            "quote_volume_24h": 56066559.5,
             "stage": "quote"
           },
           {
-            "candidate_count": 1,
-            "confirmed_arms": [
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47853",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "RSITREND-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSITREND-v1",
         "symbol": "LINK"
       },
       {
-        "candidate_count": 1,
-        "confirmed_arms": [
-          "RSI-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 12,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 8.969047,
+        "pct24h": 8.80068,
         "provider": "okx-swap",
-        "quote_age_seconds": -14.306,
-        "quote_volume_24h": 74279592.49,
-        "record_id": "LAB-47869",
-        "side": "SHORT",
+        "quote_age_seconds": -8.997,
+        "quote_volume_24h": 75206633.74,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 8.969047,
+            "pct24h": 8.80068,
             "provider": "okx-swap",
-            "quote_age_seconds": -14.306,
-            "quote_volume_24h": 74279592.49,
+            "quote_age_seconds": -8.997,
+            "quote_volume_24h": 75206633.74,
             "stage": "quote"
           },
           {
-            "candidate_count": 1,
-            "confirmed_arms": [
-              "RSI-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 12,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47869",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "MR-proxy-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "MR-proxy-v1",
         "symbol": "AVAX"
       },
       {
-        "candidate_count": 2,
-        "confirmed_arms": [
-          "RSI-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 1.305729,
+        "pct24h": 1.539004,
         "provider": "okx-swap",
-        "quote_age_seconds": -14.925,
-        "quote_volume_24h": 79197503.88,
-        "record_id": "LAB-47880",
-        "side": "SHORT",
+        "quote_age_seconds": -14.355,
+        "quote_volume_24h": 79951507.11,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 1.305729,
+            "pct24h": 1.539004,
             "provider": "okx-swap",
-            "quote_age_seconds": -14.925,
-            "quote_volume_24h": 79197503.88,
+            "quote_age_seconds": -14.355,
+            "quote_volume_24h": 79951507.11,
             "stage": "quote"
           },
           {
-            "candidate_count": 2,
-            "confirmed_arms": [
-              "RSI-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47880",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RSI-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSI-v1",
         "symbol": "SUI"
       },
       {
-        "candidate_count": 2,
-        "confirmed_arms": [
-          "LS-v3",
-          "RSI-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 12,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.793037,
+        "pct24h": 0.637066,
         "provider": "okx-swap",
-        "quote_age_seconds": -14.4,
-        "quote_volume_24h": 36941732.61,
-        "record_id": "LAB-47860",
-        "side": "SHORT",
+        "quote_age_seconds": -14.361,
+        "quote_volume_24h": 37161506.49,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.793037,
+            "pct24h": 0.637066,
             "provider": "okx-swap",
-            "quote_age_seconds": -14.4,
-            "quote_volume_24h": 36941732.61,
+            "quote_age_seconds": -14.361,
+            "quote_volume_24h": 37161506.49,
             "stage": "quote"
           },
           {
-            "candidate_count": 2,
-            "confirmed_arms": [
-              "LS-v3",
-              "RSI-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 12,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47860",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "CTRL-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "CTRL-v1",
         "symbol": "LTC"
       },
       {
@@ -3482,19 +3226,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": -0.951668,
+        "pct24h": -0.901857,
         "provider": "okx-swap",
-        "quote_age_seconds": -15.225,
-        "quote_volume_24h": 8583968.05,
+        "quote_age_seconds": -14.258,
+        "quote_volume_24h": 8612160.51,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -0.951668,
+            "pct24h": -0.901857,
             "provider": "okx-swap",
-            "quote_age_seconds": -15.225,
-            "quote_volume_24h": 8583968.05,
+            "quote_age_seconds": -14.258,
+            "quote_volume_24h": 8612160.51,
             "stage": "quote"
           },
           {
@@ -3512,103 +3256,57 @@
         "symbol": "TRX"
       },
       {
-        "candidate_count": 4,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "LS-v3",
-          "RSI-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 24,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.033738,
+        "pct24h": -0.180038,
         "provider": "okx-swap",
-        "quote_age_seconds": -14.923,
-        "quote_volume_24h": 15810704.17,
-        "record_id": "LAB-47873",
-        "side": "LONG",
+        "quote_age_seconds": -14.254,
+        "quote_volume_24h": 15912865.45,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.033738,
+            "pct24h": -0.180038,
             "provider": "okx-swap",
-            "quote_age_seconds": -14.923,
-            "quote_volume_24h": 15810704.17,
+            "quote_age_seconds": -14.254,
+            "quote_volume_24h": 15912865.45,
             "stage": "quote"
           },
           {
-            "candidate_count": 4,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "LS-v3",
-              "RSI-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 24,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47873",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "ATRCHAN-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "ATRCHAN-v1",
         "symbol": "DOT"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "LS-v3",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -0.200573,
+        "pct24h": -0.471429,
         "provider": "okx-swap",
-        "quote_age_seconds": -15.92,
-        "quote_volume_24h": 92520189.85,
-        "record_id": "LAB-47864",
-        "side": "LONG",
+        "quote_age_seconds": -14.352,
+        "quote_volume_24h": 93182614.78,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -0.200573,
+            "pct24h": -0.471429,
             "provider": "okx-swap",
-            "quote_age_seconds": -15.92,
-            "quote_volume_24h": 92520189.85,
+            "quote_age_seconds": -14.352,
+            "quote_volume_24h": 93182614.78,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "LS-v3",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47864",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "MR-proxy-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "MR-proxy-v1",
         "symbol": "UNI"
       },
       {
@@ -3617,19 +3315,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 2.888115,
+        "pct24h": 2.779279,
         "provider": "okx-swap",
-        "quote_age_seconds": -15.928,
-        "quote_volume_24h": 45864778.41,
+        "quote_age_seconds": -15.356,
+        "quote_volume_24h": 46130576.76,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.888115,
+            "pct24h": 2.779279,
             "provider": "okx-swap",
-            "quote_age_seconds": -15.928,
-            "quote_volume_24h": 45864778.41,
+            "quote_age_seconds": -15.356,
+            "quote_volume_24h": 46130576.76,
             "stage": "quote"
           },
           {
@@ -3647,54 +3345,30 @@
         "symbol": "AAVE"
       },
       {
-        "candidate_count": 4,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "LS-v3",
-          "RANGE-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -1.75486,
+        "pct24h": -1.647313,
         "provider": "okx-swap",
-        "quote_age_seconds": -9.421,
-        "quote_volume_24h": 128044368.55,
-        "record_id": "LAB-47865",
-        "side": "SHORT",
+        "quote_age_seconds": -15.454,
+        "quote_volume_24h": 128435818.34,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -1.75486,
+            "pct24h": -1.647313,
             "provider": "okx-swap",
-            "quote_age_seconds": -9.421,
-            "quote_volume_24h": 128044368.55,
+            "quote_age_seconds": -15.454,
+            "quote_volume_24h": 128435818.34,
             "stage": "quote"
           },
           {
-            "candidate_count": 4,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "LS-v3",
-              "RANGE-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47865",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RANGE-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RANGE-v1",
         "symbol": "NEAR"
       },
       {
@@ -3703,19 +3377,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 3.571429,
+        "pct24h": 4.023845,
         "provider": "okx-swap",
-        "quote_age_seconds": -15.519,
-        "quote_volume_24h": 5738586.82,
+        "quote_age_seconds": -15.146,
+        "quote_volume_24h": 5759015.12,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 3.571429,
+            "pct24h": 4.023845,
             "provider": "okx-swap",
-            "quote_age_seconds": -15.519,
-            "quote_volume_24h": 5738586.82,
+            "quote_age_seconds": -15.146,
+            "quote_volume_24h": 5759015.12,
             "stage": "quote"
           },
           {
@@ -3733,89 +3407,57 @@
         "symbol": "ATOM"
       },
       {
-        "candidate_count": 0,
-        "confirmed_arms": [],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 4,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 7.191781,
+        "pct24h": 7.671023,
         "provider": "okx-swap",
-        "quote_age_seconds": -16.122,
-        "quote_volume_24h": 76093957.3,
-        "record_id": "LAB-47856",
-        "side": "LONG",
+        "quote_age_seconds": -15.35,
+        "quote_volume_24h": 77211000.14,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 7.191781,
+            "pct24h": 7.671023,
             "provider": "okx-swap",
-            "quote_age_seconds": -16.122,
-            "quote_volume_24h": 76093957.3,
+            "quote_age_seconds": -15.35,
+            "quote_volume_24h": 77211000.14,
             "stage": "quote"
           },
           {
-            "candidate_count": 0,
-            "confirmed_arms": [],
-            "outcome": "VALID_NO_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 4,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47856",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "BR-proxy-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "BR-proxy-v1",
         "symbol": "ARB"
       },
       {
-        "candidate_count": 1,
-        "confirmed_arms": [
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 1.347202,
+        "pct24h": 1.741884,
         "provider": "okx-swap",
-        "quote_age_seconds": -8.824,
-        "quote_volume_24h": 12049985.45,
-        "record_id": "LAB-47867",
-        "side": "LONG",
+        "quote_age_seconds": -16.344,
+        "quote_volume_24h": 12308522.59,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 1.347202,
+            "pct24h": 1.741884,
             "provider": "okx-swap",
-            "quote_age_seconds": -8.824,
-            "quote_volume_24h": 12049985.45,
+            "quote_age_seconds": -16.344,
+            "quote_volume_24h": 12308522.59,
             "stage": "quote"
           },
           {
-            "candidate_count": 1,
-            "confirmed_arms": [
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47867",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "RSITREND-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSITREND-v1",
         "symbol": "OP"
       },
       {
@@ -3824,19 +3466,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 0.284161,
+        "pct24h": 1.179506,
         "provider": "okx-swap",
-        "quote_age_seconds": -16.326,
-        "quote_volume_24h": 23763130.33,
+        "quote_age_seconds": -9.558,
+        "quote_volume_24h": 24462253.61,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.284161,
+            "pct24h": 1.179506,
             "provider": "okx-swap",
-            "quote_age_seconds": -16.326,
-            "quote_volume_24h": 23763130.33,
+            "quote_age_seconds": -9.558,
+            "quote_volume_24h": 24462253.61,
             "stage": "quote"
           },
           {
@@ -3854,146 +3496,84 @@
         "symbol": "INJ"
       },
       {
-        "candidate_count": 2,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 4,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 1.051917,
+        "pct24h": 1.322258,
         "provider": "okx-swap",
-        "quote_age_seconds": -17.022,
-        "quote_volume_24h": 8360735.0,
-        "record_id": "LAB-47881",
-        "side": "LONG",
+        "quote_age_seconds": -16.152,
+        "quote_volume_24h": 8436479.91,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 1.051917,
+            "pct24h": 1.322258,
             "provider": "okx-swap",
-            "quote_age_seconds": -17.022,
-            "quote_volume_24h": 8360735.0,
+            "quote_age_seconds": -16.152,
+            "quote_volume_24h": 8436479.91,
             "stage": "quote"
           },
           {
-            "candidate_count": 2,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 4,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47881",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "ATRCHAN-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "ATRCHAN-v1",
         "symbol": "APT"
       },
       {
-        "candidate_count": 1,
-        "confirmed_arms": [
-          "RSI-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 24,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 2.046936,
+        "pct24h": 2.201668,
         "provider": "okx-swap",
-        "quote_age_seconds": -9.224,
-        "quote_volume_24h": 44904714.3,
-        "record_id": "LAB-47874",
-        "side": "SHORT",
+        "quote_age_seconds": -16.354,
+        "quote_volume_24h": 45373431.04,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.046936,
+            "pct24h": 2.201668,
             "provider": "okx-swap",
-            "quote_age_seconds": -9.224,
-            "quote_volume_24h": 44904714.3,
+            "quote_age_seconds": -16.354,
+            "quote_volume_24h": 45373431.04,
             "stage": "quote"
           },
           {
-            "candidate_count": 1,
-            "confirmed_arms": [
-              "RSI-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 24,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47874",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RSI-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSI-v1",
         "symbol": "FIL"
       },
       {
-        "candidate_count": 4,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "LS-v3",
-          "RANGE-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 12,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 3.614909,
+        "pct24h": 3.817518,
         "provider": "okx-swap",
-        "quote_age_seconds": -8.588,
-        "quote_volume_24h": 372352487.79,
-        "record_id": "LAB-47852",
-        "side": "SHORT",
+        "quote_age_seconds": -16.355,
+        "quote_volume_24h": 372491838.27,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 3.614909,
+            "pct24h": 3.817518,
             "provider": "okx-swap",
-            "quote_age_seconds": -8.588,
-            "quote_volume_24h": 372352487.79,
+            "quote_age_seconds": -16.355,
+            "quote_volume_24h": 372491838.27,
             "stage": "quote"
           },
           {
-            "candidate_count": 4,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "LS-v3",
-              "RANGE-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 12,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47852",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RANGE-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RANGE-v1",
         "symbol": "PEPE"
       },
       {
@@ -4002,19 +3582,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 0.626566,
+        "pct24h": 0.93985,
         "provider": "okx-swap",
-        "quote_age_seconds": -16.284,
-        "quote_volume_24h": 6248142.68,
+        "quote_age_seconds": -16.654,
+        "quote_volume_24h": 6299727.7,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.626566,
+            "pct24h": 0.93985,
             "provider": "okx-swap",
-            "quote_age_seconds": -16.284,
-            "quote_volume_24h": 6248142.68,
+            "quote_age_seconds": -16.654,
+            "quote_volume_24h": 6299727.7,
             "stage": "quote"
           },
           {
@@ -4035,15 +3615,15 @@
         "decision": "QUOTE_REJECTED",
         "last_stage": "quote",
         "provider": "kraken-spot-proxy",
-        "quote_age_seconds": -18.024,
-        "quote_volume_24h": 723289.5,
+        "quote_age_seconds": -18.046,
+        "quote_volume_24h": 723682.28,
         "reason": "LOW_QUOTE_VOLUME",
         "stages": [
           {
             "outcome": "QUOTE_REJECTED",
             "provider": "kraken-spot-proxy",
-            "quote_age_seconds": -18.024,
-            "quote_volume_24h": 723289.5,
+            "quote_age_seconds": -18.046,
+            "quote_volume_24h": 723682.28,
             "reason": "LOW_QUOTE_VOLUME",
             "stage": "quote"
           }
@@ -4056,19 +3636,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 1.125731,
+        "pct24h": 1.592636,
         "provider": "okx-swap",
-        "quote_age_seconds": -18.028,
-        "quote_volume_24h": 9286872.8,
+        "quote_age_seconds": -17.356,
+        "quote_volume_24h": 9405618.6,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 1.125731,
+            "pct24h": 1.592636,
             "provider": "okx-swap",
-            "quote_age_seconds": -18.028,
-            "quote_volume_24h": 9286872.8,
+            "quote_age_seconds": -17.356,
+            "quote_volume_24h": 9405618.6,
             "stage": "quote"
           },
           {
@@ -4091,19 +3671,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": -0.876656,
+        "pct24h": -1.054775,
         "provider": "okx-swap",
-        "quote_age_seconds": -17.929,
-        "quote_volume_24h": 49142735.5,
+        "quote_age_seconds": -8.258,
+        "quote_volume_24h": 49074484.55,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -0.876656,
+            "pct24h": -1.054775,
             "provider": "okx-swap",
-            "quote_age_seconds": -17.929,
-            "quote_volume_24h": 49142735.5,
+            "quote_age_seconds": -8.258,
+            "quote_volume_24h": 49074484.55,
             "stage": "quote"
           },
           {
@@ -4121,50 +3701,30 @@
         "symbol": "BCH"
       },
       {
-        "candidate_count": 2,
-        "confirmed_arms": [
-          "LS-v3",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -1.786896,
+        "pct24h": -1.581002,
         "provider": "okx-swap",
-        "quote_age_seconds": -18.125,
-        "quote_volume_24h": 12078838.44,
-        "record_id": "LAB-47872",
-        "side": "SHORT",
+        "quote_age_seconds": -17.358,
+        "quote_volume_24h": 12174103.52,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -1.786896,
+            "pct24h": -1.581002,
             "provider": "okx-swap",
-            "quote_age_seconds": -18.125,
-            "quote_volume_24h": 12078838.44,
+            "quote_age_seconds": -17.358,
+            "quote_volume_24h": 12174103.52,
             "stage": "quote"
           },
           {
-            "candidate_count": 2,
-            "confirmed_arms": [
-              "LS-v3",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47872",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "LS-v3"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "LS-v3",
         "symbol": "XLM"
       },
       {
@@ -4173,19 +3733,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 2.208866,
+        "pct24h": 2.646219,
         "provider": "okx-swap",
-        "quote_age_seconds": -18.721,
-        "quote_volume_24h": 9150253.78,
+        "quote_age_seconds": -17.651,
+        "quote_volume_24h": 9259109.87,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.208866,
+            "pct24h": 2.646219,
             "provider": "okx-swap",
-            "quote_age_seconds": -18.721,
-            "quote_volume_24h": 9150253.78,
+            "quote_age_seconds": -17.651,
+            "quote_volume_24h": 9259109.87,
             "stage": "quote"
           },
           {
@@ -4203,163 +3763,99 @@
         "symbol": "HBAR"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "LS-v3",
-          "RSI-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 4,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.222965,
+        "pct24h": 0.669195,
         "provider": "okx-swap",
-        "quote_age_seconds": -18.127,
-        "quote_volume_24h": 2976554.84,
-        "record_id": "LAB-47877",
-        "side": "SHORT",
+        "quote_age_seconds": -18.457,
+        "quote_volume_24h": 2993822.66,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.222965,
+            "pct24h": 0.669195,
             "provider": "okx-swap",
-            "quote_age_seconds": -18.127,
-            "quote_volume_24h": 2976554.84,
+            "quote_age_seconds": -18.457,
+            "quote_volume_24h": 2993822.66,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "LS-v3",
-              "RSI-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 4,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47877",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "LS-v3"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "LS-v3",
         "symbol": "SEI"
       },
       {
-        "candidate_count": 2,
-        "confirmed_arms": [
-          "LS-v3",
-          "RSI-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 2,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 2.056232,
+        "pct24h": 2.435951,
         "provider": "okx-swap",
-        "quote_age_seconds": -8.714,
-        "quote_volume_24h": 5645671.41,
-        "record_id": "LAB-47866",
-        "side": "SHORT",
+        "quote_age_seconds": -8.252,
+        "quote_volume_24h": 5672081.35,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.056232,
+            "pct24h": 2.435951,
             "provider": "okx-swap",
-            "quote_age_seconds": -8.714,
-            "quote_volume_24h": 5645671.41,
+            "quote_age_seconds": -8.252,
+            "quote_volume_24h": 5672081.35,
             "stage": "quote"
           },
           {
-            "candidate_count": 2,
-            "confirmed_arms": [
-              "LS-v3",
-              "RSI-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 2,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47866",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "RSI-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "RSI-v1",
         "symbol": "ICP"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "RSITREND-v1",
-          "TREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 12,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.605096,
+        "pct24h": 0.97561,
         "provider": "okx-swap",
-        "quote_age_seconds": -19.024,
-        "quote_volume_24h": 2597404.04,
-        "record_id": "LAB-47879",
-        "side": "LONG",
+        "quote_age_seconds": -18.674,
+        "quote_volume_24h": 2655562.01,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.605096,
+            "pct24h": 0.97561,
             "provider": "okx-swap",
-            "quote_age_seconds": -19.024,
-            "quote_volume_24h": 2597404.04,
+            "quote_age_seconds": -18.674,
+            "quote_volume_24h": 2655562.01,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "RSITREND-v1",
-              "TREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 12,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47879",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "TREND-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "TREND-v1",
         "symbol": "ALGO"
       },
       {
         "decision": "QUOTE_REJECTED",
         "last_stage": "quote",
         "provider": "kraken-spot-proxy",
-        "quote_age_seconds": -19.577,
-        "quote_volume_24h": 245794.92,
+        "quote_age_seconds": -19.431,
+        "quote_volume_24h": 226439.55,
         "reason": "LOW_QUOTE_VOLUME",
         "stages": [
           {
             "outcome": "QUOTE_REJECTED",
             "provider": "kraken-spot-proxy",
-            "quote_age_seconds": -19.577,
-            "quote_volume_24h": 245794.92,
+            "quote_age_seconds": -19.431,
+            "quote_volume_24h": 226439.55,
             "reason": "LOW_QUOTE_VOLUME",
             "stage": "quote"
           }
@@ -4367,113 +3863,57 @@
         "symbol": "RUNE"
       },
       {
-        "candidate_count": 6,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "BR-v3",
-          "BRREG-v1",
-          "DC-v1",
-          "RSI-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 2.296451,
+        "pct24h": 3.002502,
         "provider": "okx-swap",
-        "quote_age_seconds": -18.926,
-        "quote_volume_24h": 3483711.35,
-        "record_id": "LAB-47876",
-        "side": "LONG",
+        "quote_age_seconds": -19.056,
+        "quote_volume_24h": 3621914.14,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.296451,
+            "pct24h": 3.002502,
             "provider": "okx-swap",
-            "quote_age_seconds": -18.926,
-            "quote_volume_24h": 3483711.35,
+            "quote_age_seconds": -19.056,
+            "quote_volume_24h": 3621914.14,
             "stage": "quote"
           },
           {
-            "candidate_count": 6,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "BR-v3",
-              "BRREG-v1",
-              "DC-v1",
-              "RSI-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47876",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "BRREG-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "BRREG-v1",
         "symbol": "JUP"
       },
       {
-        "candidate_count": 6,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "BR-v3",
-          "DC-v1",
-          "EFFTREND-v1",
-          "RSI-v1",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.604974,
+        "pct24h": 0.716525,
         "provider": "okx-swap",
-        "quote_age_seconds": -19.324,
-        "quote_volume_24h": 10379886.36,
-        "record_id": "LAB-47868",
-        "side": "LONG",
+        "quote_age_seconds": -19.353,
+        "quote_volume_24h": 10482753.18,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.604974,
+            "pct24h": 0.716525,
             "provider": "okx-swap",
-            "quote_age_seconds": -19.324,
-            "quote_volume_24h": 10379886.36,
+            "quote_age_seconds": -19.353,
+            "quote_volume_24h": 10482753.18,
             "stage": "quote"
           },
           {
-            "candidate_count": 6,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "BR-v3",
-              "DC-v1",
-              "EFFTREND-v1",
-              "RSI-v1",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47868",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "BR-v3"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "BR-v3",
         "symbol": "SHIB"
       },
       {
@@ -4482,19 +3922,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 2.741313,
+        "pct24h": 3.04784,
         "provider": "okx-swap",
-        "quote_age_seconds": -19.32,
-        "quote_volume_24h": 8727365.52,
+        "quote_age_seconds": -19.453,
+        "quote_volume_24h": 8786001.82,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.741313,
+            "pct24h": 3.04784,
             "provider": "okx-swap",
-            "quote_age_seconds": -19.32,
-            "quote_volume_24h": 8727365.52,
+            "quote_age_seconds": -19.453,
+            "quote_volume_24h": 8786001.82,
             "stage": "quote"
           },
           {
@@ -4515,15 +3955,15 @@
         "decision": "QUOTE_REJECTED",
         "last_stage": "quote",
         "provider": "okx-swap",
-        "quote_age_seconds": -19.9,
-        "quote_volume_24h": 384470.44,
+        "quote_age_seconds": -19.857,
+        "quote_volume_24h": 383638.05,
         "reason": "LOW_QUOTE_VOLUME",
         "stages": [
           {
             "outcome": "QUOTE_REJECTED",
             "provider": "okx-swap",
-            "quote_age_seconds": -19.9,
-            "quote_volume_24h": 384470.44,
+            "quote_age_seconds": -19.857,
+            "quote_volume_24h": 383638.05,
             "reason": "LOW_QUOTE_VOLUME",
             "stage": "quote"
           }
@@ -4531,89 +3971,57 @@
         "symbol": "GRT"
       },
       {
-        "candidate_count": 1,
-        "confirmed_arms": [
-          "LS-v3"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 12,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 0.966774,
+        "pct24h": 1.421275,
         "provider": "okx-swap",
-        "quote_age_seconds": -20.121,
-        "quote_volume_24h": 3686030.29,
-        "record_id": "LAB-47857",
-        "side": "SHORT",
+        "quote_age_seconds": -19.954,
+        "quote_volume_24h": 3767631.6,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 0.966774,
+            "pct24h": 1.421275,
             "provider": "okx-swap",
-            "quote_age_seconds": -20.121,
-            "quote_volume_24h": 3686030.29,
+            "quote_age_seconds": -19.954,
+            "quote_volume_24h": 3767631.6,
             "stage": "quote"
           },
           {
-            "candidate_count": 1,
-            "confirmed_arms": [
-              "LS-v3"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 12,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47857",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "LS-v3"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "LS-v3",
         "symbol": "POL"
       },
       {
-        "candidate_count": 0,
-        "confirmed_arms": [],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 3.612903,
+        "pct24h": 4.043646,
         "provider": "okx-swap",
-        "quote_age_seconds": -19.679,
-        "quote_volume_24h": 4334539.4,
-        "record_id": "LAB-47854",
-        "side": "SHORT",
+        "quote_age_seconds": -19.822,
+        "quote_volume_24h": 4415907.13,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 3.612903,
+            "pct24h": 4.043646,
             "provider": "okx-swap",
-            "quote_age_seconds": -19.679,
-            "quote_volume_24h": 4334539.4,
+            "quote_age_seconds": -19.822,
+            "quote_volume_24h": 4415907.13,
             "stage": "quote"
           },
           {
-            "candidate_count": 0,
-            "confirmed_arms": [],
-            "outcome": "VALID_NO_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47854",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "MR-proxy-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "MR-proxy-v1",
         "symbol": "RENDER"
       },
       {
@@ -4622,19 +4030,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": -2.731912,
+        "pct24h": -2.011408,
         "provider": "okx-swap",
-        "quote_age_seconds": -20.416,
-        "quote_volume_24h": 4930328.09,
+        "quote_age_seconds": -20.347,
+        "quote_volume_24h": 5011587.38,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -2.731912,
+            "pct24h": -2.011408,
             "provider": "okx-swap",
-            "quote_age_seconds": -20.416,
-            "quote_volume_24h": 4930328.09,
+            "quote_age_seconds": -20.347,
+            "quote_volume_24h": 5011587.38,
             "stage": "quote"
           },
           {
@@ -4657,19 +4065,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 2.916765,
+        "pct24h": 3.515439,
         "provider": "okx-swap",
-        "quote_age_seconds": -21.208,
-        "quote_volume_24h": 11289599.47,
+        "quote_age_seconds": -7.945,
+        "quote_volume_24h": 11380411.47,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.916765,
+            "pct24h": 3.515439,
             "provider": "okx-swap",
-            "quote_age_seconds": -21.208,
-            "quote_volume_24h": 11289599.47,
+            "quote_age_seconds": -7.945,
+            "quote_volume_24h": 11380411.47,
             "stage": "quote"
           },
           {
@@ -4687,56 +4095,30 @@
         "symbol": "TIA"
       },
       {
-        "candidate_count": 5,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "LS-v3",
-          "RSI-v1",
-          "RSITREND-v1",
-          "TREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 3.298717,
+        "pct24h": 3.635808,
         "provider": "okx-swap",
-        "quote_age_seconds": -21.324,
-        "quote_volume_24h": 3512643.95,
-        "record_id": "LAB-47871",
-        "side": "SHORT",
+        "quote_age_seconds": -9.356,
+        "quote_volume_24h": 3542895.49,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 3.298717,
+            "pct24h": 3.635808,
             "provider": "okx-swap",
-            "quote_age_seconds": -21.324,
-            "quote_volume_24h": 3512643.95,
+            "quote_age_seconds": -9.356,
+            "quote_volume_24h": 3542895.49,
             "stage": "quote"
           },
           {
-            "candidate_count": 5,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "LS-v3",
-              "RSI-v1",
-              "RSITREND-v1",
-              "TREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47871",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "MR-proxy-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "MR-proxy-v1",
         "symbol": "JTO"
       },
       {
@@ -4745,19 +4127,19 @@
         "decision": "NO_SIGNAL_NOT_SAMPLED",
         "last_stage": "sampling",
         "market_type": "perpetual",
-        "pct24h": 2.508542,
+        "pct24h": 2.411935,
         "provider": "okx-swap",
-        "quote_age_seconds": -20.599,
-        "quote_volume_24h": 2296917.87,
+        "quote_age_seconds": -19.66,
+        "quote_volume_24h": 2313926.28,
         "reason": "predeclared_20_percent_control_sampling",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 2.508542,
+            "pct24h": 2.411935,
             "provider": "okx-swap",
-            "quote_age_seconds": -20.599,
-            "quote_volume_24h": 2296917.87,
+            "quote_age_seconds": -19.66,
+            "quote_volume_24h": 2313926.28,
             "stage": "quote"
           },
           {
@@ -4775,214 +4157,126 @@
         "symbol": "IMX"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "RSITREND-v1",
-          "TREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 3.159076,
+        "pct24h": 3.728,
         "provider": "okx-swap",
-        "quote_age_seconds": -9.127,
-        "quote_volume_24h": 4165546.98,
-        "record_id": "LAB-47851",
-        "side": "LONG",
+        "quote_age_seconds": -20.253,
+        "quote_volume_24h": 4232349.4,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 3.159076,
+            "pct24h": 3.728,
             "provider": "okx-swap",
-            "quote_age_seconds": -9.127,
-            "quote_volume_24h": 4165546.98,
+            "quote_age_seconds": -20.253,
+            "quote_volume_24h": 4232349.4,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "RSITREND-v1",
-              "TREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47851",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "ATRCHAN-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "ATRCHAN-v1",
         "symbol": "PYTH"
       },
       {
-        "candidate_count": 3,
-        "confirmed_arms": [
-          "ATRCHAN-v1",
-          "RSITREND-v1",
-          "TREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 3.820858,
+        "pct24h": 3.87985,
         "provider": "okx-swap",
-        "quote_age_seconds": -20.92,
-        "quote_volume_24h": 4005262.23,
-        "record_id": "LAB-47862",
-        "side": "LONG",
+        "quote_age_seconds": -8.347,
+        "quote_volume_24h": 4035905.54,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 3.820858,
+            "pct24h": 3.87985,
             "provider": "okx-swap",
-            "quote_age_seconds": -20.92,
-            "quote_volume_24h": 4005262.23,
+            "quote_age_seconds": -8.347,
+            "quote_volume_24h": 4035905.54,
             "stage": "quote"
           },
           {
-            "candidate_count": 3,
-            "confirmed_arms": [
-              "ATRCHAN-v1",
-              "RSITREND-v1",
-              "TREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47862",
-            "side": "LONG",
-            "stage": "entry",
-            "strategy": "TREND-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "TREND-v1",
         "symbol": "LDO"
       },
       {
-        "candidate_count": 2,
-        "confirmed_arms": [
-          "LS-v3",
-          "RSITREND-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 1,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": -0.398895,
+        "pct24h": -0.245399,
         "provider": "okx-swap",
-        "quote_age_seconds": -21.822,
-        "quote_volume_24h": 103794173.25,
-        "record_id": "LAB-47858",
-        "side": "SHORT",
+        "quote_age_seconds": -20.651,
+        "quote_volume_24h": 104295313.46,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": -0.398895,
+            "pct24h": -0.245399,
             "provider": "okx-swap",
-            "quote_age_seconds": -21.822,
-            "quote_volume_24h": 103794173.25,
+            "quote_age_seconds": -20.651,
+            "quote_volume_24h": 104295313.46,
             "stage": "quote"
           },
           {
-            "candidate_count": 2,
-            "confirmed_arms": [
-              "LS-v3",
-              "RSITREND-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 1,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47858",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "LS-v3"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "LS-v3",
         "symbol": "WLD"
       },
       {
-        "candidate_count": 4,
-        "confirmed_arms": [
-          "LS-v3",
-          "RSI-v1",
-          "RSITREND-v1",
-          "VOLFADE-v1"
-        ],
-        "decision": "PAPER_OPEN_CREATED",
-        "horizon_hours": 8,
-        "last_stage": "entry",
+        "decision": "SKIPPED_CAPACITY_OR_DUPLICATE",
+        "last_stage": "capacity",
         "market_type": "perpetual",
-        "pct24h": 1.275907,
+        "pct24h": 1.60705,
         "provider": "okx-swap",
-        "quote_age_seconds": -21.828,
-        "quote_volume_24h": 53328318.47,
-        "record_id": "LAB-47878",
-        "side": "SHORT",
+        "quote_age_seconds": -21.123,
+        "quote_volume_24h": 53727192.29,
+        "reason": "one_per_symbol_slot_or_daily_or_open_cap",
         "stages": [
           {
             "market_type": "perpetual",
             "outcome": "ELIGIBLE_QUOTE",
-            "pct24h": 1.275907,
+            "pct24h": 1.60705,
             "provider": "okx-swap",
-            "quote_age_seconds": -21.828,
-            "quote_volume_24h": 53328318.47,
+            "quote_age_seconds": -21.123,
+            "quote_volume_24h": 53727192.29,
             "stage": "quote"
           },
           {
-            "candidate_count": 4,
-            "confirmed_arms": [
-              "LS-v3",
-              "RSI-v1",
-              "RSITREND-v1",
-              "VOLFADE-v1"
-            ],
-            "outcome": "CONFIRMED_SIGNAL",
-            "stage": "signal"
-          },
-          {
-            "horizon_hours": 8,
-            "outcome": "PAPER_OPEN_CREATED",
-            "record_id": "LAB-47878",
-            "side": "SHORT",
-            "stage": "entry",
-            "strategy": "VOLFADE-v1"
+            "outcome": "SKIPPED_CAPACITY_OR_DUPLICATE",
+            "reason": "one_per_symbol_slot_or_daily_or_open_cap",
+            "stage": "capacity"
           }
         ],
-        "strategy": "VOLFADE-v1",
         "symbol": "ENA"
       },
       {
         "decision": "QUOTE_REJECTED",
         "last_stage": "quote",
         "provider": "okx-swap",
-        "quote_age_seconds": -22.079,
-        "quote_volume_24h": 1535890.98,
+        "quote_age_seconds": -21.642,
+        "quote_volume_24h": 1551332.03,
         "reason": "LOW_QUOTE_VOLUME",
         "stages": [
           {
             "outcome": "QUOTE_REJECTED",
             "provider": "okx-swap",
-            "quote_age_seconds": -22.079,
-            "quote_volume_24h": 1535890.98,
+            "quote_age_seconds": -21.642,
+            "quote_volume_24h": 1551332.03,
             "reason": "LOW_QUOTE_VOLUME",
             "stage": "quote"
           }
@@ -4995,7 +4289,6 @@
       "BR-v3",
       "BRREG-v1",
       "EFFTREND-v1",
-      "IMPULSE-v1",
       "RSITREND-v1",
       "TPREG-v1",
       "VOLFADE-v1"
@@ -5016,8 +4309,8 @@
     ],
     "training_or_monitoring_returns_used": false,
     "unavailable_confirmed_candle_slots": 0,
-    "utc_day_opens_before_tick": 1243,
-    "utc_day_quota_remaining_before_tick": 507,
+    "utc_day_opens_before_tick": 1275,
+    "utc_day_quota_remaining_before_tick": 475,
     "version": "confirmed-entry-opportunity-v1"
   },
   "entry_safety_policy": {
@@ -5035,7 +4328,7 @@
   "evidence_quality": {
     "distinct_utc_days": 33,
     "eligible_share_of_all_closes": 0.9322,
-    "eligible_timely_perpetual_closes": 43918,
+    "eligible_timely_perpetual_closes": 43926,
     "market_breadth": {
       "days_with_all_four_utc_dayparts": 23,
       "days_with_both_up_and_down_regimes": 33,
@@ -5254,7 +4547,7 @@
         {
           "distinct_frozen_strata": 30,
           "distinct_sectors": 9,
-          "eligible_closes": 635,
+          "eligible_closes": 643,
           "entry_regimes": [
             "24h_down",
             "24h_up"
@@ -5271,7 +4564,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-11-09T15:33:34.148799+00:00",
+      "as_of_utc": "2026-11-09T15:43:34.416239+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 0,
@@ -6349,8 +5642,8 @@
           "distinct_entry_utc_days": 33,
           "distinct_iso_weeks": 6,
           "distinct_weekdays": 7,
-          "effective_equally_weighted_day_clusters_upper_bound": 25.53,
-          "eligible_closes": 6398,
+          "effective_equally_weighted_day_clusters_upper_bound": 25.54,
+          "eligible_closes": 6400,
           "first_entry_utc_day": "2026-10-08",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
@@ -6361,12 +5654,12 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 2465,
+            "eligible_closes": 2467,
             "observed_entry_utc_days": 14
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 6287,
+            "eligible_closes": 6289,
             "observed_entry_utc_days": 30
           },
           "recent_30_observed_entry_days": [
@@ -6766,7 +6059,7 @@
               "utc_day": "2026-11-08"
             },
             {
-              "eligible_closes": 108,
+              "eligible_closes": 110,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -6781,7 +6074,7 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1245,
+            "eligible_closes": 1247,
             "observed_entry_utc_days": 7
           },
           "six_hour_bin_day_coverage": {
@@ -8419,23 +7712,23 @@
           "distinct_iso_weeks": 6,
           "distinct_weekdays": 7,
           "effective_equally_weighted_day_clusters_upper_bound": 29.02,
-          "eligible_closes": 8359,
+          "eligible_closes": 8360,
           "first_entry_utc_day": "2026-10-08",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
-          "largest_single_day_trade_share": 0.0473,
+          "largest_single_day_trade_share": 0.0472,
           "latest_entry_utc_day": "2026-11-09",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [],
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 3687,
+            "eligible_closes": 3688,
             "observed_entry_utc_days": 14
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 8237,
+            "eligible_closes": 8238,
             "observed_entry_utc_days": 30
           },
           "recent_30_observed_entry_days": [
@@ -8835,7 +8128,7 @@
               "utc_day": "2026-11-08"
             },
             {
-              "eligible_closes": 127,
+              "eligible_closes": 128,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -8850,7 +8143,7 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 1727,
+            "eligible_closes": 1728,
             "observed_entry_utc_days": 7
           },
           "six_hour_bin_day_coverage": {
@@ -10407,24 +9700,24 @@
           "distinct_entry_utc_days": 26,
           "distinct_iso_weeks": 5,
           "distinct_weekdays": 7,
-          "effective_equally_weighted_day_clusters_upper_bound": 23.42,
-          "eligible_closes": 887,
+          "effective_equally_weighted_day_clusters_upper_bound": 23.49,
+          "eligible_closes": 889,
           "first_entry_utc_day": "2026-10-15",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
-          "largest_single_day_trade_share": 0.0552,
+          "largest_single_day_trade_share": 0.0551,
           "latest_entry_utc_day": "2026-11-09",
           "longest_unobserved_calendar_gap_between_entry_days": 0,
           "missing_eligible_entry_days_last_7_completed_utc_days": [],
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 487,
+            "eligible_closes": 489,
             "observed_entry_utc_days": 14
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 887,
+            "eligible_closes": 889,
             "observed_entry_utc_days": 26
           },
           "recent_30_observed_entry_days": [
@@ -10763,7 +10056,7 @@
               "utc_day": "2026-11-08"
             },
             {
-              "eligible_closes": 9,
+              "eligible_closes": 11,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -10778,7 +10071,7 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 223,
+            "eligible_closes": 225,
             "observed_entry_utc_days": 7
           },
           "six_hour_bin_day_coverage": {
@@ -12610,8 +11903,8 @@
           "distinct_entry_utc_days": 32,
           "distinct_iso_weeks": 6,
           "distinct_weekdays": 7,
-          "effective_equally_weighted_day_clusters_upper_bound": 19.18,
-          "eligible_closes": 2111,
+          "effective_equally_weighted_day_clusters_upper_bound": 19.19,
+          "eligible_closes": 2112,
           "first_entry_utc_day": "2026-10-09",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
@@ -12622,12 +11915,12 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 1069,
+            "eligible_closes": 1070,
             "observed_entry_utc_days": 14
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 2107,
+            "eligible_closes": 2108,
             "observed_entry_utc_days": 30
           },
           "recent_30_observed_entry_days": [
@@ -13022,7 +12315,7 @@
               "utc_day": "2026-11-08"
             },
             {
-              "eligible_closes": 24,
+              "eligible_closes": 25,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -13037,7 +12330,7 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 456,
+            "eligible_closes": 457,
             "observed_entry_utc_days": 7
           },
           "six_hour_bin_day_coverage": {
@@ -13452,8 +12745,8 @@
           "distinct_entry_utc_days": 26,
           "distinct_iso_weeks": 5,
           "distinct_weekdays": 7,
-          "effective_equally_weighted_day_clusters_upper_bound": 23.77,
-          "eligible_closes": 3276,
+          "effective_equally_weighted_day_clusters_upper_bound": 23.79,
+          "eligible_closes": 3278,
           "first_entry_utc_day": "2026-10-15",
           "four_daypart_breadth_ready": true,
           "four_daypart_breadth_target_days": 6,
@@ -13464,12 +12757,12 @@
           "observed_entry_days_last_7_completed_utc_days": 7,
           "recent_14_calendar_days": {
             "calendar_window_days": 14,
-            "eligible_closes": 1620,
+            "eligible_closes": 1622,
             "observed_entry_utc_days": 14
           },
           "recent_30_calendar_days": {
             "calendar_window_days": 30,
-            "eligible_closes": 3276,
+            "eligible_closes": 3278,
             "observed_entry_utc_days": 26
           },
           "recent_30_observed_entry_days": [
@@ -13815,7 +13108,7 @@
               "utc_day": "2026-11-08"
             },
             {
-              "eligible_closes": 42,
+              "eligible_closes": 44,
               "frozen_entry_regimes": [
                 "24h_down",
                 "24h_up"
@@ -13830,7 +13123,7 @@
           ],
           "recent_7_calendar_days": {
             "calendar_window_days": 7,
-            "eligible_closes": 755,
+            "eligible_closes": 757,
             "observed_entry_utc_days": 7
           },
           "six_hour_bin_day_coverage": {
@@ -17083,8 +16376,8 @@
         "distinct_entry_utc_days": 33,
         "distinct_iso_weeks": 6,
         "distinct_weekdays": 7,
-        "effective_equally_weighted_day_clusters_upper_bound": 28.6,
-        "eligible_closes": 43918,
+        "effective_equally_weighted_day_clusters_upper_bound": 28.61,
+        "eligible_closes": 43926,
         "first_entry_utc_day": "2026-10-08",
         "four_daypart_breadth_ready": true,
         "four_daypart_breadth_target_days": 6,
@@ -17095,12 +16388,12 @@
         "observed_entry_days_last_7_completed_utc_days": 7,
         "recent_14_calendar_days": {
           "calendar_window_days": 14,
-          "eligible_closes": 20882,
+          "eligible_closes": 20890,
           "observed_entry_utc_days": 14
         },
         "recent_30_calendar_days": {
           "calendar_window_days": 30,
-          "eligible_closes": 43508,
+          "eligible_closes": 43516,
           "observed_entry_utc_days": 30
         },
         "recent_30_observed_entry_days": [
@@ -17500,7 +16793,7 @@
             "utc_day": "2026-11-08"
           },
           {
-            "eligible_closes": 635,
+            "eligible_closes": 643,
             "frozen_entry_regimes": [
               "24h_down",
               "24h_up"
@@ -17515,7 +16808,7 @@
         ],
         "recent_7_calendar_days": {
           "calendar_window_days": 7,
-          "eligible_closes": 9792,
+          "eligible_closes": 9800,
           "observed_entry_utc_days": 7
         },
         "six_hour_bin_day_coverage": {
@@ -17532,113 +16825,113 @@
   },
   "fixed_horizon_outcomes": {
     "due_unresolved": 0,
-    "eligible_timely_perpetual_closures": 43918,
+    "eligible_timely_perpetual_closures": 43926,
     "entry_regime": {
       "24h_down": {
-        "active": 432,
+        "active": 425,
         "breakeven": 1,
-        "closed": 27855,
-        "closed_expectancy_R": -0.0697,
-        "closed_net_R": -1941.56424,
-        "closed_net_usd": -291234.64,
-        "eligible_after_friction_day_cluster_lcb_R": -0.140965,
-        "eligible_after_friction_expectancy_R": -0.13329,
-        "eligible_after_friction_net_R": -3474.46728,
+        "closed": 27862,
+        "closed_expectancy_R": -0.06938,
+        "closed_net_R": -1933.00055,
+        "closed_net_usd": -289950.08,
+        "eligible_after_friction_day_cluster_lcb_R": -0.140614,
+        "eligible_after_friction_expectancy_R": -0.13294,
+        "eligible_after_friction_net_R": -3466.38854,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 26067,
-        "eligible_timely_perpetual_expectancy_R": -0.06572,
-        "eligible_timely_perpetual_net_R": -1713.19881,
+        "eligible_timely_perpetual_closed": 26074,
+        "eligible_timely_perpetual_expectancy_R": -0.06538,
+        "eligible_timely_perpetual_net_R": -1704.63511,
         "eligible_timely_perpetual_share": 0.9358,
-        "eligible_timely_perpetual_win_rate": 0.4646,
+        "eligible_timely_perpetual_win_rate": 0.4647,
         "late_closes": 1788,
         "late_share_of_closed": 0.0642,
-        "losses": 14896,
+        "losses": 14899,
         "opened": 28287,
-        "timely_closes": 26067,
+        "timely_closes": 26074,
         "win_rate": 0.4652,
-        "wins": 12958
+        "wins": 12962
       },
       "24h_up": {
-        "active": 223,
+        "active": 222,
         "breakeven": 0,
-        "closed": 19257,
-        "closed_expectancy_R": -0.11165,
-        "closed_net_R": -2150.03743,
-        "closed_net_usd": -322505.61,
-        "eligible_after_friction_day_cluster_lcb_R": -0.187466,
-        "eligible_after_friction_expectancy_R": -0.17505,
-        "eligible_after_friction_net_R": -3124.80896,
+        "closed": 19258,
+        "closed_expectancy_R": -0.11157,
+        "closed_net_R": -2148.69829,
+        "closed_net_usd": -322304.74,
+        "eligible_after_friction_day_cluster_lcb_R": -0.187307,
+        "eligible_after_friction_expectancy_R": -0.17497,
+        "eligible_after_friction_net_R": -3123.53379,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 17851,
-        "eligible_timely_perpetual_expectancy_R": -0.10981,
-        "eligible_timely_perpetual_net_R": -1960.20426,
+        "eligible_timely_perpetual_closed": 17852,
+        "eligible_timely_perpetual_expectancy_R": -0.10973,
+        "eligible_timely_perpetual_net_R": -1958.86511,
         "eligible_timely_perpetual_share": 0.927,
         "eligible_timely_perpetual_win_rate": 0.4477,
         "late_closes": 1406,
         "late_share_of_closed": 0.073,
         "losses": 10655,
         "opened": 19480,
-        "timely_closes": 17851,
+        "timely_closes": 17852,
         "win_rate": 0.4467,
-        "wins": 8602
+        "wins": 8603
       }
     },
     "entry_utc_daypart": {
       "00-05 UTC": {
-        "active": 61,
+        "active": 58,
         "breakeven": 1,
-        "closed": 15000,
-        "closed_expectancy_R": -0.07785,
-        "closed_net_R": -1167.79048,
-        "closed_net_usd": -175168.57,
-        "eligible_after_friction_day_cluster_lcb_R": -0.156217,
-        "eligible_after_friction_expectancy_R": -0.13797,
-        "eligible_after_friction_net_R": -1932.51049,
+        "closed": 15003,
+        "closed_expectancy_R": -0.07798,
+        "closed_net_R": -1169.91037,
+        "closed_net_usd": -175486.56,
+        "eligible_after_friction_day_cluster_lcb_R": -0.156425,
+        "eligible_after_friction_expectancy_R": -0.13811,
+        "eligible_after_friction_net_R": -1934.87574,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 14007,
-        "eligible_timely_perpetual_expectancy_R": -0.07164,
-        "eligible_timely_perpetual_net_R": -1003.44639,
+        "eligible_timely_perpetual_closed": 14010,
+        "eligible_timely_perpetual_expectancy_R": -0.07177,
+        "eligible_timely_perpetual_net_R": -1005.56629,
         "eligible_timely_perpetual_share": 0.9338,
         "eligible_timely_perpetual_win_rate": 0.4592,
         "late_closes": 993,
         "late_share_of_closed": 0.0662,
-        "losses": 8112,
+        "losses": 8114,
         "opened": 15061,
-        "timely_closes": 14007,
+        "timely_closes": 14010,
         "win_rate": 0.4591,
-        "wins": 6887
+        "wins": 6888
       },
       "06-11 UTC": {
-        "active": 195,
+        "active": 190,
         "breakeven": 0,
-        "closed": 14852,
-        "closed_expectancy_R": -0.09704,
-        "closed_net_R": -1441.1952,
-        "closed_net_usd": -216179.28,
-        "eligible_after_friction_day_cluster_lcb_R": -0.168277,
-        "eligible_after_friction_expectancy_R": -0.15646,
-        "eligible_after_friction_net_R": -2161.8978,
+        "closed": 14857,
+        "closed_expectancy_R": -0.0962,
+        "closed_net_R": -1429.17246,
+        "closed_net_usd": -214375.87,
+        "eligible_after_friction_day_cluster_lcb_R": -0.167105,
+        "eligible_after_friction_expectancy_R": -0.15555,
+        "eligible_after_friction_net_R": -2150.17863,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 13818,
-        "eligible_timely_perpetual_expectancy_R": -0.08928,
-        "eligible_timely_perpetual_net_R": -1233.73294,
+        "eligible_timely_perpetual_closed": 13823,
+        "eligible_timely_perpetual_expectancy_R": -0.08838,
+        "eligible_timely_perpetual_net_R": -1221.7102,
         "eligible_timely_perpetual_share": 0.9304,
-        "eligible_timely_perpetual_win_rate": 0.4553,
+        "eligible_timely_perpetual_win_rate": 0.4554,
         "late_closes": 1034,
         "late_share_of_closed": 0.0696,
-        "losses": 8112,
+        "losses": 8113,
         "opened": 15047,
-        "timely_closes": 13818,
-        "win_rate": 0.4538,
-        "wins": 6740
+        "timely_closes": 13823,
+        "win_rate": 0.4539,
+        "wins": 6744
       },
       "12-17 UTC": {
         "active": 353,
@@ -17693,8 +16986,8 @@
         "wins": 2755
       }
     },
-    "evaluation_next_24_hours": 652,
-    "evaluation_next_hour": 72,
+    "evaluation_next_24_hours": 647,
+    "evaluation_next_hour": 75,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
@@ -17725,30 +17018,30 @@
         "wins": 4857
       },
       "12": {
-        "active": 170,
+        "active": 167,
         "breakeven": 0,
-        "closed": 6657,
-        "closed_expectancy_R": -0.09608,
-        "closed_net_R": -639.58548,
-        "closed_net_usd": -95937.82,
-        "eligible_after_friction_day_cluster_lcb_R": -0.167032,
-        "eligible_after_friction_expectancy_R": -0.16248,
-        "eligible_after_friction_net_R": -1013.51924,
+        "closed": 6660,
+        "closed_expectancy_R": -0.09635,
+        "closed_net_R": -641.70538,
+        "closed_net_usd": -96255.81,
+        "eligible_after_friction_day_cluster_lcb_R": -0.166279,
+        "eligible_after_friction_expectancy_R": -0.16278,
+        "eligible_after_friction_net_R": -1015.8845,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 6238,
-        "eligible_timely_perpetual_expectancy_R": -0.09543,
-        "eligible_timely_perpetual_net_R": -595.31995,
+        "eligible_timely_perpetual_closed": 6241,
+        "eligible_timely_perpetual_expectancy_R": -0.09573,
+        "eligible_timely_perpetual_net_R": -597.43985,
         "eligible_timely_perpetual_share": 0.9371,
         "eligible_timely_perpetual_win_rate": 0.4716,
         "late_closes": 419,
         "late_share_of_closed": 0.0629,
-        "losses": 3507,
+        "losses": 3509,
         "opened": 6827,
-        "timely_closes": 6238,
-        "win_rate": 0.4732,
-        "wins": 3150
+        "timely_closes": 6241,
+        "win_rate": 0.4731,
+        "wins": 3151
       },
       "2": {
         "active": 33,
@@ -17803,30 +17096,30 @@
         "wins": 2801
       },
       "4": {
-        "active": 75,
+        "active": 70,
         "breakeven": 0,
-        "closed": 7660,
-        "closed_expectancy_R": -0.07667,
-        "closed_net_R": -587.31881,
-        "closed_net_usd": -88097.82,
-        "eligible_after_friction_day_cluster_lcb_R": -0.157139,
-        "eligible_after_friction_expectancy_R": -0.14048,
-        "eligible_after_friction_net_R": -999.6213,
+        "closed": 7665,
+        "closed_expectancy_R": -0.07505,
+        "closed_net_R": -575.29608,
+        "closed_net_usd": -86294.41,
+        "eligible_after_friction_day_cluster_lcb_R": -0.156017,
+        "eligible_after_friction_expectancy_R": -0.13873,
+        "eligible_after_friction_net_R": -987.90213,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 32,
-        "eligible_timely_perpetual_closed": 7116,
-        "eligible_timely_perpetual_expectancy_R": -0.07398,
-        "eligible_timely_perpetual_net_R": -526.42195,
+        "eligible_timely_perpetual_closed": 7121,
+        "eligible_timely_perpetual_expectancy_R": -0.07224,
+        "eligible_timely_perpetual_net_R": -514.39921,
         "eligible_timely_perpetual_share": 0.929,
-        "eligible_timely_perpetual_win_rate": 0.4637,
+        "eligible_timely_perpetual_win_rate": 0.464,
         "late_closes": 544,
         "late_share_of_closed": 0.071,
-        "losses": 4118,
+        "losses": 4119,
         "opened": 7735,
-        "timely_closes": 7116,
-        "win_rate": 0.4624,
-        "wins": 3542
+        "timely_closes": 7121,
+        "win_rate": 0.4626,
+        "wins": 3546
       },
       "8": {
         "active": 111,
@@ -17857,30 +17150,30 @@
     },
     "market_type": {
       "perpetual": {
-        "active": 655,
+        "active": 647,
         "breakeven": 1,
-        "closed": 47112,
-        "closed_expectancy_R": -0.08685,
-        "closed_net_R": -4091.60167,
-        "closed_net_usd": -613740.25,
-        "eligible_after_friction_day_cluster_lcb_R": -0.148465,
-        "eligible_after_friction_expectancy_R": -0.15026,
-        "eligible_after_friction_net_R": -6599.27624,
+        "closed": 47120,
+        "closed_expectancy_R": -0.08662,
+        "closed_net_R": -4081.69883,
+        "closed_net_usd": -612254.82,
+        "eligible_after_friction_day_cluster_lcb_R": -0.148159,
+        "eligible_after_friction_expectancy_R": -0.15002,
+        "eligible_after_friction_net_R": -6589.92232,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 43918,
-        "eligible_timely_perpetual_expectancy_R": -0.08364,
-        "eligible_timely_perpetual_net_R": -3673.40307,
+        "eligible_timely_perpetual_closed": 43926,
+        "eligible_timely_perpetual_expectancy_R": -0.0834,
+        "eligible_timely_perpetual_net_R": -3663.50023,
         "eligible_timely_perpetual_share": 0.9322,
         "eligible_timely_perpetual_win_rate": 0.4578,
         "late_closes": 3194,
         "late_share_of_closed": 0.0678,
-        "losses": 25551,
+        "losses": 25554,
         "opened": 47767,
-        "timely_closes": 43918,
-        "win_rate": 0.4576,
-        "wins": 21560
+        "timely_closes": 43926,
+        "win_rate": 0.4577,
+        "wins": 21565
       }
     },
     "method": "fixed_horizon_v4",
@@ -17888,59 +17181,59 @@
     "selection_note": "Regime/daypart labels frozen at entry, descriptive and correlated. Post-friction scores include frozen stress when present, otherwise a predeclared 0.12% extra-cost legacy haircut. Day-cluster LCB uses clipped day-mean R; positive screening cannot promote an edge.",
     "side": {
       "LONG": {
-        "active": 332,
+        "active": 327,
         "breakeven": 1,
-        "closed": 23320,
-        "closed_expectancy_R": -0.22227,
-        "closed_net_R": -5183.44458,
-        "closed_net_usd": -777516.69,
-        "eligible_after_friction_day_cluster_lcb_R": -0.405253,
-        "eligible_after_friction_expectancy_R": -0.27305,
-        "eligible_after_friction_net_R": -5925.83578,
+        "closed": 23325,
+        "closed_expectancy_R": -0.22161,
+        "closed_net_R": -5169.08506,
+        "closed_net_usd": -775362.76,
+        "eligible_after_friction_day_cluster_lcb_R": -0.404714,
+        "eligible_after_friction_expectancy_R": -0.27235,
+        "eligible_after_friction_net_R": -5911.80577,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 21702,
-        "eligible_timely_perpetual_expectancy_R": -0.20635,
-        "eligible_timely_perpetual_net_R": -4478.20926,
+        "eligible_timely_perpetual_closed": 21707,
+        "eligible_timely_perpetual_expectancy_R": -0.20564,
+        "eligible_timely_perpetual_net_R": -4463.84974,
         "eligible_timely_perpetual_share": 0.9306,
-        "eligible_timely_perpetual_win_rate": 0.4172,
+        "eligible_timely_perpetual_win_rate": 0.4173,
         "late_closes": 1618,
         "late_share_of_closed": 0.0694,
         "losses": 13659,
         "opened": 23652,
-        "timely_closes": 21702,
-        "win_rate": 0.4142,
-        "wins": 9660
+        "timely_closes": 21707,
+        "win_rate": 0.4144,
+        "wins": 9665
       },
       "SHORT": {
-        "active": 323,
+        "active": 320,
         "breakeven": 0,
-        "closed": 23792,
-        "closed_expectancy_R": 0.04589,
-        "closed_net_R": 1091.84291,
-        "closed_net_usd": 163776.44,
-        "eligible_after_friction_day_cluster_lcb_R": -0.184953,
-        "eligible_after_friction_expectancy_R": -0.03031,
-        "eligible_after_friction_net_R": -673.44046,
+        "closed": 23795,
+        "closed_expectancy_R": 0.0457,
+        "closed_net_R": 1087.38623,
+        "closed_net_usd": 163107.93,
+        "eligible_after_friction_day_cluster_lcb_R": -0.185342,
+        "eligible_after_friction_expectancy_R": -0.03052,
+        "eligible_after_friction_net_R": -678.11655,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 22216,
-        "eligible_timely_perpetual_expectancy_R": 0.03623,
-        "eligible_timely_perpetual_net_R": 804.80619,
+        "eligible_timely_perpetual_closed": 22219,
+        "eligible_timely_perpetual_expectancy_R": 0.03602,
+        "eligible_timely_perpetual_net_R": 800.34951,
         "eligible_timely_perpetual_share": 0.9338,
         "eligible_timely_perpetual_win_rate": 0.4974,
         "late_closes": 1576,
         "late_share_of_closed": 0.0662,
-        "losses": 11892,
+        "losses": 11895,
         "opened": 24115,
-        "timely_closes": 22216,
-        "win_rate": 0.5002,
+        "timely_closes": 22219,
+        "win_rate": 0.5001,
         "wins": 11900
       }
     },
-    "simultaneous_open_research_notional_usd": 6550000.0,
+    "simultaneous_open_research_notional_usd": 6470000.0,
     "strategy": {
       "ATRCHAN-v1": {
         "active": 38,
@@ -18021,29 +17314,29 @@
         "wins": 209
       },
       "BR-proxy-v1": {
-        "active": 56,
+        "active": 54,
         "breakeven": 0,
-        "closed": 6970,
-        "closed_expectancy_R": -0.15701,
-        "closed_net_R": -1094.32916,
-        "closed_net_usd": -164149.37,
-        "eligible_after_friction_day_cluster_lcb_R": -0.249917,
-        "eligible_after_friction_expectancy_R": -0.21367,
-        "eligible_after_friction_net_R": -1367.06135,
+        "closed": 6972,
+        "closed_expectancy_R": -0.15755,
+        "closed_net_R": -1098.41597,
+        "closed_net_usd": -164762.4,
+        "eligible_after_friction_day_cluster_lcb_R": -0.251144,
+        "eligible_after_friction_expectancy_R": -0.21427,
+        "eligible_after_friction_net_R": -1371.31983,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 6398,
-        "eligible_timely_perpetual_expectancy_R": -0.14707,
-        "eligible_timely_perpetual_net_R": -940.97812,
-        "eligible_timely_perpetual_share": 0.9179,
-        "eligible_timely_perpetual_win_rate": 0.4576,
+        "eligible_timely_perpetual_closed": 6400,
+        "eligible_timely_perpetual_expectancy_R": -0.14767,
+        "eligible_timely_perpetual_net_R": -945.06493,
+        "eligible_timely_perpetual_share": 0.918,
+        "eligible_timely_perpetual_win_rate": 0.4575,
         "late_closes": 572,
-        "late_share_of_closed": 0.0821,
-        "losses": 3765,
+        "late_share_of_closed": 0.082,
+        "losses": 3767,
         "opened": 7026,
-        "timely_closes": 6398,
-        "win_rate": 0.4598,
+        "timely_closes": 6400,
+        "win_rate": 0.4597,
         "wins": 3205
       },
       "BR-v3": {
@@ -18151,30 +17444,30 @@
         "wins": 200
       },
       "CTRL-v1": {
-        "active": 94,
+        "active": 93,
         "breakeven": 0,
-        "closed": 9036,
-        "closed_expectancy_R": -0.04451,
-        "closed_net_R": -402.21273,
-        "closed_net_usd": -60331.91,
-        "eligible_after_friction_day_cluster_lcb_R": -0.199037,
-        "eligible_after_friction_expectancy_R": -0.11111,
-        "eligible_after_friction_net_R": -928.80056,
+        "closed": 9037,
+        "closed_expectancy_R": -0.04437,
+        "closed_net_R": -400.97528,
+        "closed_net_usd": -60146.29,
+        "eligible_after_friction_day_cluster_lcb_R": -0.19888,
+        "eligible_after_friction_expectancy_R": -0.11096,
+        "eligible_after_friction_net_R": -927.61789,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 33,
-        "eligible_timely_perpetual_closed": 8359,
-        "eligible_timely_perpetual_expectancy_R": -0.0448,
-        "eligible_timely_perpetual_net_R": -374.49252,
+        "eligible_timely_perpetual_closed": 8360,
+        "eligible_timely_perpetual_expectancy_R": -0.04465,
+        "eligible_timely_perpetual_net_R": -373.25507,
         "eligible_timely_perpetual_share": 0.9251,
-        "eligible_timely_perpetual_win_rate": 0.4693,
+        "eligible_timely_perpetual_win_rate": 0.4694,
         "late_closes": 677,
         "late_share_of_closed": 0.0749,
         "losses": 4797,
         "opened": 9130,
-        "timely_closes": 8359,
-        "win_rate": 0.4691,
-        "wins": 4239
+        "timely_closes": 8360,
+        "win_rate": 0.4692,
+        "wins": 4240
       },
       "DC-v1": {
         "active": 13,
@@ -18281,30 +17574,30 @@
         "wins": 109
       },
       "IMPULSE-v1": {
-        "active": 14,
+        "active": 12,
         "breakeven": 1,
-        "closed": 939,
-        "closed_expectancy_R": -0.08421,
-        "closed_net_R": -79.07423,
-        "closed_net_usd": -11861.13,
-        "eligible_after_friction_day_cluster_lcb_R": -0.291856,
-        "eligible_after_friction_expectancy_R": -0.1413,
-        "eligible_after_friction_net_R": -125.33584,
+        "closed": 941,
+        "closed_expectancy_R": -0.0736,
+        "closed_net_R": -69.25821,
+        "closed_net_usd": -10388.73,
+        "eligible_after_friction_day_cluster_lcb_R": -0.279616,
+        "eligible_after_friction_expectancy_R": -0.1301,
+        "eligible_after_friction_net_R": -115.65689,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 26,
-        "eligible_timely_perpetual_closed": 887,
-        "eligible_timely_perpetual_expectancy_R": -0.07474,
-        "eligible_timely_perpetual_net_R": -66.29188,
-        "eligible_timely_perpetual_share": 0.9446,
-        "eligible_timely_perpetual_win_rate": 0.4453,
+        "eligible_timely_perpetual_closed": 889,
+        "eligible_timely_perpetual_expectancy_R": -0.06353,
+        "eligible_timely_perpetual_net_R": -56.47586,
+        "eligible_timely_perpetual_share": 0.9447,
+        "eligible_timely_perpetual_win_rate": 0.4466,
         "late_closes": 52,
-        "late_share_of_closed": 0.0554,
+        "late_share_of_closed": 0.0553,
         "losses": 525,
         "opened": 953,
-        "timely_closes": 887,
-        "win_rate": 0.4398,
-        "wins": 413
+        "timely_closes": 889,
+        "win_rate": 0.441,
+        "wins": 415
       },
       "LS-v3": {
         "active": 29,
@@ -18411,29 +17704,29 @@
         "wins": 565
       },
       "RSI-v1": {
-        "active": 51,
+        "active": 50,
         "breakeven": 0,
-        "closed": 2248,
-        "closed_expectancy_R": -0.09098,
-        "closed_net_R": -204.5333,
-        "closed_net_usd": -30680.0,
-        "eligible_after_friction_day_cluster_lcb_R": -0.324945,
-        "eligible_after_friction_expectancy_R": -0.14375,
-        "eligible_after_friction_net_R": -303.44644,
+        "closed": 2249,
+        "closed_expectancy_R": -0.09111,
+        "closed_net_R": -204.90318,
+        "closed_net_usd": -30735.48,
+        "eligible_after_friction_day_cluster_lcb_R": -0.325185,
+        "eligible_after_friction_expectancy_R": -0.14388,
+        "eligible_after_friction_net_R": -303.86406,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 32,
-        "eligible_timely_perpetual_closed": 2111,
-        "eligible_timely_perpetual_expectancy_R": -0.07587,
-        "eligible_timely_perpetual_net_R": -160.15306,
+        "eligible_timely_perpetual_closed": 2112,
+        "eligible_timely_perpetual_expectancy_R": -0.07601,
+        "eligible_timely_perpetual_net_R": -160.52293,
         "eligible_timely_perpetual_share": 0.9391,
-        "eligible_timely_perpetual_win_rate": 0.4557,
+        "eligible_timely_perpetual_win_rate": 0.4555,
         "late_closes": 137,
         "late_share_of_closed": 0.0609,
-        "losses": 1234,
+        "losses": 1235,
         "opened": 2299,
-        "timely_closes": 2111,
-        "win_rate": 0.4511,
+        "timely_closes": 2112,
+        "win_rate": 0.4509,
         "wins": 1014
       },
       "RSIREC-v1": {
@@ -18463,30 +17756,30 @@
         "wins": 512
       },
       "RSITREND-v1": {
-        "active": 72,
+        "active": 70,
         "breakeven": 0,
-        "closed": 3442,
-        "closed_expectancy_R": -0.26328,
-        "closed_net_R": -906.2207,
-        "closed_net_usd": -135933.11,
-        "eligible_after_friction_day_cluster_lcb_R": -0.415066,
-        "eligible_after_friction_expectancy_R": -0.33673,
-        "eligible_after_friction_net_R": -1103.12575,
+        "closed": 3444,
+        "closed_expectancy_R": -0.26217,
+        "closed_net_R": -902.91465,
+        "closed_net_usd": -135437.2,
+        "eligible_after_friction_day_cluster_lcb_R": -0.413331,
+        "eligible_after_friction_expectancy_R": -0.33556,
+        "eligible_after_friction_net_R": -1099.95736,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 26,
-        "eligible_timely_perpetual_closed": 3276,
-        "eligible_timely_perpetual_expectancy_R": -0.26967,
-        "eligible_timely_perpetual_net_R": -883.44656,
+        "eligible_timely_perpetual_closed": 3278,
+        "eligible_timely_perpetual_expectancy_R": -0.2685,
+        "eligible_timely_perpetual_net_R": -880.14051,
         "eligible_timely_perpetual_share": 0.9518,
-        "eligible_timely_perpetual_win_rate": 0.4209,
+        "eligible_timely_perpetual_win_rate": 0.4213,
         "late_closes": 166,
         "late_share_of_closed": 0.0482,
         "losses": 1991,
         "opened": 3514,
-        "timely_closes": 3276,
-        "win_rate": 0.4216,
-        "wins": 1451
+        "timely_closes": 3278,
+        "win_rate": 0.4219,
+        "wins": 1453
       },
       "TP-v3": {
         "active": 14,
@@ -18855,55 +18148,55 @@
         "wins": 506
       },
       "AVAX": {
-        "active": 19,
+        "active": 18,
         "breakeven": 0,
-        "closed": 1097,
-        "closed_expectancy_R": -0.02899,
-        "closed_net_R": -31.8044,
-        "closed_net_usd": -4770.66,
-        "eligible_after_friction_day_cluster_lcb_R": -0.141355,
-        "eligible_after_friction_expectancy_R": -0.10431,
-        "eligible_after_friction_net_R": -109.00649,
+        "closed": 1098,
+        "closed_expectancy_R": -0.02212,
+        "closed_net_R": -24.28232,
+        "closed_net_usd": -3642.35,
+        "eligible_after_friction_day_cluster_lcb_R": -0.141375,
+        "eligible_after_friction_expectancy_R": -0.09707,
+        "eligible_after_friction_net_R": -101.54005,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 32,
-        "eligible_timely_perpetual_closed": 1045,
-        "eligible_timely_perpetual_expectancy_R": -0.04647,
-        "eligible_timely_perpetual_net_R": -48.56113,
+        "eligible_timely_perpetual_closed": 1046,
+        "eligible_timely_perpetual_expectancy_R": -0.03923,
+        "eligible_timely_perpetual_net_R": -41.03905,
         "eligible_timely_perpetual_share": 0.9526,
-        "eligible_timely_perpetual_win_rate": 0.4565,
+        "eligible_timely_perpetual_win_rate": 0.457,
         "late_closes": 52,
         "late_share_of_closed": 0.0474,
         "losses": 593,
         "opened": 1116,
-        "timely_closes": 1045,
-        "win_rate": 0.4594,
-        "wins": 504
+        "timely_closes": 1046,
+        "win_rate": 0.4599,
+        "wins": 505
       },
       "BCH": {
-        "active": 9,
+        "active": 8,
         "breakeven": 0,
-        "closed": 1211,
-        "closed_expectancy_R": -0.09169,
-        "closed_net_R": -111.03337,
-        "closed_net_usd": -16655.0,
-        "eligible_after_friction_day_cluster_lcb_R": -0.218993,
-        "eligible_after_friction_expectancy_R": -0.16475,
-        "eligible_after_friction_net_R": -181.72006,
+        "closed": 1212,
+        "closed_expectancy_R": -0.09192,
+        "closed_net_R": -111.40324,
+        "closed_net_usd": -16710.49,
+        "eligible_after_friction_day_cluster_lcb_R": -0.219319,
+        "eligible_after_friction_expectancy_R": -0.16498,
+        "eligible_after_friction_net_R": -182.13768,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 32,
-        "eligible_timely_perpetual_closed": 1103,
-        "eligible_timely_perpetual_expectancy_R": -0.1025,
-        "eligible_timely_perpetual_net_R": -113.06276,
-        "eligible_timely_perpetual_share": 0.9108,
-        "eligible_timely_perpetual_win_rate": 0.4696,
+        "eligible_timely_perpetual_closed": 1104,
+        "eligible_timely_perpetual_expectancy_R": -0.10275,
+        "eligible_timely_perpetual_net_R": -113.43263,
+        "eligible_timely_perpetual_share": 0.9109,
+        "eligible_timely_perpetual_win_rate": 0.4692,
         "late_closes": 108,
-        "late_share_of_closed": 0.0892,
-        "losses": 641,
+        "late_share_of_closed": 0.0891,
+        "losses": 642,
         "opened": 1220,
-        "timely_closes": 1103,
-        "win_rate": 0.4707,
+        "timely_closes": 1104,
+        "win_rate": 0.4703,
         "wins": 570
       },
       "BNB": {
@@ -19193,29 +18486,29 @@
         "wins": 498
       },
       "ICP": {
-        "active": 19,
+        "active": 18,
         "breakeven": 0,
-        "closed": 1163,
-        "closed_expectancy_R": -0.14526,
-        "closed_net_R": -168.94059,
-        "closed_net_usd": -25341.09,
-        "eligible_after_friction_day_cluster_lcb_R": -0.267336,
-        "eligible_after_friction_expectancy_R": -0.24282,
-        "eligible_after_friction_net_R": -260.05487,
+        "closed": 1164,
+        "closed_expectancy_R": -0.14681,
+        "closed_net_R": -170.89033,
+        "closed_net_usd": -25633.55,
+        "eligible_after_friction_day_cluster_lcb_R": -0.271576,
+        "eligible_after_friction_expectancy_R": -0.24449,
+        "eligible_after_friction_net_R": -262.09323,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 32,
-        "eligible_timely_perpetual_closed": 1071,
-        "eligible_timely_perpetual_expectancy_R": -0.15689,
-        "eligible_timely_perpetual_net_R": -168.02519,
-        "eligible_timely_perpetual_share": 0.9209,
-        "eligible_timely_perpetual_win_rate": 0.4706,
+        "eligible_timely_perpetual_closed": 1072,
+        "eligible_timely_perpetual_expectancy_R": -0.15856,
+        "eligible_timely_perpetual_net_R": -169.97494,
+        "eligible_timely_perpetual_share": 0.921,
+        "eligible_timely_perpetual_win_rate": 0.4701,
         "late_closes": 92,
-        "late_share_of_closed": 0.0791,
-        "losses": 616,
+        "late_share_of_closed": 0.079,
+        "losses": 617,
         "opened": 1182,
-        "timely_closes": 1071,
-        "win_rate": 0.4703,
+        "timely_closes": 1072,
+        "win_rate": 0.4699,
         "wins": 547
       },
       "IMX": {
@@ -19245,56 +18538,56 @@
         "wins": 24
       },
       "INJ": {
-        "active": 15,
+        "active": 14,
         "breakeven": 0,
-        "closed": 1221,
-        "closed_expectancy_R": -0.14549,
-        "closed_net_R": -177.64619,
-        "closed_net_usd": -26646.93,
-        "eligible_after_friction_day_cluster_lcb_R": -0.392544,
-        "eligible_after_friction_expectancy_R": -0.21872,
-        "eligible_after_friction_net_R": -245.18015,
+        "closed": 1222,
+        "closed_expectancy_R": -0.14436,
+        "closed_net_R": -176.40874,
+        "closed_net_usd": -26461.31,
+        "eligible_after_friction_day_cluster_lcb_R": -0.38775,
+        "eligible_after_friction_expectancy_R": -0.21747,
+        "eligible_after_friction_net_R": -243.99748,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 32,
-        "eligible_timely_perpetual_closed": 1121,
-        "eligible_timely_perpetual_expectancy_R": -0.15359,
-        "eligible_timely_perpetual_net_R": -172.17172,
-        "eligible_timely_perpetual_share": 0.9181,
-        "eligible_timely_perpetual_win_rate": 0.4558,
+        "eligible_timely_perpetual_closed": 1122,
+        "eligible_timely_perpetual_expectancy_R": -0.15235,
+        "eligible_timely_perpetual_net_R": -170.93428,
+        "eligible_timely_perpetual_share": 0.9182,
+        "eligible_timely_perpetual_win_rate": 0.4563,
         "late_closes": 100,
-        "late_share_of_closed": 0.0819,
+        "late_share_of_closed": 0.0818,
         "losses": 655,
         "opened": 1236,
-        "timely_closes": 1121,
-        "win_rate": 0.4636,
-        "wins": 566
+        "timely_closes": 1122,
+        "win_rate": 0.464,
+        "wins": 567
       },
       "JTO": {
-        "active": 18,
+        "active": 17,
         "breakeven": 0,
-        "closed": 878,
-        "closed_expectancy_R": -0.0308,
-        "closed_net_R": -27.04058,
-        "closed_net_usd": -4056.09,
-        "eligible_after_friction_day_cluster_lcb_R": -0.296716,
-        "eligible_after_friction_expectancy_R": -0.10993,
-        "eligible_after_friction_net_R": -92.22959,
+        "closed": 879,
+        "closed_expectancy_R": -0.02815,
+        "closed_net_R": -24.74665,
+        "closed_net_usd": -3712.0,
+        "eligible_after_friction_day_cluster_lcb_R": -0.27291,
+        "eligible_after_friction_expectancy_R": -0.10716,
+        "eligible_after_friction_net_R": -90.01709,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 25,
-        "eligible_timely_perpetual_closed": 839,
-        "eligible_timely_perpetual_expectancy_R": -0.0243,
-        "eligible_timely_perpetual_net_R": -20.38784,
+        "eligible_timely_perpetual_closed": 840,
+        "eligible_timely_perpetual_expectancy_R": -0.02154,
+        "eligible_timely_perpetual_net_R": -18.0939,
         "eligible_timely_perpetual_share": 0.9556,
-        "eligible_timely_perpetual_win_rate": 0.4708,
+        "eligible_timely_perpetual_win_rate": 0.4714,
         "late_closes": 39,
         "late_share_of_closed": 0.0444,
         "losses": 464,
         "opened": 896,
-        "timely_closes": 839,
-        "win_rate": 0.4715,
-        "wins": 414
+        "timely_closes": 840,
+        "win_rate": 0.4721,
+        "wins": 415
       },
       "JUP": {
         "active": 20,
@@ -19323,29 +18616,29 @@
         "wins": 448
       },
       "LDO": {
-        "active": 14,
+        "active": 13,
         "breakeven": 0,
-        "closed": 825,
-        "closed_expectancy_R": -0.19542,
-        "closed_net_R": -161.22295,
-        "closed_net_usd": -24183.44,
-        "eligible_after_friction_day_cluster_lcb_R": -0.283259,
-        "eligible_after_friction_expectancy_R": -0.27165,
-        "eligible_after_friction_net_R": -212.97544,
+        "closed": 826,
+        "closed_expectancy_R": -0.19777,
+        "closed_net_R": -163.36001,
+        "closed_net_usd": -24504.0,
+        "eligible_after_friction_day_cluster_lcb_R": -0.289902,
+        "eligible_after_friction_expectancy_R": -0.27413,
+        "eligible_after_friction_net_R": -215.19555,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 25,
-        "eligible_timely_perpetual_closed": 784,
-        "eligible_timely_perpetual_expectancy_R": -0.18398,
-        "eligible_timely_perpetual_net_R": -144.24253,
-        "eligible_timely_perpetual_share": 0.9503,
-        "eligible_timely_perpetual_win_rate": 0.4452,
+        "eligible_timely_perpetual_closed": 785,
+        "eligible_timely_perpetual_expectancy_R": -0.18647,
+        "eligible_timely_perpetual_net_R": -146.37959,
+        "eligible_timely_perpetual_share": 0.9504,
+        "eligible_timely_perpetual_win_rate": 0.4446,
         "late_closes": 41,
-        "late_share_of_closed": 0.0497,
-        "losses": 461,
+        "late_share_of_closed": 0.0496,
+        "losses": 462,
         "opened": 839,
-        "timely_closes": 784,
-        "win_rate": 0.4412,
+        "timely_closes": 785,
+        "win_rate": 0.4407,
         "wins": 364
       },
       "LINK": {
@@ -19687,30 +18980,30 @@
         "wins": 481
       },
       "TIA": {
-        "active": 14,
+        "active": 12,
         "breakeven": 0,
-        "closed": 1018,
-        "closed_expectancy_R": -0.03299,
-        "closed_net_R": -33.58268,
-        "closed_net_usd": -5037.4,
-        "eligible_after_friction_day_cluster_lcb_R": -0.214381,
-        "eligible_after_friction_expectancy_R": -0.11654,
-        "eligible_after_friction_net_R": -112.46324,
+        "closed": 1020,
+        "closed_expectancy_R": -0.02968,
+        "closed_net_R": -30.27663,
+        "closed_net_usd": -4541.49,
+        "eligible_after_friction_day_cluster_lcb_R": -0.207887,
+        "eligible_after_friction_expectancy_R": -0.11302,
+        "eligible_after_friction_net_R": -109.29485,
         "eligible_after_friction_research_status": "not_positive_after_cost",
         "eligible_day_breadth_ready": true,
         "eligible_distinct_entry_utc_days": 25,
-        "eligible_timely_perpetual_closed": 965,
-        "eligible_timely_perpetual_expectancy_R": -0.04401,
-        "eligible_timely_perpetual_net_R": -42.46913,
-        "eligible_timely_perpetual_share": 0.9479,
-        "eligible_timely_perpetual_win_rate": 0.4694,
+        "eligible_timely_perpetual_closed": 967,
+        "eligible_timely_perpetual_expectancy_R": -0.0405,
+        "eligible_timely_perpetual_net_R": -39.16308,
+        "eligible_timely_perpetual_share": 0.948,
+        "eligible_timely_perpetual_win_rate": 0.4705,
         "late_closes": 53,
-        "late_share_of_closed": 0.0521,
+        "late_share_of_closed": 0.052,
         "losses": 539,
         "opened": 1032,
-        "timely_closes": 965,
-        "win_rate": 0.4705,
-        "wins": 479
+        "timely_closes": 967,
+        "win_rate": 0.4716,
+        "wins": 481
       },
       "TRX": {
         "active": 7,
@@ -19872,15 +19165,15 @@
     "total_research_notional_usd": 477670000.0
   },
   "friction_stress_scenario": {
-    "additional_assumed_cost_usd": 469818.12,
+    "additional_assumed_cost_usd": 469900.46,
     "assumption": "entry bid-ask crossing plus hypothetical impact; not observed fills",
-    "modeled_closes": 47064,
-    "net_R": -7212.85834,
-    "net_pnl_usd": -1081928.75
+    "modeled_closes": 47072,
+    "net_R": -7203.50442,
+    "net_pnl_usd": -1080525.66
   },
   "late_closed_this_run": 0,
   "late_closures": 3194,
-  "ledger_tip_sha256": "4a579538c25f6faf7c4dd34b062162874c343f3922a1b00a1cd9eb9d96a56134",
+  "ledger_tip_sha256": "361decaeb97221634d695f74975899fe7d2a77fa54be7cf795770ecf3d09f7e0",
   "limitations": [
     "Correlated trades are not independent evidence of edge",
     "Fixed-horizon only; NO stop-loss, take-profit or interim exit; delayed observations excluded from eligible sample",
@@ -19900,12 +19193,12 @@
     "validated_real_public_quotes": 48,
     "validated_spot_proxy_quotes": 2
   },
-  "losses": 25551,
+  "losses": 25554,
   "max_closed_equity_drawdown_usd": 615684.37,
   "missed_due_snapshots": 0,
-  "net_R": -4091.60167,
-  "net_expectancy_R": -0.08685,
-  "net_pnl_usd": -613740.25,
+  "net_R": -4081.69883,
+  "net_expectancy_R": -0.08662,
+  "net_pnl_usd": -612254.82,
   "observation_heartbeat": {
     "attempted_symbols": [],
     "attested_by_real_quote": false,
@@ -19914,17 +19207,17 @@
     "observed_at": null,
     "provider": null
   },
-  "open": 655,
+  "open": 647,
   "opportunity_history": {
     "append_only": true,
-    "head_sha256": "d9a110974dbe820059056015092b77e7a6345ddc2b9ee515a73de553bac14e58",
+    "head_sha256": "5ba6ca51bb548f87c31b9b87bed86916fa83bac58ecc64e31ec36beb2c8636ba",
     "individual_opportunities_not_reconstructed": true,
     "path": "data/opportunity_history.jsonl",
-    "rows": 1719,
+    "rows": 1720,
     "version": "opportunity-history-hash-chain-v1"
   },
   "pending": 0,
-  "profit_factor": 0.8357,
+  "profit_factor": 0.8362,
   "provider_observations": 48,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
@@ -19936,7 +19229,7 @@
       24
     ],
     "clean_future_10m_intervals_to_reach_90pct": 0,
-    "clean_future_10m_intervals_to_reach_95pct": 30,
+    "clean_future_10m_intervals_to_reach_95pct": 29,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -19952,9 +19245,8 @@
     "near_duplicate_fast_intervals": 4,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.005,
+    "prior_observation_gap_minutes": 10.004,
     "recent_observation_gaps_minutes": [
-      10.007,
       10.006,
       10.006,
       3.753,
@@ -20025,7 +19317,8 @@
       10.004,
       10.005,
       10.004,
-      10.005
+      10.005,
+      10.004
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -20043,7 +19336,7 @@
     "TON:okx-swap": "OKX missing ticker"
   },
   "spot_proxy_closures": 0,
-  "status": "OK",
+  "status": "NO_NEW_SIGNALS",
   "strategy_horizon": {
     "ATRCHAN-v1 / 12h": {
       "evidence": "multi-regime validation needed",
@@ -20155,9 +19448,9 @@
     },
     "BR-proxy-v1 / 12h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.26574,
-      "n": 881,
-      "net_R": -234.11489
+      "expectancy_R": -0.26976,
+      "n": 883,
+      "net_R": -238.2017
     },
     "BR-proxy-v1 / 1h": {
       "evidence": "multi-regime validation needed",
@@ -20359,9 +19652,9 @@
     },
     "CTRL-v1 / 4h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.02196,
-      "n": 1569,
-      "net_R": -34.45053
+      "expectancy_R": -0.02115,
+      "n": 1570,
+      "net_R": -33.21308
     },
     "CTRL-v1 / 8h": {
       "evidence": "multi-regime validation needed",
@@ -20539,9 +19832,9 @@
     },
     "IMPULSE-v1 / 4h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.02011,
-      "n": 154,
-      "net_R": -3.09736
+      "expectancy_R": 0.04307,
+      "n": 156,
+      "net_R": 6.71866
     },
     "IMPULSE-v1 / 8h": {
       "evidence": "multi-regime validation needed",
@@ -20719,9 +20012,9 @@
     },
     "RSI-v1 / 4h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.07057,
-      "n": 372,
-      "net_R": -26.25183
+      "expectancy_R": -0.07137,
+      "n": 373,
+      "net_R": -26.6217
     },
     "RSI-v1 / 8h": {
       "evidence": "multi-regime validation needed",
@@ -20767,9 +20060,9 @@
     },
     "RSITREND-v1 / 12h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.45359,
-      "n": 517,
-      "net_R": -234.50783
+      "expectancy_R": -0.44892,
+      "n": 518,
+      "net_R": -232.54092
     },
     "RSITREND-v1 / 1h": {
       "evidence": "multi-regime validation needed",
@@ -20791,9 +20084,9 @@
     },
     "RSITREND-v1 / 4h": {
       "evidence": "multi-regime validation needed",
-      "expectancy_R": -0.12801,
-      "n": 533,
-      "net_R": -68.22887
+      "expectancy_R": -0.12526,
+      "n": 534,
+      "net_R": -66.88973
     },
     "RSITREND-v1 / 8h": {
       "evidence": "multi-regime validation needed",
@@ -21090,12 +20383,12 @@
       "net_R": -10.82431
     }
   },
-  "timestamp": "2026-11-09T15:33:34.148799Z",
-  "total_round_trip_fees_usd": 471120.0,
+  "timestamp": "2026-11-09T15:43:34.416239Z",
+  "total_round_trip_fees_usd": 471200.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
-  "verified_events": 94879,
-  "win_rate": 0.4576,
-  "wins": 21560,
+  "verified_events": 94887,
+  "win_rate": 0.4577,
+  "wins": 21565,
   "workflow_interval_note": "GitHub scheduled triggers are best-effort"
 }
