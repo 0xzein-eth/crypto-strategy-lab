@@ -6,7 +6,7 @@ volatility, candle and combined OPEN-time feature groups.
 ## Experimental controls
 
 - Same eligible sample cohort for every feature set and horizon.
-- Same chronological 60/20/20 split and 24-hour boundary purge.
+- Same chronological 60/20/20 split and 24h30m boundary purge (24h fixed horizon plus up to 30m timely observation delay).
 - Imputation, scaling and category vocabulary are fit on training rows only.
 - Fixed logistic-regression hyperparameters; no test-set tuning.
 - Test Brier deltas are reported against the baseline; negative is better.
