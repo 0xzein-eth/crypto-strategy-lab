@@ -105,7 +105,7 @@ def weighted_exploration(names, underperformers, key):
     return slots[stable_bucket(key,len(slots))]
 
 
-def analysis(records):
+def analysis(records, include_cells=False):
     """Summarize ONLY past eligible CLOSE records; frozen 20% day holdout."""
     if isinstance(records,dict):
         records=records.values()
@@ -173,58 +173,61 @@ def analysis(records):
             "allocation_train_only":bool(train_only_ready),
         }
 
-    # A strategy-wide average can hide a losing direction or horizon. Build
-    # matched cells using only timely CLOSED perpetual outcomes, and compare
-    # each advanced cell with CTRL on the SAME side and horizon. The 20% day
-    # holdout is never consulted for this prospective research throttle.
-    cell_groups=defaultdict(list)
-    for r in all_eligible:
-        side=r.get("side")
-        horizon=r.get("horizon_hours")
-        if side in ("LONG","SHORT") and horizon in HORIZONS:
-            cell_groups[(r["strategy"],side,horizon,r.get("provider"))].append(r)
     cell_summary={}
     negative_cells=[]
-    # Advanced confirmed-candle arms are currently sourced only from OKX;
-    # compare them with the OKX CTRL cohort, not a cross-venue pooled control.
-    matched_provider="okx-swap"
-    for arm in ADVANCED:
-        for side in ("LONG","SHORT"):
-            for horizon in HORIZONS:
-                rows=cell_groups[(arm,side,horizon,matched_provider)]
-                control=cell_groups[("CTRL-v1",side,horizon,matched_provider)]
-                train=[r for r in rows if stable_bucket("holdout:"+day_of(r),5)!=0]
-                control_train=[r for r in control
-                               if stable_bucket("holdout:"+day_of(r),5)!=0]
-                train_days=len({day_of(r) for r in train})
-                control_days=len({day_of(r) for r in control_train})
-                lower,upper=_daily_interval(train)
-                arm_avg=mean([research_R(r) for r in train]) if train else None
-                control_avg=(mean([research_R(r) for r in control_train])
-                             if control_train else None)
-                sufficiently_observed=(len(train)>=REDUCE_TRAIN_N and
-                                       train_days>=REDUCE_TRAIN_DAYS and
-                                       len(control_train)>=REDUCE_TRAIN_N and
-                                       control_days>=REDUCE_TRAIN_DAYS)
-                underperforming=bool(
-                    sufficiently_observed and upper is not None and
-                    upper<REDUCE_UCB_R and arm_avg is not None and
-                    control_avg is not None and
-                    arm_avg<control_avg-REDUCE_WORSE_THAN_CONTROL_R)
-                key=cell_key(arm,side,horizon)
-                if rows:
-                    cell_summary[key]={
-                        "provider":matched_provider,
-                        "n":len(rows),"train_n":len(train),
-                        "control_train_n":len(control_train),
-                        "train_days":train_days,"control_train_days":control_days,
-                        "train_expectancy_R":round(arm_avg,6) if arm_avg is not None else None,
-                        "matched_control_expectancy_R":round(control_avg,6) if control_avg is not None else None,
-                        "train_cluster_lcb_R":lower,"train_cluster_ucb_R":upper,
-                        "underperformer_train_only":underperforming,
-                    }
-                if underperforming:
-                    negative_cells.append(key)
+    if include_cells:
+        # A strategy-wide average can hide a losing direction or horizon. Build
+        # matched cells using only timely CLOSED perpetual outcomes, and compare
+        # each advanced cell with CTRL on the SAME side and horizon. The 20% day
+        # holdout is never consulted for this prospective research throttle.
+        cell_groups=defaultdict(list)
+        for r in all_eligible:
+            side=r.get("side")
+            horizon=r.get("horizon_hours")
+            if side in ("LONG","SHORT") and horizon in HORIZONS:
+                cell_groups[(r["strategy"],side,horizon,r.get("provider"))].append(r)
+        cell_summary={}
+        negative_cells=[]
+        # Advanced confirmed-candle arms are currently sourced only from OKX;
+        # compare them with the OKX CTRL cohort, not a cross-venue pooled control.
+        matched_provider="okx-swap"
+        for arm in ADVANCED:
+            for side in ("LONG","SHORT"):
+                for horizon in HORIZONS:
+                    rows=cell_groups[(arm,side,horizon,matched_provider)]
+                    control=cell_groups[("CTRL-v1",side,horizon,matched_provider)]
+                    train=[r for r in rows if stable_bucket("holdout:"+day_of(r),5)!=0]
+                    control_train=[r for r in control
+                                   if stable_bucket("holdout:"+day_of(r),5)!=0]
+                    train_days=len({day_of(r) for r in train})
+                    control_days=len({day_of(r) for r in control_train})
+                    lower,upper=_daily_interval(train)
+                    arm_avg=mean([research_R(r) for r in train]) if train else None
+                    control_avg=(mean([research_R(r) for r in control_train])
+                                 if control_train else None)
+                    sufficiently_observed=(len(train)>=REDUCE_TRAIN_N and
+                                           train_days>=REDUCE_TRAIN_DAYS and
+                                           len(control_train)>=REDUCE_TRAIN_N and
+                                           control_days>=REDUCE_TRAIN_DAYS)
+                    underperforming=bool(
+                        sufficiently_observed and upper is not None and
+                        upper<REDUCE_UCB_R and arm_avg is not None and
+                        control_avg is not None and
+                        arm_avg<control_avg-REDUCE_WORSE_THAN_CONTROL_R)
+                    key=cell_key(arm,side,horizon)
+                    if rows:
+                        cell_summary[key]={
+                            "provider":matched_provider,
+                            "n":len(rows),"train_n":len(train),
+                            "control_train_n":len(control_train),
+                            "train_days":train_days,"control_train_days":control_days,
+                            "train_expectancy_R":round(arm_avg,6) if arm_avg is not None else None,
+                            "matched_control_expectancy_R":round(control_avg,6) if control_avg is not None else None,
+                            "train_cluster_lcb_R":lower,"train_cluster_ucb_R":upper,
+                            "underperformer_train_only":underperforming,
+                        }
+                    if underperforming:
+                        negative_cells.append(key)
 
     reduced=[name for name,stats in summary.items()
              if stats["underperformer_train_only"]]
@@ -235,7 +238,7 @@ def analysis(records):
     candidates=[k for k,v in summary.items() if v["preferential"]]
     candidates.sort(key=lambda name:(-(summary[name]["holdout_cluster_lcb_R"] or 0),
                                      -(summary[name]["train_cluster_lcb_R"] or 0),name))
-    return {
+    result = {
         "method":"v4-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
                    "; training-only allocation; 20% day monitoring withheld from selection; clustered daily lower bound",
         "eligible_closed":len(all_eligible),
@@ -244,11 +247,6 @@ def analysis(records):
         "provisional_leaders":candidates,
         "allocation_leaders":allocation_candidates,
         "training_only_underperformers":sorted(reduced),
-        "directional_horizon_cells":cell_summary,
-        "training_only_underperforming_cells":sorted(negative_cells),
-        "training_negative_cells_v1":sorted(negative_cells),
-        "cell_downweight_policy_version":"side-horizon-training-only-v1",
-        "training_negative_policy_version":"side-horizon-training-only-v1",
         "underperformer_policy":(
             ">=50 eligible training closes and >=7 training UTC days, "
             "clipped daily upper bound < -0.05R, training mean >0.05R "
@@ -261,6 +259,15 @@ def analysis(records):
                    "so it is not an untouched final holdout. "
                    "Selection remains observational, multi-tested and correlated.")
     }
+    if include_cells:
+        result.update({
+            "directional_horizon_cells":cell_summary,
+            "training_only_underperforming_cells":sorted(negative_cells),
+            "training_negative_cells_v1":sorted(negative_cells),
+            "cell_downweight_policy_version":"side-horizon-training-only-v1",
+            "training_negative_policy_version":"side-horizon-training-only-v1",
+        })
+    return result
 
 
 def choose(options,records,symbol,horizon,slot,rank,profile=None):
