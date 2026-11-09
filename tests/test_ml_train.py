@@ -23,13 +23,21 @@ class LogisticBaselineTests(unittest.TestCase):
 
     def test_time_split_is_ordered_and_purged(self):
         rows = [sample(day, str(day)) for day in range(1, 29)]
-        train, validation, test = ml_train.split_chronologically(rows, 24)
+        train, validation, test = ml_train.split_chronologically(rows, 24.5)
         train_end = ml_train.parse_time(train[-1]["entry_at"])
         valid_start = ml_train.parse_time(validation[0]["entry_at"])
         valid_end = ml_train.parse_time(validation[-1]["entry_at"])
         test_start = ml_train.parse_time(test[0]["entry_at"])
-        self.assertGreaterEqual((valid_start-train_end).total_seconds(), 24*3600)
+        self.assertGreaterEqual((valid_start-train_end).total_seconds(), 24.5*3600)
         self.assertGreaterEqual((test_start-valid_end).total_seconds(), 24*3600)
+
+
+    def test_default_purge_covers_24h_horizon_plus_30m_observation_delay(self):
+        rows = [sample(day, str(day)) for day in range(1, 29)]
+        train, validation, test = ml_train.split_chronologically(rows)
+        train_end = ml_train.parse_time(train[-1]["entry_at"])
+        valid_start = ml_train.parse_time(validation[0]["entry_at"])
+        self.assertGreaterEqual((valid_start-train_end).total_seconds(), 24.5*3600)
 
     def test_unknown_categories_and_missing_numeric_are_handled(self):
         train = [sample(day, str(day), label=day % 2) for day in range(1, 5)]
