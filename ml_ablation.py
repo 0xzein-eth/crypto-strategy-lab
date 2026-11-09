@@ -44,7 +44,7 @@ def run_ablation(rows):
                         "feature_sets": by_set})
     return {
         "version": "matched-feature-ablation-v1",
-        "method": "same chronological cohort, 60/20/20 split, 24h purge, train-only preprocessing",
+        "method": "same chronological cohort, 60/20/20 split, 24h30m purge, train-only preprocessing",
         "target": "net_profit_after_recorded_fees",
         "feature_policy": "OPEN_TIME_ONLY",
         "hyperparameters": {"epochs": 1200, "learning_rate": 0.05, "l2": 0.01},
