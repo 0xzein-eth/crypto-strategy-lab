@@ -21,6 +21,24 @@ class LogisticBaselineTests(unittest.TestCase):
         self.assertLess(probabilities[0], probabilities[-1])
         self.assertLess(probabilities[1], probabilities[2])
 
+    def test_sparse_optimizer_matches_dense_gradient_descent(self):
+        matrix = [[1.0, 0.0, -1.0, 0.0], [1.0, 2.0, 0.0, 1.0],
+                  [1.0, 0.0, 1.0, 0.0], [1.0, -2.0, 0.0, 1.0]]
+        labels = [0, 1, 1, 0]
+        expected = [0.0] * 4
+        for _ in range(30):
+            gradient = [0.0] * 4
+            for row, target in zip(matrix, labels):
+                error = ml_train.sigmoid(sum(w*x for w, x in zip(expected, row))) - target
+                for j, value in enumerate(row):
+                    gradient[j] += error * value
+            for j in range(4):
+                gradient[j] = gradient[j]/len(labels) + (0.01*expected[j] if j else 0.0)
+                expected[j] -= 0.05 * gradient[j]
+        actual = ml_train.fit_logistic(matrix, labels, epochs=30)
+        for left, right in zip(actual, expected):
+            self.assertAlmostEqual(left, right, places=12)
+
     def test_time_split_is_ordered_and_purged(self):
         rows = [sample(day, str(day)) for day in range(1, 29)]
         train, validation, test = ml_train.split_chronologically(rows, 24.5)
