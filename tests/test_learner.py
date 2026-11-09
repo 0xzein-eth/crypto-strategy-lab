@@ -8,6 +8,7 @@ def trade(arm,day,r_value,market_type="perpetual",late=False,horizon=2,side="LON
     return {
         "strategy":arm,
         "side":side,
+        "provider":"okx-swap",
         "created_at":day+"T03:00:00Z",
         "status":"CLOSED",
         "market_type":market_type,
@@ -268,6 +269,22 @@ class LearningTests(unittest.TestCase):
         profile=learner.analysis(rows)
         self.assertNotIn("BR-v3|LONG|24h",
                          profile["training_only_underperforming_cells"])
+
+
+    def test_cell_downweighting_requires_same_venue_control(self):
+        rows=[]
+        for i in range(100):
+            day=(dt.date(2026,3,1)+dt.timedelta(days=i)).isoformat()
+            rows.extend([
+                trade("BR-v3",day,-1.0,horizon=24,side="LONG"),
+                trade("CTRL-v1",day,0.0,horizon=24,side="LONG",
+                      provider="bybit-linear"),
+            ])
+        profile=learner.analysis(rows)
+        self.assertNotIn("BR-v3|LONG|24h",
+                         profile["training_only_underperforming_cells"])
+        self.assertEqual(
+            profile["directional_horizon_cells"]["BR-v3|LONG|24h"]["control_train_n"],0)
 
     def test_unconfirmed_advanced_never_selected(self):
         options=[{"strategy":"BR-proxy-v1","side":"SHORT"},
