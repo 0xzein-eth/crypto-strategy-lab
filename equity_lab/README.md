@@ -85,8 +85,20 @@ win rate / profit factor are `null`, not a fabricated 100%.
 
 ## Development / tests
 
+**Policy v2 (22 October 2026):** new observations use prior-session volume,
+prior observed equity and prior drawdown for hypothetical OPEN decisions.
+The current day's CLOSE cannot change that OPEN allocation. A missed next
+session or a signal recorded after its OPEN prevents a retroactive entry.
+Existing v1 observations retain their original replay policy and hashes;
+new records identify v2 explicitly, with policy downgrade rejected.
+`--verify-only` reconciles both saved report and equity curve against the
+source journal and refuses missing/divergent outputs. It never repairs or
+rewrites evidence. Calendar holidays and corporate-action modeling remain
+incomplete; weekday checks do not constitute an official exchange calendar.
+
 ```bash
 python -m unittest discover -s tests -p 'test_equity_lab.py' -v
+python -m unittest discover -s tests -p 'test_equity_audit_regression.py' -v
 python -m equity_lab.forward --market NASDAQ --verify-only
 python -m equity_lab.forward --market LQ45 --verify-only
 # Only after each market's true daily close:

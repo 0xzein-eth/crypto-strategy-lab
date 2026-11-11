@@ -12,3 +12,5 @@ class LegacyResearchQualityCompatibility(unittest.TestCase):
         self.assertTrue(callable(audit.audit))
         self.assertTrue(callable(calendar_evidence.interval_by_entry_day))
         self.assertTrue(callable(crypto_forensics.analyze))
+    def test_quality_entry_day_is_utc(self):
+        self.assertEqual(research_quality._day("2026-10-20T00:30:00+07:00"),"2026-10-19")

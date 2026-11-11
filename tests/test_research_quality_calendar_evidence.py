@@ -17,3 +17,9 @@ class CalendarEvidenceTests(unittest.TestCase):
             interval_by_entry_day([("2026-10-20",float("nan"))],families=5)
     def test_empty(self):
         self.assertIsNone(interval_by_entry_day([],families=5)["ucb_pct"])
+    def test_invalid_dates_and_boolean_thresholds_fail_closed(self):
+        for rows,options in (([("2026-99-99",.1)],{}),([],{"families":True}),
+                             ([],{"minimum_rows":0}),([],{"minimum_days":True})):
+            with self.subTest(options=options):
+                with self.assertRaises(ValueError):
+                    interval_by_entry_day(rows,**{"families":5,**options})
