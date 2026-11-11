@@ -528,7 +528,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 51298,
-  "closed_this_run": 12,
+  "closed_this_run": 0,
   "cohort_diagnostics": {
     "by_source_provenance": {
       "confirmed_15m_candle": {
@@ -2878,12 +2878,12 @@
     "paper_only": true,
     "quiet_24h_quotes_admitted": 0,
     "recent_7d_confirmed_open_counts": {
-      "ATRCHAN-v1": 382,
+      "ATRCHAN-v1": 380,
       "BANDREV-v1": 163,
       "BANDSWEEP-v1": 185,
       "BR-v3": 197,
-      "BRREG-v1": 157,
-      "COMPBR-v1": 187,
+      "BRREG-v1": 156,
+      "COMPBR-v1": 184,
       "CROSS-v1": 160,
       "DC-v1": 191,
       "EFFTREND-v1": 201,
@@ -2891,15 +2891,15 @@
       "IBREAK-v1": 74,
       "IMPULSE-v1": 297,
       "LS-v3": 451,
-      "MR-v3": 437,
-      "RANGE-v1": 349,
+      "MR-v3": 436,
+      "RANGE-v1": 348,
       "RSI-v1": 471,
       "RSIREC-v1": 274,
       "RSITREND-v1": 982,
       "TP-v3": 246,
       "TPREG-v1": 180,
       "TRECLAIM-v1": 166,
-      "TREND-v1": 152,
+      "TREND-v1": 151,
       "VOL-v1": 143,
       "VOLFADE-v1": 138,
       "VWAP-v1": 311,
@@ -3211,7 +3211,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-11-11T22:55:17.852534+00:00",
+      "as_of_utc": "2026-11-11T23:05:18.177999+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 0,
@@ -16123,7 +16123,7 @@
       }
     },
     "evaluation_next_24_hours": 444,
-    "evaluation_next_hour": 32,
+    "evaluation_next_hour": 37,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
@@ -18373,13 +18373,12 @@
     "note": "Fresh validated public snapshots only. Spot proxies do not count toward perpetual strategy evidence.",
     "real_perpetual_quote_available_this_tick": true,
     "successful_sources": [
-      "kraken-spot-proxy",
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 11,
-    "validated_real_public_quotes": 12,
-    "validated_spot_proxy_quotes": 1
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
+    "validated_spot_proxy_quotes": 0
   },
   "losses": 27810,
   "max_closed_equity_drawdown_usd": 666407.95,
@@ -18388,25 +18387,27 @@
   "net_expectancy_R": -0.08643,
   "net_pnl_usd": -665046.93,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-11-11T23:05:26.672000Z",
+    "provider": "okx-swap"
   },
   "open": 444,
   "opportunity_history": {
     "append_only": true,
-    "head_sha256": "247e762209a0beb2aa07edebe9a7ad064cc03867d9843be3a28a021cabfc727b",
+    "head_sha256": "8c3bea8fc3a5a1212fb364fc4dec3e7f4bb54c53fab8ba34c8b6f19683f35243",
     "individual_opportunities_not_reconstructed": true,
     "path": "data/opportunity_history.jsonl",
-    "rows": 2039,
+    "rows": 2040,
     "version": "opportunity-history-hash-chain-v1"
   },
   "pending": 0,
   "profit_factor": 0.835,
-  "provider_observations": 12,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -18416,8 +18417,8 @@
       12,
       24
     ],
-    "clean_future_10m_intervals_to_reach_90pct": 55,
-    "clean_future_10m_intervals_to_reach_95pct": 55,
+    "clean_future_10m_intervals_to_reach_90pct": 54,
+    "clean_future_10m_intervals_to_reach_95pct": 54,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -18433,9 +18434,8 @@
     "near_duplicate_fast_intervals": 1,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.006,
+    "prior_observation_gap_minutes": 10.005,
     "recent_observation_gaps_minutes": [
-      10.007,
       10.006,
       10.005,
       10.005,
@@ -18506,7 +18506,8 @@
       10.013,
       10.008,
       10.005,
-      10.006
+      10.006,
+      10.005
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -19564,7 +19565,7 @@
       "net_R": -10.64966
     }
   },
-  "timestamp": "2026-11-11T22:55:17.852534Z",
+  "timestamp": "2026-11-11T23:05:18.177999Z",
   "total_round_trip_fees_usd": 512980.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
