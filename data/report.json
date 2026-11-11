@@ -528,7 +528,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 51330,
-  "closed_this_run": 9,
+  "closed_this_run": 0,
   "cohort_diagnostics": {
     "by_source_provenance": {
       "confirmed_15m_candle": {
@@ -3211,7 +3211,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-11-11T23:48:39.467978+00:00",
+      "as_of_utc": "2026-11-11T23:58:39.759430+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 0,
@@ -16123,7 +16123,7 @@
       }
     },
     "evaluation_next_24_hours": 412,
-    "evaluation_next_hour": 48,
+    "evaluation_next_hour": 60,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
@@ -18373,13 +18373,12 @@
     "note": "Fresh validated public snapshots only. Spot proxies do not count toward perpetual strategy evidence.",
     "real_perpetual_quote_available_this_tick": true,
     "successful_sources": [
-      "kraken-spot-proxy",
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 8,
-    "validated_real_public_quotes": 9,
-    "validated_spot_proxy_quotes": 1
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
+    "validated_spot_proxy_quotes": 0
   },
   "losses": 27832,
   "max_closed_equity_drawdown_usd": 668418.69,
@@ -18388,25 +18387,27 @@
   "net_expectancy_R": -0.08667,
   "net_pnl_usd": -667310.25,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-11-11T23:58:48.166000Z",
+    "provider": "okx-swap"
   },
   "open": 412,
   "opportunity_history": {
     "append_only": true,
-    "head_sha256": "dd1165b908828a5d4a8740943700cf6bd6c486be4dabf827638592489d7ed149",
+    "head_sha256": "f1f2dea739c30acefa86f43e248f698f17a6a8012b3cfd3d1423295b49dc51c0",
     "individual_opportunities_not_reconstructed": true,
     "path": "data/opportunity_history.jsonl",
-    "rows": 2045,
+    "rows": 2046,
     "version": "opportunity-history-hash-chain-v1"
   },
   "pending": 0,
   "profit_factor": 0.8347,
-  "provider_observations": 9,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -18416,8 +18417,8 @@
       12,
       24
     ],
-    "clean_future_10m_intervals_to_reach_90pct": 49,
-    "clean_future_10m_intervals_to_reach_95pct": 49,
+    "clean_future_10m_intervals_to_reach_90pct": 48,
+    "clean_future_10m_intervals_to_reach_95pct": 48,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -18433,9 +18434,8 @@
     "near_duplicate_fast_intervals": 2,
     "normal_requested_new": 44,
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
-    "prior_observation_gap_minutes": 10.006,
+    "prior_observation_gap_minutes": 10.005,
     "recent_observation_gaps_minutes": [
-      10.006,
       10.007,
       10.007,
       10.006,
@@ -18506,7 +18506,8 @@
       10.006,
       10.006,
       10.009,
-      10.006
+      10.006,
+      10.005
     ],
     "recent_observed_intervals": 72,
     "recovery_throttled": false,
@@ -19564,7 +19565,7 @@
       "net_R": -12.97121
     }
   },
-  "timestamp": "2026-11-11T23:48:39.467978Z",
+  "timestamp": "2026-11-11T23:58:39.759430Z",
   "total_round_trip_fees_usd": 513300.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
