@@ -530,7 +530,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 54863,
-  "closed_this_run": 4,
+  "closed_this_run": 0,
   "cohort_diagnostics": {
     "by_source_provenance": {
       "confirmed_15m_candle": {
@@ -2887,17 +2887,17 @@
       "BRREG-v1": 177,
       "COMPBR-v1": 190,
       "CROSS-v1": 145,
-      "DC-v1": 200,
+      "DC-v1": 199,
       "EFFTREND-v1": 183,
       "FB-v3": 296,
       "IBREAK-v1": 69,
       "IMPULSE-v1": 313,
       "LS-v3": 435,
-      "MR-v3": 388,
+      "MR-v3": 386,
       "RANGE-v1": 325,
-      "RSI-v1": 526,
-      "RSIREC-v1": 275,
-      "RSITREND-v1": 1078,
+      "RSI-v1": 525,
+      "RSIREC-v1": 274,
+      "RSITREND-v1": 1077,
       "TP-v3": 241,
       "TPREG-v1": 172,
       "TRECLAIM-v1": 129,
@@ -2905,7 +2905,7 @@
       "VOL-v1": 134,
       "VOLFADE-v1": 131,
       "VWAP-v1": 276,
-      "VWAPTR-v1": 137
+      "VWAPTR-v1": 136
     },
     "requested_new_slots": 44,
     "scope": "real fresh market quote, distinct unsampled instrument/15m slot, within quota",
@@ -3217,7 +3217,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-11-13T22:29:01.456426+00:00",
+      "as_of_utc": "2026-11-13T22:39:01.784859+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 0,
@@ -16541,7 +16541,7 @@
       }
     },
     "evaluation_next_24_hours": 379,
-    "evaluation_next_hour": 22,
+    "evaluation_next_hour": 25,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
@@ -18794,8 +18794,8 @@
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 4,
-    "validated_real_public_quotes": 4,
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
     "validated_spot_proxy_quotes": 0
   },
   "losses": 29714,
@@ -18805,25 +18805,27 @@
   "net_expectancy_R": -0.08401,
   "net_pnl_usd": -691336.5,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-11-13T22:39:10.070000Z",
+    "provider": "okx-swap"
   },
   "open": 379,
   "opportunity_history": {
     "append_only": true,
-    "head_sha256": "69496413519336cf26ee6a37c0fa118b7ef3d01cc590db9a74256706ed677053",
+    "head_sha256": "17f5cb76a45f4f7bdb8f0579fbef51b334c0cf5b005882b0ef18323ffe97883f",
     "individual_opportunities_not_reconstructed": true,
     "path": "data/opportunity_history.jsonl",
-    "rows": 2308,
+    "rows": 2309,
     "version": "opportunity-history-hash-chain-v1"
   },
   "pending": 0,
   "profit_factor": 0.8404,
-  "provider_observations": 4,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -18834,7 +18836,7 @@
       24
     ],
     "clean_future_10m_intervals_to_reach_90pct": 0,
-    "clean_future_10m_intervals_to_reach_95pct": 3,
+    "clean_future_10m_intervals_to_reach_95pct": 2,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -18852,7 +18854,6 @@
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
     "prior_observation_gap_minutes": 10.005,
     "recent_observation_gaps_minutes": [
-      10.009,
       10.007,
       56.614,
       10.009,
@@ -18923,6 +18924,7 @@
       10.005,
       10.012,
       10.007,
+      10.005,
       10.005
     ],
     "recent_observed_intervals": 72,
@@ -19981,7 +19983,7 @@
       "net_R": -13.64847
     }
   },
-  "timestamp": "2026-11-13T22:29:01.456426Z",
+  "timestamp": "2026-11-13T22:39:01.784859Z",
   "total_round_trip_fees_usd": 548630.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
