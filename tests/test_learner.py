@@ -295,5 +295,53 @@ class LearningTests(unittest.TestCase):
             self.assertIn(selected,options)
 
 
+    def test_proxy_baseline_cells_are_training_only_downweighted(self):
+        days=[(dt.date(2026,4,1)+dt.timedelta(days=i)).isoformat()
+              for i in range(100)]
+        rows=[]
+        for day in days:
+            for _ in range(2):
+                rows.extend([
+                    trade("CTRL-v1",day,0.0,horizon=24,side="LONG"),
+                    trade("BR-proxy-v1",day,-1.0,horizon=24,side="LONG"),
+                    trade("MR-proxy-v1",day,1.0,horizon=24,side="LONG"),
+                ])
+        profile=learner.analysis(rows,include_cells=True)
+        key="BR-proxy-v1|LONG|24h"
+        self.assertIn(key,profile["training_negative_cells_v1"])
+        options=[{"strategy":"BR-proxy-v1","side":"LONG"},
+                 {"strategy":"MR-proxy-v1","side":"LONG"}]
+        picks=[learner.choose(options,rows,"BTC",24,k,0,profile)
+               for k in range(2000)]
+        br=sum(p[0]["strategy"]=="BR-proxy-v1" for p in picks)
+        mr=sum(p[0]["strategy"]=="MR-proxy-v1" for p in picks)
+        self.assertGreater(br,0)
+        self.assertGreater(mr,br*2)
+        self.assertTrue(all(
+            learner.is_training_negative_downweighted(mode)
+            for _,mode in picks
+            if mode=="baseline_side_horizon_training_negative_downweighted"))
+        changed=[dict(x) for x in rows]
+        for x in changed:
+            if x["strategy"]=="BR-proxy-v1" and learner.stable_bucket(
+                    "holdout:"+learner.day_of(x),5)==0:
+                x["normalized_R"]=3.0
+        profile2=learner.analysis(changed,include_cells=True)
+        self.assertEqual(profile["training_negative_cells_v1"],
+                         profile2["training_negative_cells_v1"])
+        self.assertEqual(picks,[learner.choose(options,changed,"BTC",24,k,0,profile2)
+                                for k in range(2000)])
+
+    def test_allocation_mode_audit_flag_covers_versioned_guard_modes(self):
+        self.assertTrue(learner.is_training_negative_downweighted(
+            "confirmed_signal_training_negative_downweighted"))
+        self.assertTrue(learner.is_training_negative_downweighted(
+            "confirmed_signal_side_horizon_training_negative_downweighted"))
+        self.assertTrue(learner.is_training_negative_downweighted(
+            "baseline_side_horizon_training_negative_downweighted"))
+        self.assertFalse(learner.is_training_negative_downweighted(
+            "baseline_side_horizon_neutral_exploration"))
+
+
 if __name__=="__main__":
     unittest.main()
