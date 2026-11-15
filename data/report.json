@@ -530,7 +530,7 @@
     "max_opens_per_symbol_per_15m_signal_slot": 1
   },
   "closed": 58264,
-  "closed_this_run": 18,
+  "closed_this_run": 0,
   "cohort_diagnostics": {
     "by_source_provenance": {
       "confirmed_15m_candle": {
@@ -2891,18 +2891,18 @@
       "EFFTREND-v1": 186,
       "FB-v3": 331,
       "IBREAK-v1": 59,
-      "IMPULSE-v1": 296,
+      "IMPULSE-v1": 295,
       "LS-v3": 480,
       "MR-v3": 365,
       "RANGE-v1": 289,
       "RSI-v1": 610,
-      "RSIREC-v1": 286,
+      "RSIREC-v1": 283,
       "RSITREND-v1": 1218,
       "TP-v3": 197,
       "TPREG-v1": 173,
       "TRECLAIM-v1": 115,
       "TREND-v1": 234,
-      "VOL-v1": 147,
+      "VOL-v1": 146,
       "VOLFADE-v1": 143,
       "VWAP-v1": 277,
       "VWAPTR-v1": 121
@@ -3217,7 +3217,7 @@
     "minimum_training_days": 7,
     "note": "Correlated trades/2-day trends do not prove edge; funding, slippage and margin not actual fills",
     "temporal_maturity": {
-      "as_of_utc": "2026-11-15T23:07:44.905000+00:00",
+      "as_of_utc": "2026-11-15T23:17:45.279461+00:00",
       "by_strategy": {
         "ATRCHAN-v1": {
           "additional_bidirectional_regime_days_needed": 0,
@@ -16787,7 +16787,7 @@
       }
     },
     "evaluation_next_24_hours": 478,
-    "evaluation_next_hour": 48,
+    "evaluation_next_hour": 54,
     "exit_policy": "first fresh same-venue observed ticker at/after due time; NO stop-loss or take-profit",
     "exposure_note": "Sum of overlapping virtual research notionals; NOT deployable capital or portfolio equity.",
     "horizon_hours": {
@@ -19040,8 +19040,8 @@
       "okx-swap"
     ],
     "unavailable_symbol_source_requests": 0,
-    "validated_perpetual_quotes": 16,
-    "validated_real_public_quotes": 16,
+    "validated_perpetual_quotes": 1,
+    "validated_real_public_quotes": 1,
     "validated_spot_proxy_quotes": 0
   },
   "losses": 31422,
@@ -19051,25 +19051,27 @@
   "net_expectancy_R": -0.07922,
   "net_pnl_usd": -692313.23,
   "observation_heartbeat": {
-    "attempted_symbols": [],
-    "attested_by_real_quote": false,
-    "instrument": null,
+    "attempted_symbols": [
+      "BTC"
+    ],
+    "attested_by_real_quote": true,
+    "instrument": "BTC-USDT-SWAP",
     "note": "Only a validated actual-time public quote can attest idle ticks; never fabricates an OPEN/CLOSE.",
-    "observed_at": null,
-    "provider": null
+    "observed_at": "2026-11-15T23:17:51.773000Z",
+    "provider": "okx-swap"
   },
   "open": 478,
   "opportunity_history": {
     "append_only": true,
-    "head_sha256": "b936a0a9998834efafd7ae297041fe4433b419b3dfb53771958a0b4e9dfda3ec",
+    "head_sha256": "f52ffdc350c2d3ce2318ecea3e7ff74c456434f1375058ce41b4405bf4aa8691",
     "individual_opportunities_not_reconstructed": true,
     "path": "data/opportunity_history.jsonl",
-    "rows": 2586,
+    "rows": 2587,
     "version": "opportunity-history-hash-chain-v1"
   },
   "pending": 0,
   "profit_factor": 0.8535,
-  "provider_observations": 16,
+  "provider_observations": 1,
   "scheduling_diagnostics": {
     "allowed_new_entry_horizons_hours": [
       1,
@@ -19080,7 +19082,7 @@
       24
     ],
     "clean_future_10m_intervals_to_reach_90pct": 0,
-    "clean_future_10m_intervals_to_reach_95pct": 32,
+    "clean_future_10m_intervals_to_reach_95pct": 31,
     "coverage_recovery_projection_is_counterfactual": true,
     "coverage_windows_are_diagnostics_only": true,
     "degraded_after_minutes": 45,
@@ -19098,7 +19100,6 @@
     "note": "GitHub Actions cron is best-effort; late exits remain excluded from evidence",
     "prior_observation_gap_minutes": 10.006,
     "recent_observation_gaps_minutes": [
-      10.005,
       10.005,
       10.005,
       10.005,
@@ -19169,6 +19170,7 @@
       10.003,
       3.191,
       10.009,
+      10.006,
       10.006
     ],
     "recent_observed_intervals": 72,
@@ -20227,7 +20229,7 @@
       "net_R": -4.76517
     }
   },
-  "timestamp": "2026-11-15T23:07:44.905000Z",
+  "timestamp": "2026-11-15T23:17:45.279461Z",
   "total_round_trip_fees_usd": 582640.0,
   "universe_size": 48,
   "universe_version": "2026-10-16-v3",
