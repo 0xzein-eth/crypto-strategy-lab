@@ -191,7 +191,7 @@ def analysis(records, include_cells=False):
         # Advanced confirmed-candle arms are currently sourced only from OKX;
         # compare them with the OKX CTRL cohort, not a cross-venue pooled control.
         matched_provider="okx-swap"
-        for arm in ADVANCED:
+        for arm in BASELINES[:2]+ADVANCED:
             for side in ("LONG","SHORT"):
                 for horizon in HORIZONS:
                     rows=cell_groups[(arm,side,horizon,matched_provider)]
@@ -271,11 +271,41 @@ def analysis(records, include_cells=False):
 
 
 def choose(options,records,symbol,horizon,slot,rank,profile=None):
-    """Pick a pre-registered eligible arm, preserving controls and exploration.
+    """Pick among eligible paper arms after training-only loser quarantine.
 
-    Cannot choose an advanced signal unless it is explicitly in options
-    following confirmed OHLCV validation by signals.py.
+    A sufficiently evidenced losing arm/cell is excluded from NEW entries,
+    not merely downweighted. CTRL remains available; all old records remain
+    immutable. Advanced signals still require confirmation by signals.py.
     """
+    if not options:
+        return None
+    # Reversible training-only quarantine for persistently losing arms/cells.
+    # No monitoring labels enter this gate; historical events are immutable.
+    # CTRL is always retained as the research comparator.
+    arm_quarantine=set()
+    cell_quarantine=set()
+    if isinstance(profile,dict):
+        values=profile.get("training_only_underperformers",())
+        if isinstance(values,(tuple,list)):
+            arm_quarantine=set(values)
+        if profile.get("training_negative_policy_version") == "side-horizon-training-only-v1":
+            values=profile.get("training_negative_cells_v1",())
+            if isinstance(values,(tuple,list)):
+                cell_quarantine=set(values)
+    eligible_options=[]
+    for option in options:
+        strategy=option.get("strategy")
+        if strategy == "CTRL-v1":
+            eligible_options.append(option)
+            continue
+        if strategy in arm_quarantine:
+            continue
+        side=option.get("side")
+        if side in ("LONG","SHORT") and horizon in HORIZONS:
+            if cell_key(strategy,side,horizon) in cell_quarantine:
+                continue
+        eligible_options.append(option)
+    options=eligible_options
     if not options:
         return None
     available={o["strategy"]:o for o in options}
