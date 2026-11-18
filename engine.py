@@ -521,6 +521,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     negative_cells = learning_profile.get("training_negative_cells_v1", [])
     selection_profile = {
         "entry_exposure_counts_v1": exposure_counts,
+        # Whole-arm and side×horizon quarantines are derived exclusively from
+        # eligible training-day clusters; the monitoring partition is excluded.
+        "training_only_underperformers": underperformers,
         "train_negative_arms_v1": [name for name in underperformers
                                    if name in learner.ADVANCED],
         "training_negative_policy_version": "side-horizon-training-only-v1",
@@ -529,7 +532,9 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     if opportunity_audit is not None:
         opportunity_audit["training_only_negative_arms_v1"] = (
             selection_profile["train_negative_arms_v1"])
+        opportunity_audit["training_only_quarantined_arms_v1"] = underperformers
         opportunity_audit["training_only_negative_cells_v1"] = negative_cells
+        opportunity_audit["training_only_quarantined_cells_v1"] = negative_cells
     # UTC-day budgets bound public CI/storage use and avoid accidental flood
     # from repeated manual dispatches. Existing full event history remains intact.
     utc_day = moment.date()
