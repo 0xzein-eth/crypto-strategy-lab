@@ -27,9 +27,9 @@ MIN_HOLDOUT=10
 MIN_HOLDOUT_DAYS=3
 CLIP_R=3.0
 # Only a sufficiently large multi-day TRAINING partition, with a negative
-# day-cluster upper confidence bound and worse outcome than the matched
-# control, can reduce exploratory sampling. Never stop control or shut off
-# an unfavored arm: positive later regimes must remain observable.
+# day-cluster upper confidence bound and worse outcome than matched control,
+# can quarantine an arm/cell from NEW entries. CTRL remains as comparator;
+# historical observations are immutable and the quarantine is reversible.
 REDUCE_TRAIN_N=50
 REDUCE_TRAIN_DAYS=7
 REDUCE_UCB_R=-0.05
@@ -95,7 +95,7 @@ def daily_lcb(rows):
 
 
 def weighted_exploration(names, underperformers, key):
-    """Never exclude an arm. Less-promising TRAIN-only arms retain 1/4 weight."""
+    """Deterministically sample eligible arms; quarantined arms are filtered first."""
     if not names:
         return None
     slots=[]
@@ -248,14 +248,14 @@ def analysis(records, include_cells=False):
         "allocation_leaders":allocation_candidates,
         "training_only_underperformers":sorted(reduced),
         "underperformer_policy":(
-            ">=50 eligible training closes and >=7 training UTC days, "
-            "clipped daily upper bound < -0.05R, training mean >0.05R "
-            "worse than CTRL; only 4:1 exploration reweight, never disable; "
-            "monitoring outcomes excluded"),
+            "reversible quarantine from NEW entries at >=50 eligible training "
+            "closes and >=7 training UTC days, clipped daily upper bound "
+            "< -0.05R, training mean >0.05R worse than matched CTRL; "
+            "CTRL remains; historical records immutable; monitoring excluded"),
         "champion":None,  # Descriptive candidates do not meet independent promotion criteria.
         "warning":("No strategy has demonstrated a reliable tradable edge. "
                    "Training-only allocations never access monitoring results. "
-                   "Historical monitoring was previously used for allocations, "
+                   "Historical monitoring was previously inspected, "
                    "so it is not an untouched final holdout. "
                    "Selection remains observational, multi-tested and correlated.")
     }
