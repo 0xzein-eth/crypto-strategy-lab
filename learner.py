@@ -105,6 +105,11 @@ def weighted_exploration(names, underperformers, key):
     return slots[stable_bucket(key,len(slots))]
 
 
+def is_training_negative_downweighted(mode):
+    """Recognize every versioned allocation mode that applied the 1:4 guard."""
+    return isinstance(mode, str) and mode.endswith("_training_negative_downweighted")
+
+
 def analysis(records, include_cells=False):
     """Summarize ONLY past eligible CLOSE records; frozen 20% day holdout."""
     if isinstance(records,dict):
@@ -188,10 +193,11 @@ def analysis(records, include_cells=False):
                 cell_groups[(r["strategy"],side,horizon,r.get("provider"))].append(r)
         cell_summary={}
         negative_cells=[]
-        # Advanced confirmed-candle arms are currently sourced only from OKX;
-        # compare them with the OKX CTRL cohort, not a cross-venue pooled control.
+        # Compare every sampled strategy arm with the same-venue CTRL cohort.
+        # Proxy baselines and confirmed-candle arms are evaluated separately by
+        # side and horizon; no cross-venue pooling or monitoring labels.
         matched_provider="okx-swap"
-        for arm in ADVANCED:
+        for arm in BASELINES[:2]+ADVANCED:
             for side in ("LONG","SHORT"):
                 for horizon in HORIZONS:
                     rows=cell_groups[(arm,side,horizon,matched_provider)]
@@ -353,6 +359,23 @@ def choose(options,records,symbol,horizon,slot,rank,profile=None):
         return available[pick],("confirmed_signal_training_negative_downweighted"
                                 if legacy_negative else "confirmed_signal_neutral_exploration")
     if bucket<95 and baselines:
+        baseline_cells={cell_key(available[name]["strategy"],
+                                 available[name]["side"],horizon):available[name]
+                        for name in baselines}
+        cell_flagged=(profile.get("training_negative_cells_v1")
+                      if isinstance(profile,dict) and
+                      profile.get("training_negative_policy_version") ==
+                      "side-horizon-training-only-v1" else ())
+        negative_cells=(set(cell_flagged).intersection(baseline_cells)
+                        if isinstance(cell_flagged,(tuple,list)) else set())
+        if baseline_cells and profile is not None and "training_negative_cells_v1" in profile:
+            pick=weighted_exploration(
+                list(baseline_cells),negative_cells,
+                "baseline-cell:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
+            return baseline_cells[pick],(
+                "baseline_side_horizon_training_negative_downweighted"
+                if negative_cells else
+                "baseline_side_horizon_neutral_exploration")
         pick=weighted_exploration(baselines,set(),
                                   "baseline:%s:%s:%s:%s"%(symbol,horizon,slot,rank))
         return available[pick],"baseline_neutral_exploration"

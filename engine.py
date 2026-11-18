@@ -753,6 +753,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                                 reason="all_registered_arm_horizon_signatures_occupied")
             continue
         style,side=chosen["strategy"],chosen["side"]
+        training_negative_downweighted=learner.is_training_negative_downweighted(allocation)
         evidence={"price_change_24h_pct":round(q["pct24h"],6),
                   "quote_volume_24h":round(q["quote_volume_24h"],2),
                   "price_change_reference":q.get("price_change_reference","provider-24h-window"),
@@ -761,12 +762,10 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                   "allocation_policy":"learner-v8-confirmed-quality-first-training-loss-guard",
                   "selection_mode":allocation,
                   "horizon_conflict_retries":horizon_retry,
-                  "performance_neutral_allocation":(
-                      allocation != "confirmed_signal_training_negative_downweighted"),
+                  "performance_neutral_allocation":not training_negative_downweighted,
                   "training_loss_research_guard":(
-                      "bounded_train_only_4to1_exploration_no_holdout_v1"
-                      if allocation == "confirmed_signal_training_negative_downweighted"
-                      else "inactive"),
+                      "bounded_train_only_4to1_exploration_no_holdout_v2"
+                      if training_negative_downweighted else "inactive"),
                   "signal_catalog_version":"2026-10-19-band-sweep-research-v7",
                   "universe_version":universe.UNIVERSE_VERSION,
                   "sampling_stratum":list(universe.bucket(symbol, q["pct24h"], q["quote_volume_24h"])),
