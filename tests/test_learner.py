@@ -296,8 +296,11 @@ class LearningTests(unittest.TestCase):
                     trade("CTRL-v1",day,0.0,horizon=24,side="LONG"),
                     trade("BR-proxy-v1",day,-1.0,horizon=24,side="LONG"),
                     trade("MR-proxy-v1",day,1.0,horizon=24,side="LONG"),
+                    trade("CTRL-v1",day,0.0,horizon=24,side="SHORT"),
+                    trade("BR-proxy-v1",day,1.0,horizon=24,side="SHORT"),
                 ])
         profile=learner.analysis(rows,include_cells=True)
+        self.assertNotIn("BR-proxy-v1",profile["training_only_underperformers"])
         self.assertIn("BR-proxy-v1|LONG|24h",
                       profile["training_only_underperforming_cells"])
         options=[{"strategy":"BR-proxy-v1","side":"LONG"},
