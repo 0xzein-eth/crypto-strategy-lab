@@ -277,11 +277,43 @@ def analysis(records, include_cells=False):
 
 
 def choose(options,records,symbol,horizon,slot,rank,profile=None):
-    """Pick a pre-registered eligible arm, preserving controls and exploration.
+    """Pick among eligible paper arms after training-only loser quarantine.
 
-    Cannot choose an advanced signal unless it is explicitly in options
-    following confirmed OHLCV validation by signals.py.
+    A sufficiently evidenced losing arm/cell is excluded from NEW entries,
+    not merely downweighted. CTRL remains available; all old records remain
+    immutable. Cannot choose an advanced signal unless signals.py confirmed it.
     """
+    if not options:
+        return None
+    # Strict, reversible quarantine: only TRAINING-only arm/cell diagnostics
+    # may remove a candidate from NEW paper entries. Historical events remain
+    # untouched, CTRL is always retained, and the monitoring partition is never
+    # consulted. If every experimental arm is quarantined, keep CTRL rather
+    # than silently re-admitting a known loser.
+    arm_quarantine=set()
+    cell_quarantine=set()
+    if isinstance(profile,dict):
+        values=profile.get("training_only_underperformers",())
+        if isinstance(values,(tuple,list)):
+            arm_quarantine=set(values)
+        if profile.get("training_negative_policy_version") == "side-horizon-training-only-v1":
+            values=profile.get("training_negative_cells_v1",())
+            if isinstance(values,(tuple,list)):
+                cell_quarantine=set(values)
+    eligible_options=[]
+    for option in options:
+        strategy=option.get("strategy")
+        if strategy == "CTRL-v1":
+            eligible_options.append(option)
+            continue
+        if strategy in arm_quarantine:
+            continue
+        side=option.get("side")
+        if side in ("LONG","SHORT") and horizon in HORIZONS:
+            if cell_key(strategy,side,horizon) in cell_quarantine:
+                continue
+        eligible_options.append(option)
+    options=eligible_options
     if not options:
         return None
     available={o["strategy"]:o for o in options}
