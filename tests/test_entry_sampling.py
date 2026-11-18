@@ -58,18 +58,21 @@ class EntryExposureTests(unittest.TestCase):
                  {"strategy":"BR-v3","side":"LONG"},
                  {"strategy":"BRREG-v1","side":"LONG"}]
         counts={"BR-v3":150,"BRREG-v1":2}
-        profile={"entry_exposure_counts_v1":counts}
+        profile={"entry_exposure_counts_v1":counts,
+                 "training_only_underperformers":["BRREG-v1"]}
         winners=[]
         for slot in range(1500):
             winner,mode=learner.choose(choices,[], "BTC",4,slot,0,profile)
             winners.append((winner["strategy"],mode))
         self.assertGreater(sum(a=="CTRL-v1" for a,_ in winners),220)
-        self.assertGreater(sum(a=="BRREG-v1" for a,_ in winners),250)
+        self.assertEqual(sum(a=="BRREG-v1" for a,_ in winners),0)
+        self.assertGreater(sum(a=="BR-v3" for a,_ in winners),250)
         self.assertGreater(sum(mode=="confirmed_entry_coverage_neutral_exploration"
                                for _,mode in winners),260)
         self.assertTrue(all(a in {x["strategy"] for x in choices} for a,_ in winners))
         reversed_rewards={"entry_exposure_counts_v1":dict(counts),
                           "allocation_leaders":["BR-v3"],
+                          "provisional_leaders":["BRREG-v1"],
                           "training_only_underperformers":["BRREG-v1"]}
         self.assertEqual(winners,[
             (y["strategy"],m) for slot in range(1500)
