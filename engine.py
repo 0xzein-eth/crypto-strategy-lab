@@ -513,8 +513,8 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
     if opportunity_audit is not None:
         opportunity_audit.update(entry_sampling.make_opportunity_audit(requested))
         opportunity_audit["recent_7d_confirmed_open_counts"] = exposure_counts
-    # Only a strict multi-day TRAINING signal can attenuate a matched cell. The
-    # frozen monitoring/holdout portion is never used to select next OPENs.
+    # Only strict multi-day TRAINING evidence can quarantine a matched arm/cell.
+    # The frozen monitoring/holdout portion never selects next OPENs.
     # Do not call this on pure offline proxy fixtures without candle signals.
     learning_profile = learner.analysis(records, include_cells=True) if advanced is not None else {}
     underperformers = learning_profile.get("training_only_underperformers", [])
