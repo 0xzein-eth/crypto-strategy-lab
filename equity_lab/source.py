@@ -45,8 +45,11 @@ def request(symbol, *, getter=urllib.request.urlopen, sleeper=time.sleep):
     path=urllib.parse.quote(symbol,safe=".")
     query="?interval=1d&range=2y&events=div%2Csplits&includeAdjustedClose=true"
     last=None
-    for host in (ROOT1,ROOT2):
-        for retry in range(2):
+    # Rotate both public hosts, then increase the pause between rounds. This
+    # improves resilience to transient 429/5xx responses without hammering
+    # either endpoint in a tight retry loop.
+    for round_index,pause in enumerate((0.5,1.5,4.0)):
+        for host in (ROOT1,ROOT2):
             url=host+path+query
             try:
                 req=urllib.request.Request(url,headers={
@@ -60,7 +63,8 @@ def request(symbol, *, getter=urllib.request.urlopen, sleeper=time.sleep):
                     raise
             except (urllib.error.URLError,TimeoutError) as exc:
                 last=exc
-            if retry==0:sleeper(.7)
+        if round_index < 2:
+            sleeper(pause)
     raise RuntimeError("SOURCE_UNAVAILABLE: Yahoo public endpoints failed") from last
 
 

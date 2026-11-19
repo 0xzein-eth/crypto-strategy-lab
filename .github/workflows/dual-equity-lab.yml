@@ -122,7 +122,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if test -d equity_state/LQ45; then git add -A equity_state/LQ45/; fi
+          # The Nov-2026 membership epoch is stored separately; never stage the archived prior cohort.
+          if test -d equity_state/LQ45_2026-11-18; then git add -A equity_state/LQ45_2026-11-18/; fi
           if ! git diff --cached --quiet; then
             git commit -m "paper(equities): authentic LQ45 EOD and isolated IDR cash account [skip ci]"
             for attempt in 1 2 3; do

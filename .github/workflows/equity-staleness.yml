@@ -1,0 +1,21 @@
+name: Equity journal freshness monitor
+on:
+  workflow_dispatch:
+  schedule:
+    # After the scheduled IDX EOD observers; weekdays only.
+    - cron: '30 15 * * 1-5'
+permissions:
+  contents: read
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Fail loudly when either isolated paper journal stops advancing
+        run: python -m equity_lab.stale_check --all
