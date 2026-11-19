@@ -239,7 +239,7 @@ def analysis(records, include_cells=False):
     candidates.sort(key=lambda name:(-(summary[name]["holdout_cluster_lcb_R"] or 0),
                                      -(summary[name]["train_cluster_lcb_R"] or 0),name))
     result = {
-        "method":"v4-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
+        "method":"v5-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
                    "; training-only allocation; 20% day monitoring withheld from selection; clustered daily lower bound",
         "eligible_closed":len(all_eligible),
         "eligible_days":len({day_of(r) for r in all_eligible}),
