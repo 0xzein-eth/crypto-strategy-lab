@@ -25,6 +25,27 @@ class EngineTests(unittest.TestCase):
         self.assertGreater(engine.parse(out[0]["evaluate_at"]),self.t)
         self.assertEqual(out[0]["market_type"],"spot_proxy")
 
+    def test_new_candidates_rejects_materially_future_quote(self):
+        future=dict(self.q,observed_at=engine.stamp(
+            self.t+dt.timedelta(seconds=engine.MAX_FUTURE_QUOTE_SKEW_SECONDS+1)))
+        audit={}
+        out=engine.new_candidates({},lambda s,p:future,self.t,116,1,
+                                  opportunity_audit=audit)
+        self.assertEqual(out,[])
+        self.assertEqual(audit["symbol_decisions"][0]["reason"],
+                         "FUTURE_QUOTE_TIMESTAMP")
+
+    def test_close_due_rejects_materially_future_quote(self):
+        opened=engine.new_candidates({},lambda s,p:self.q,self.t,116,1)[0]
+        due=engine.parse(opened["evaluate_at"])
+        moment=due+dt.timedelta(seconds=5)
+        future=dict(self.q,price=99,observed_at=engine.stamp(
+            moment+dt.timedelta(seconds=engine.MAX_FUTURE_QUOTE_SKEW_SECONDS+1)))
+        outputs,late,missing=engine.close_due(
+            {opened["id"]:opened},lambda s,p:future,moment)
+        self.assertEqual(outputs,[])
+        self.assertEqual((late,missing),(0,1))
+
     def test_closure_fees_late_and_venue_protection(self):
         r=engine.new_candidates({},lambda s,p:self.q,self.t,116,1)[0]
         due=engine.parse(r["evaluate_at"])
