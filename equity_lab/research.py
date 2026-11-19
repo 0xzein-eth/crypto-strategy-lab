@@ -6,7 +6,6 @@ during its frozen interval; past bars are reference, not contemporaneous
 membership. No future candle feeds an earlier signal.
 """
 import argparse
-import datetime as dt
 import json
 from collections import defaultdict
 from pathlib import Path
