@@ -27,9 +27,9 @@ MIN_HOLDOUT=10
 MIN_HOLDOUT_DAYS=3
 CLIP_R=3.0
 # Only a sufficiently large multi-day TRAINING partition, with a negative
-# day-cluster upper confidence bound and worse outcome than the matched
-# control, can reduce exploratory sampling. Never stop control or shut off
-# an unfavored arm: positive later regimes must remain observable.
+# day-cluster upper confidence bound and worse outcome than matched control,
+# can quarantine an arm/cell from NEW entries. CTRL remains as comparator;
+# historical observations are immutable and the quarantine is reversible.
 REDUCE_TRAIN_N=50
 REDUCE_TRAIN_DAYS=7
 REDUCE_UCB_R=-0.05
@@ -95,7 +95,7 @@ def daily_lcb(rows):
 
 
 def weighted_exploration(names, underperformers, key):
-    """Never exclude an arm. Less-promising TRAIN-only arms retain 1/4 weight."""
+    """Deterministically sample eligible arms; quarantined arms are filtered first."""
     if not names:
         return None
     slots=[]
@@ -191,7 +191,7 @@ def analysis(records, include_cells=False):
         # Advanced confirmed-candle arms are currently sourced only from OKX;
         # compare them with the OKX CTRL cohort, not a cross-venue pooled control.
         matched_provider="okx-swap"
-        for arm in ADVANCED:
+        for arm in BASELINES[:2]+ADVANCED:
             for side in ("LONG","SHORT"):
                 for horizon in HORIZONS:
                     rows=cell_groups[(arm,side,horizon,matched_provider)]
@@ -239,7 +239,7 @@ def analysis(records, include_cells=False):
     candidates.sort(key=lambda name:(-(summary[name]["holdout_cluster_lcb_R"] or 0),
                                      -(summary[name]["train_cluster_lcb_R"] or 0),name))
     result = {
-        "method":"v4-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
+        "method":"v5-"+hashlib.sha256("|".join(BASELINES+ADVANCED).encode()).hexdigest()[:8]+
                    "; training-only allocation; 20% day monitoring withheld from selection; clustered daily lower bound",
         "eligible_closed":len(all_eligible),
         "eligible_days":len({day_of(r) for r in all_eligible}),
@@ -248,14 +248,14 @@ def analysis(records, include_cells=False):
         "allocation_leaders":allocation_candidates,
         "training_only_underperformers":sorted(reduced),
         "underperformer_policy":(
-            ">=50 eligible training closes and >=7 training UTC days, "
-            "clipped daily upper bound < -0.05R, training mean >0.05R "
-            "worse than CTRL; only 4:1 exploration reweight, never disable; "
-            "monitoring outcomes excluded"),
+            "reversible quarantine from NEW entries at >=50 eligible training "
+            "closes and >=7 training UTC days, clipped daily upper bound "
+            "< -0.05R, training mean >0.05R worse than matched CTRL; "
+            "CTRL remains; historical records immutable; monitoring excluded"),
         "champion":None,  # Descriptive candidates do not meet independent promotion criteria.
         "warning":("No strategy has demonstrated a reliable tradable edge. "
                    "Training-only allocations never access monitoring results. "
-                   "Historical monitoring was previously used for allocations, "
+                   "Historical monitoring was previously inspected, "
                    "so it is not an untouched final holdout. "
                    "Selection remains observational, multi-tested and correlated.")
     }
@@ -271,11 +271,41 @@ def analysis(records, include_cells=False):
 
 
 def choose(options,records,symbol,horizon,slot,rank,profile=None):
-    """Pick a pre-registered eligible arm, preserving controls and exploration.
+    """Pick among eligible paper arms after training-only loser quarantine.
 
-    Cannot choose an advanced signal unless it is explicitly in options
-    following confirmed OHLCV validation by signals.py.
+    A sufficiently evidenced losing arm/cell is excluded from NEW entries,
+    not merely downweighted. CTRL remains available; all old records remain
+    immutable. Advanced signals still require confirmation by signals.py.
     """
+    if not options:
+        return None
+    # Reversible training-only quarantine for persistently losing arms/cells.
+    # No monitoring labels enter this gate; historical events are immutable.
+    # CTRL is always retained as the research comparator.
+    arm_quarantine=set()
+    cell_quarantine=set()
+    if isinstance(profile,dict):
+        values=profile.get("training_only_underperformers",())
+        if isinstance(values,(tuple,list)):
+            arm_quarantine=set(values)
+        if profile.get("training_negative_policy_version") == "side-horizon-training-only-v1":
+            values=profile.get("training_negative_cells_v1",())
+            if isinstance(values,(tuple,list)):
+                cell_quarantine=set(values)
+    eligible_options=[]
+    for option in options:
+        strategy=option.get("strategy")
+        if strategy == "CTRL-v1":
+            eligible_options.append(option)
+            continue
+        if strategy in arm_quarantine:
+            continue
+        side=option.get("side")
+        if side in ("LONG","SHORT") and horizon in HORIZONS:
+            if cell_key(strategy,side,horizon) in cell_quarantine:
+                continue
+        eligible_options.append(option)
+    options=eligible_options
     if not options:
         return None
     available={o["strategy"]:o for o in options}

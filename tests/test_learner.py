@@ -96,7 +96,7 @@ class LearningTests(unittest.TestCase):
         self.assertGreater(sum(p[0]["strategy"]!="CTRL-v1" for p in picks),60)
         self.assertTrue(all(p[1]!="provisional_leader_allocation" for p in picks))
 
-    def test_train_only_persistent_losses_reduce_weight_without_erasure(self):
+    def test_train_only_persistent_losses_are_quarantined_without_history_erasure(self):
         days=[(dt.date(2026,1,1)+dt.timedelta(days=i)).isoformat()
               for i in range(100)]
         rows=[]
@@ -117,8 +117,8 @@ class LearningTests(unittest.TestCase):
         br=sum(p["strategy"]=="BR-proxy-v1" for p,_ in selected)
         mr=sum(p["strategy"]=="MR-proxy-v1" for p,_ in selected)
         ctrl=sum(p["strategy"]=="CTRL-v1" for p,_ in selected)
-        self.assertGreater(br,0)
-        self.assertLess(abs(mr-br),250)
+        self.assertEqual(br,0)
+        self.assertGreater(mr,0)
         self.assertGreaterEqual(ctrl,240)
         self.assertTrue(all("neutral_exploration" in mode or mode=="control_exploration"
                             for _,mode in selected))
@@ -143,7 +143,7 @@ class LearningTests(unittest.TestCase):
         leading={"allocation_leaders":["BR-proxy-v1"],
                  "training_only_underperformers":["MR-proxy-v1"]}
         reversed_leading={"allocation_leaders":["MR-proxy-v1"],
-                          "training_only_underperformers":["BR-proxy-v1"]}
+                          "training_only_underperformers":["MR-proxy-v1"]}
         for slot in range(200):
             one=learner.choose(choices,[],"BTC",4,slot,0,profile=leading)
             two=learner.choose(choices,[],"BTC",4,slot,0,profile=reversed_leading)
@@ -247,8 +247,8 @@ class LearningTests(unittest.TestCase):
                for k in range(2000)]
         br=sum(p[0]["strategy"]=="BR-v3" for p in picks)
         mr=sum(p[0]["strategy"]=="MR-v3" for p in picks)
-        self.assertGreater(br,0)  # Never erase an exploratory arm.
-        self.assertGreater(mr,br*2)
+        self.assertEqual(br,0)  # Training-negative cells are quarantined.
+        self.assertGreater(mr,0)
         changed=[dict(x) for x in rows]
         for x in changed:
             if x["strategy"]=="BR-v3" and learner.stable_bucket(
@@ -285,6 +285,29 @@ class LearningTests(unittest.TestCase):
                          profile["training_only_underperforming_cells"])
         self.assertEqual(
             profile["directional_horizon_cells"]["BR-v3|LONG|24h"]["control_train_n"],0)
+
+    def test_proxy_baseline_losing_cell_is_quarantined(self):
+        days=[(dt.date(2026,4,1)+dt.timedelta(days=i)).isoformat()
+              for i in range(100)]
+        rows=[]
+        for day in days:
+            for _ in range(2):
+                rows.extend([
+                    trade("CTRL-v1",day,0.0,horizon=24,side="LONG"),
+                    trade("BR-proxy-v1",day,-1.0,horizon=24,side="LONG"),
+                    trade("MR-proxy-v1",day,1.0,horizon=24,side="LONG"),
+                    trade("CTRL-v1",day,0.0,horizon=24,side="SHORT"),
+                    trade("BR-proxy-v1",day,1.0,horizon=24,side="SHORT"),
+                ])
+        profile=learner.analysis(rows,include_cells=True)
+        self.assertNotIn("BR-proxy-v1",profile["training_only_underperformers"])
+        self.assertIn("BR-proxy-v1|LONG|24h",
+                      profile["training_only_underperforming_cells"])
+        options=[{"strategy":"BR-proxy-v1","side":"LONG"},
+                 {"strategy":"MR-proxy-v1","side":"LONG"}]
+        picks=[learner.choose(options,rows,"BTC",24,k,0,profile)
+               for k in range(200)]
+        self.assertTrue(all(p[0]["strategy"]=="MR-proxy-v1" for p in picks))
 
     def test_unconfirmed_advanced_never_selected(self):
         options=[{"strategy":"BR-proxy-v1","side":"SHORT"},
