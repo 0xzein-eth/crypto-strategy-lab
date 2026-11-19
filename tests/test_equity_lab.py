@@ -23,9 +23,9 @@ def dates(n=170,last=dt.date(2026,10,20)):
     return list(reversed(out))
 
 
-def market_rows(n=170,offset=0):
+def market_rows(n=170,offset=0,last=dt.date(2026,10,20)):
     result=[]
-    for i,date in enumerate(dates(n)):
+    for i,date in enumerate(dates(n,last=last)):
         price=100+offset+i*.20+(i%7-3)*.8
         result.append({
             "date":date,"open":round(price-.15,5),
@@ -39,11 +39,11 @@ def market_rows(n=170,offset=0):
 def when(market):
     if market=="NASDAQ":
         return dt.datetime(2026,10,20,21,10,tzinfo=ZoneInfo("America/New_York"))
-    return dt.datetime(2026,10,21,19,10,tzinfo=ZoneInfo("Asia/Jakarta"))
+    return dt.datetime(2026,11,19,19,10,tzinfo=ZoneInfo("Asia/Jakarta"))
 
 
 def packet(market,symbol,offset=0):
-    bars=market_rows(offset=offset)
+    bars=market_rows(offset=offset,last=when(market).date())
     return {
       "symbol":symbol,"market":market,
       "currency":universe.MARKETS[market]["currency"],
@@ -61,7 +61,7 @@ def feed(market,symbols=None):
     symbols=symbols or config["symbols"][:10]
     p={symbol:packet(market,symbol,j*.01) for j,symbol in enumerate(symbols)}
     return {"market":market,"currency":config["currency"],
-      "session":market_rows()[-1]["date"],
+      "session":market_rows(last=when(market).date())[-1]["date"],
       "observed_at_utc":source.iso(when(market)),
       "membership_effective":config["membership_effective"],
       "membership_expiry":config["membership_expiry"],
@@ -70,7 +70,8 @@ def feed(market,symbols=None):
 
 
 def yahoo(market,symbol,now,*,wrong_currency=False,index=False):
-    bars=market_rows()
+    last=(dt.date(2026,10,20) if market=="NASDAQ" else dt.date(2026,11,19))
+    bars=market_rows(last=last)
     zone=ZoneInfo(universe.MARKETS[market]["timezone"])
     timestamps=[int(dt.datetime.combine(dt.date.fromisoformat(b["date"]),
                  dt.time(9,0),tzinfo=zone).timestamp()) for b in bars]
@@ -93,15 +94,30 @@ class EquityUniverseTests(unittest.TestCase):
         self.assertEqual(universe.MARKETS["NASDAQ"]["currency"],"USD")
         self.assertEqual(universe.MARKETS["LQ45"]["currency"],"IDR")
         self.assertEqual(universe.MARKETS["LQ45"]["benchmark"],"^JKSE")
-        self.assertNotIn("SMGR.JK",universe.LQ45)
-        self.assertNotIn("TOWR.JK",universe.LQ45)
+        self.assertIn("SMGR.JK",universe.LQ45)
+        self.assertIn("ERAA.JK",universe.LQ45)
+        self.assertIn("GGRM.JK",universe.LQ45)
+        self.assertIn("PWON.JK",universe.LQ45)
         self.assertIn("INDY.JK",universe.LQ45)
-        self.assertIn("NCKL.JK",universe.LQ45)
+        self.assertNotIn("MAPI.JK",universe.LQ45)
+        self.assertNotIn("NCKL.JK",universe.LQ45)
+        self.assertNotIn("PGEO.JK",universe.LQ45)
+        self.assertNotIn("SCMA.JK",universe.LQ45)
+        self.assertEqual(universe.MARKETS["LQ45"]["membership_effective"],"2026-11-18")
+        self.assertEqual(universe.MARKETS["LQ45"]["membership_expiry"],"2027-01-29")
 
-    def test_expired_2026_lq45_membership_rejected(self):
+    def test_lq45_membership_is_effective_only_inside_declared_window(self):
+        with self.assertRaisesRegex(ValueError,"MEMBERSHIP_NOT_YET_EFFECTIVE"):
+            universe.market("LQ45",now=dt.datetime(2026,11,17,tzinfo=UTC))
+        self.assertEqual(len(universe.market("LQ45",now=dt.datetime(2026,11,19,tzinfo=UTC))["symbols"]),45)
         with self.assertRaisesRegex(ValueError,"MEMBERSHIP_EXPIRED"):
-            universe.market("LQ45",now=dt.datetime(2026,11,1,tzinfo=UTC))
+            universe.market("LQ45",now=dt.datetime(2027,1,30,tzinfo=UTC))
         self.assertEqual(len(universe.market("NASDAQ")["symbols"]),25)
+
+    def test_new_lq45_epoch_does_not_reuse_previous_ledger_directory(self):
+        path,report,curve=forward.state_paths("LQ45")
+        self.assertEqual(path.parent.name,"LQ45_2026-11-18")
+        self.assertNotEqual(path.parent,forward.STATE/"LQ45")
 
     def test_wrong_currency_venue_and_universe_fail(self):
         for market in ("LQ45","NASDAQ"):
@@ -128,16 +144,18 @@ class EquityUniverseTests(unittest.TestCase):
     def test_intraday_current_partial_bar_discarded(self):
         for market in ("LQ45","NASDAQ"):
             cfg=universe.MARKETS[market]
-            before=dt.datetime(2026,10,21,13,tzinfo=ZoneInfo(cfg["timezone"]))
+            day=(dt.date(2026,10,21) if market=="NASDAQ" else dt.date(2026,11,20))
+            before=dt.datetime.combine(day,dt.time(13),tzinfo=ZoneInfo(cfg["timezone"]))
             payload=yahoo(market,cfg["symbols"][0],before)
             bars=payload["chart"]["result"][0]["indicators"]["quote"][0]
             last=payload["chart"]["result"][0]["timestamp"][-1]
             # Add a mathematically coherent, but NOT completed, today's bar.
-            today=dt.datetime(2026,10,21,9,tzinfo=ZoneInfo(cfg["timezone"]))
+            today=dt.datetime.combine(day,dt.time(9),tzinfo=ZoneInfo(cfg["timezone"]))
             payload["chart"]["result"][0]["timestamp"].append(int(today.timestamp()))
             for k in bars:bars[k].append(bars[k][-1])
             bar=source.parse(payload,cfg["symbols"][0],market,now=before)
-            self.assertEqual(bar["last_complete_session"],"2026-10-20")
+            expected="2026-10-20" if market=="NASDAQ" else "2026-11-19"
+            self.assertEqual(bar["last_complete_session"],expected)
             self.assertNotEqual(last,int(today.timestamp()))
 
 
