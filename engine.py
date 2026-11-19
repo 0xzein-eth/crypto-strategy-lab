@@ -46,6 +46,7 @@ MAX_NEW_PER_SYMBOL_PER_DAY = 70
 # Ten-minute quotes are still sampled and all existing due exits still close.
 SIGNAL_SLOT_SECONDS = 900
 MAX_QUOTE_AGE_SECONDS = 180
+MAX_FUTURE_QUOTE_SKEW_SECONDS = 30
 TIMELY_DELAY_SECONDS = 1800
 # A skipped scheduler window must not launch another full batch of correlated trades.
 SCHEDULE_DEGRADED_AFTER_MINUTES = 45
@@ -443,7 +444,10 @@ def close_due(records, read_quote, moment, clock=None):
             missing += 1
             continue
         observed = parse(q["observed_at"])
-        if observed < parse(r["evaluate_at"]):
+        # A provider clock may be slightly ahead, but a materially future-dated
+        # snapshot must never be used as a prospective close price.
+        if (observed < parse(r["evaluate_at"]) or
+                observed > moment + dt.timedelta(seconds=MAX_FUTURE_QUOTE_SKEW_SECONDS)):
             missing += 1
             continue
         signed = (q["price"] / r["entry_price"] - 1) * 100
@@ -603,7 +607,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
             # excluded quiet/range regimes from genuine 15m signal discovery.
             quote_age = (moment - parse(q["observed_at"])).total_seconds()
             if (q["quote_volume_24h"] >= MIN_QUOTE_VOLUME and
-                    quote_age <= MAX_QUOTE_AGE_SECONDS):
+                    -MAX_FUTURE_QUOTE_SKEW_SECONDS <= quote_age <= MAX_QUOTE_AGE_SECONDS):
                 quotes.append(q)
                 set_symbol_decision(symbol, "quote", "ELIGIBLE_QUOTE",
                                     provider=q.get("provider"), market_type=q.get("market_type"),
@@ -614,6 +618,7 @@ def new_candidates(records, read_quote, moment, next_id, requested, advanced=Non
                     opportunity_audit["quiet_24h_quotes_admitted"] += 1
             else:
                 reason = ("LOW_QUOTE_VOLUME" if q["quote_volume_24h"] < MIN_QUOTE_VOLUME
+                          else "FUTURE_QUOTE_TIMESTAMP" if quote_age < -MAX_FUTURE_QUOTE_SKEW_SECONDS
                           else "STALE_QUOTE")
                 set_symbol_decision(symbol, "quote", "QUOTE_REJECTED", reason=reason,
                                     provider=q.get("provider"),
