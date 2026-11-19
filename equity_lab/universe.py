@@ -3,8 +3,9 @@
 Membership is AS-OF, not backfilled historically: researching former
 constituents in preceding years otherwise introduces severe survivor bias.
 NASDAQ group is a declared Nasdaq-listed research subset, NOT an assertion
-that every member is an NDX constituent. LQ45 is the 2026-08-03..10-30
-published 45-name snapshot; it expires fail-closed on October 31.
+that every member is an NDX constituent. LQ45 is the IDX incidental-review
+45-name snapshot effective 2026-11-18 through 2027-01-29; prior cohorts are
+kept in separate immutable paper-ledger directories.
 """
 import datetime as dt
 from zoneinfo import ZoneInfo
@@ -14,17 +15,19 @@ NASDAQ=(
  "AMD","INTC","ADBE","CSCO","AMAT","QCOM","TXN","COST",
  "PEP","NFLX","PYPL","ASML","INTU","MU","MRNA","ISRG","GILD",
 )
+# IDX announcement Peng-00218/BEI.POP/11-2026, incidental review.
+# Effective 18 November 2026 through 29 January 2027 (45 constituents).
 LQ45_CODES=(
  "AADI","ADMR","ADRO","AKRA","AMMN","AMRT","ANTM","ASII",
  "BBCA","BBNI","BBRI","BBTN","BMRI","BRPT","BUMI","CPIN",
- "CUAN","DEWA","EMTK","ESSA","EXCL","GOTO","HRTA","ICBP",
- "INCO","INDF","INDY","INKP","ISAT","ITMG","JPFA","KLBF",
- "MAPI","MBMA","MDKA","MEDC","NCKL","PGAS","PGEO","PTBA",
- "SCMA","TLKM","UNTR","UNVR","WIFI",
+ "DEWA","ELSA","EMTK","ERAA","ESSA","EXCL","GGRM","GOTO",
+ "HRTA","ICBP","INCO","INDF","INDY","INKP","ISAT","ITMG",
+ "JPFA","KLBF","MBMA","MDKA","MEDC","PGAS","PTBA","PWON",
+ "SMGR","TLKM","UNTR","UNVR","WIFI",
 )
 LQ45=tuple(code+".JK" for code in LQ45_CODES)
-LQ45_START=dt.date(2026,8,3)
-LQ45_END=dt.date(2026,10,30)
+LQ45_START=dt.date(2026,11,18)
+LQ45_END=dt.date(2027,1,29)
 
 MARKETS={
  "NASDAQ":{
@@ -45,7 +48,7 @@ MARKETS={
    "initial_paper_cash":"10000000.00","lot":100,
    "buy_fee_pct":0.15,"sell_fee_pct":0.25,
    "adverse_impact_each_side_pct":0.10,"settlement_sessions":2,
-   "membership_source":"https://www.investasiku.id/eduvest/saham/perusahaan-di-bei-yang-masuk-lq45",
+   "membership_source":"IDX announcement Peng-00218/BEI.POP/11-2026 (incidental LQ45 review)",
    "membership_official_reference":"https://www.idx.co.id/id/data-pasar/data-saham/indeks-saham/",
    "membership_effective":LQ45_START.isoformat(),
    "membership_expiry":LQ45_END.isoformat(),
@@ -61,6 +64,8 @@ def market(name, *, now=None):
     if now.tzinfo is None:
         raise ValueError("CLOCK_INVALID: require timezone-aware timestamp")
     d=now.astimezone(ZoneInfo(config["timezone"])).date()
+    if config["membership_expiry"] and d < dt.date.fromisoformat(config["membership_effective"]):
+        raise ValueError("MEMBERSHIP_NOT_YET_EFFECTIVE: do not use a future index cohort")
     if config["membership_expiry"] and d > dt.date.fromisoformat(config["membership_expiry"]):
         raise ValueError("MEMBERSHIP_EXPIRED: update frozen LQ45 list for next IDX review; no stale trades")
     return config
@@ -69,10 +74,12 @@ def market(name, *, now=None):
 def verify():
     if len(set(NASDAQ))!=len(NASDAQ) or len(set(LQ45))!=45:
         raise ValueError("UNIVERSE_INVALID: duplicate or incomplete cohort")
-    if len(set(LQ45_CODES))!=45 or ("SMGR.JK" in LQ45 or "TOWR.JK" in LQ45):
-        raise ValueError("MEMBERSHIP_INVALID: removed LQ45 members")
-    if "INDY.JK" not in LQ45 or "NCKL.JK" not in LQ45:
-        raise ValueError("MEMBERSHIP_INVALID: missing new LQ45 members")
+    if len(set(LQ45_CODES))!=45:
+        raise ValueError("MEMBERSHIP_INVALID: duplicate or incomplete LQ45 cohort")
+    if not {"ERAA.JK","GGRM.JK","PWON.JK","SMGR.JK"}.issubset(LQ45):
+        raise ValueError("MEMBERSHIP_INVALID: missing Nov 2026 LQ45 additions")
+    if {"MAPI.JK","NCKL.JK","PGEO.JK","SCMA.JK"} & set(LQ45):
+        raise ValueError("MEMBERSHIP_INVALID: removed LQ45 constituents still present")
     if any(not s.endswith(".JK") for s in LQ45):
         raise ValueError("UNIVERSE_INVALID: wrong IDX suffix")
     if any(not s.isalpha() or not s.isupper() for s in NASDAQ):

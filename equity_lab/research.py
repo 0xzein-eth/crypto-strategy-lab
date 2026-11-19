@@ -6,7 +6,6 @@ during its frozen interval; past bars are reference, not contemporaneous
 membership. No future candle feeds an earlier signal.
 """
 import argparse
-import datetime as dt
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -22,7 +21,7 @@ SCHEMA="dual-nasdaq-lq45-historical-14-armed-after-cost-purged-v1"
 
 
 def fees(market):
-    cfg=universe.market(market,now=dt.datetime(2026,10,21,tzinfo=source.UTC))
+    cfg=universe.market(market)
     return (cfg["buy_fee_pct"]+cfg["sell_fee_pct"]+
             2*cfg["adverse_impact_each_side_pct"])
 
@@ -34,7 +33,7 @@ def returns(market,entry,exit_):
 
 def evaluate(market, stocks, benchmark=None):
     """Per-symbol historical split, fixed 5 sessions, no future selection."""
-    config=universe.market(market,now=dt.datetime(2026,10,21,tzinfo=source.UTC))
+    config=universe.market(market)
     if not stocks or set(stocks)-set(config["symbols"]):
         raise ValueError("SOURCE_INVALID: wrong research market")
     benchmark_by_day={}

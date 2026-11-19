@@ -18,7 +18,7 @@ on:
     types: [completed]
     branches: [main]
   schedule:
-    - cron: '7,22,37,52 * * * *' # backup per 30m slot; on-disk journal prevents duplicates
+    - cron: '*/5 * * * *' # 5m best-effort retry; journal still permits only one observation per 30m slot
 permissions:
   contents: write
 # Do NOT share v8 canonical ledger writer lock; state paths are disjoint.

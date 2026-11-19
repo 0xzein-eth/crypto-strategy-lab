@@ -43,10 +43,16 @@ def money(v):
 
 
 def state_paths(market):
-    universe.market(market,now=dt.datetime(2026,10,21,tzinfo=dt.timezone.utc))
-    return (STATE/market/"observations.jsonl",
-            STATE/market/"report.json",
-            STATE/market/"equity_curve.json")
+    if market not in universe.MARKETS:
+        raise ValueError("MARKET_INVALID: unknown paper cohort")
+    config=universe.MARKETS[market]
+    # A membership change creates a fresh paper epoch. The prior LQ45
+    # directory remains untouched as an immutable archive; its open positions
+    # are NOT backfilled or priced using a new constituent list.
+    epoch=config["membership_effective"]
+    directory=(f"{market}_{epoch}" if market=="LQ45" else market)
+    base=STATE/directory
+    return (base/"observations.jsonl",base/"report.json",base/"equity_curve.json")
 
 
 def snapshot(feed):
@@ -151,7 +157,9 @@ def append(events,tick):
 
 def replay(events,market):
     """Auditable fixed-5-session one-cash-account simulation, 0 true fills."""
-    conf=universe.market(market,now=dt.datetime(2026,10,21,tzinfo=dt.timezone.utc))
+    # Replay is pinned to the current versioned cohort. The previous LQ45
+    # epoch is preserved in its old directory and never mixed into this one.
+    conf=universe.MARKETS[market]
     currency=conf["currency"]
     cash=dec(conf["initial_paper_cash"])
     start_cash=cash
