@@ -3,8 +3,9 @@
 Membership is AS-OF, not backfilled historically: researching former
 constituents in preceding years otherwise introduces severe survivor bias.
 NASDAQ group is a declared Nasdaq-listed research subset, NOT an assertion
-that every member is an NDX constituent. LQ45 is the 2026-08-03..10-30
-published 45-name snapshot; it expires fail-closed on October 31.
+that every member is an NDX constituent. LQ45 is the IDX incidental-review
+45-name snapshot effective 2026-11-18 through 2027-01-29; prior cohorts are
+kept in separate immutable paper-ledger directories.
 """
 import datetime as dt
 from zoneinfo import ZoneInfo
@@ -63,7 +64,7 @@ def market(name, *, now=None):
     if now.tzinfo is None:
         raise ValueError("CLOCK_INVALID: require timezone-aware timestamp")
     d=now.astimezone(ZoneInfo(config["timezone"])).date()
-    if config["membership_effective"] and d < dt.date.fromisoformat(config["membership_effective"]):
+    if config["membership_expiry"] and d < dt.date.fromisoformat(config["membership_effective"]):
         raise ValueError("MEMBERSHIP_NOT_YET_EFFECTIVE: do not use a future index cohort")
     if config["membership_expiry"] and d > dt.date.fromisoformat(config["membership_expiry"]):
         raise ValueError("MEMBERSHIP_EXPIRED: update frozen LQ45 list for next IDX review; no stale trades")
