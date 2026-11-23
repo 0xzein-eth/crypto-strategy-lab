@@ -69,3 +69,37 @@ def scenario(signed_return_pct, notional_usd, research_risk_pct, extra_pct):
     return {"stress_net_pnl_usd":round(stress_pnl,6),
             "stress_normalized_R":round(stress_R,8),
             "stress_extra_cost_usd":round(notional_usd*extra_pct/100,6)}
+
+# Illustrative post-only maker-fee counterfactual. This is NOT evidence that
+# an order would have filled; queue position, adverse selection, partial fills,
+# cancellations and venue/account fee tiers are not modeled.
+MAKER_FEE_SIDE_PCT = 0.01
+
+
+def maker_counterfactual(signed_return_pct, notional_usd, research_risk_pct):
+    """Reprice a fixed-horizon outcome at an illustrative maker fee only.
+
+    Keep this diagnostic separate from the primary taker/stress result. It
+    assumes both legs fill as maker at 0.01% per side and does not model fill
+    probability, spread capture, queue priority, rebates or adverse selection.
+    """
+    values = (signed_return_pct, notional_usd, research_risk_pct)
+    try:
+        ret, notional, risk = (float(v) for v in values)
+    except (TypeError, ValueError):
+        raise ValueError("invalid maker counterfactual input")
+    if (not all(math.isfinite(v) for v in (ret, notional, risk)) or
+            notional <= 0 or risk <= 0):
+        raise ValueError("invalid maker counterfactual input")
+    fee_round_trip_pct = 2 * MAKER_FEE_SIDE_PCT
+    fee_usd = notional * fee_round_trip_pct / 100
+    net_pnl = notional * (ret - fee_round_trip_pct) / 100
+    return {
+        "maker_fee_side_pct": MAKER_FEE_SIDE_PCT,
+        "maker_fee_round_trip_pct": fee_round_trip_pct,
+        "maker_fee_round_trip_usd": round(fee_usd, 6),
+        "maker_net_pnl_usd": round(net_pnl, 6),
+        "maker_normalized_R": round((ret - fee_round_trip_pct) / risk, 8),
+        "maker_fill_assumed_not_verified": True,
+        "description": "illustrative maker-fee counterfactual only; not an executable-fill estimate",
+    }
