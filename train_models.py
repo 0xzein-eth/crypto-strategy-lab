@@ -11,7 +11,7 @@ import ml_baseline
 def run(output=None, max_epochs=30):
     import engine
 
-    records, next_id, event_count, ledger_tip = engine.replay()
+    records, event_count, ledger_tip, next_id = engine.replay()
     dataset = dataset_builder.build_dataset(records)
     result = {
         "schema": "paper-ml-baseline-research-report-v1",
