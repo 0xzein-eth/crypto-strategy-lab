@@ -315,6 +315,7 @@ def fit_mlp(train_rows, validation_rows, feature_names, *,
         "seed": seed,
         "best_epoch": best_epoch,
         "epochs_requested": max_epochs,
+        "patience": patience,
         "training_rows": len(train_rows),
         "training_positive_rate": round(prevalence, 8),
     }
