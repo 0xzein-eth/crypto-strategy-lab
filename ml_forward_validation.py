@@ -97,6 +97,11 @@ def verify_bundle(bundle):
     if bundle.get("feature_schema_sha256") != feature_schema_hash(
             dataset_builder.FEATURE_NAMES):
         raise ValueError("FREEZE_INVALID: feature schema changed")
+    if bundle.get("feature_names") != list(dataset_builder.FEATURE_NAMES):
+        raise ValueError("FREEZE_INVALID: frozen feature order changed")
+    if bundle.get("prediction_capture_delay_seconds") != manifest[
+            "prospective_rules"]["max_prediction_capture_delay_seconds"]:
+        raise ValueError("FREEZE_INVALID: prediction capture window changed")
     expected = {item["name"] for item in manifest["candidates"]}
     models = bundle.get("models", {})
     if set(models) != expected:
@@ -172,6 +177,8 @@ def initialize_bundle(records, event_count, ledger_tip, now=None, path=BUNDLE_PA
         "training_positive_prevalence": round(prevalence, 12),
         "feature_names": list(dataset["feature_names"]),
         "feature_schema_sha256": feature_schema_hash(dataset["feature_names"]),
+        "prediction_capture_delay_seconds": manifest["prospective_rules"][
+            "max_prediction_capture_delay_seconds"],
         "manifest_sha256": hashlib.sha256(MANIFEST_PATH.read_bytes()).hexdigest(),
         "code_fingerprint": code_fingerprint(),
         "models": models,
