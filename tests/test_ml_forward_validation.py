@@ -59,6 +59,7 @@ def test_bundle():
         "early_stopping_rows": 20, "training_positive_prevalence": 0.5,
         "feature_names": list(dataset_builder.FEATURE_NAMES),
         "feature_schema_sha256": forward.feature_schema_hash(dataset_builder.FEATURE_NAMES),
+        "prediction_capture_delay_seconds": 900,
         "manifest_sha256": __import__("hashlib").sha256(
             forward.MANIFEST_PATH.read_bytes()).hexdigest(),
         "code_fingerprint": forward.code_fingerprint(),
