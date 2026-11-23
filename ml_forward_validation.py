@@ -608,6 +608,8 @@ def run(now=None):
     processed = process_records(records, bundle, events, now=now)
     events = processed["events"]
     new_events = events[original_event_count:]
+    if not new_events and REPORT_PATH.exists():
+        return json.loads(REPORT_PATH.read_text(encoding="utf-8"))
     if new_events:
         with EVENTS_PATH.open("a", encoding="utf-8") as stream:
             for event in new_events:
