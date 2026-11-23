@@ -99,8 +99,10 @@ def verify_bundle(bundle):
         raise ValueError("FREEZE_INVALID: feature schema changed")
     if bundle.get("feature_names") != list(dataset_builder.FEATURE_NAMES):
         raise ValueError("FREEZE_INVALID: frozen feature order changed")
-    if bundle.get("prediction_capture_delay_seconds") != manifest[
-            "prospective_rules"]["max_prediction_capture_delay_seconds"]:
+    if (bundle.get("prediction_capture_delay_seconds") != manifest[
+            "prospective_rules"]["max_prediction_capture_delay_seconds"] or
+            MAX_CAPTURE_DELAY_SECONDS != manifest["prospective_rules"][
+                "max_prediction_capture_delay_seconds"]):
         raise ValueError("FREEZE_INVALID: prediction capture window changed")
     expected = {item["name"] for item in manifest["candidates"]}
     models = bundle.get("models", {})
@@ -292,7 +294,7 @@ def process_records(records, bundle, events, now=None):
             reason = None
             if age < 0:
                 reason = "open_timestamp_in_future"
-            elif age > MAX_CAPTURE_DELAY_SECONDS:
+            elif age > bundle["prediction_capture_delay_seconds"]:
                 reason = "prediction_capture_window_missed"
             elif (record.get("provider") != "okx-swap" or
                   record.get("market_type") != "perpetual" or
