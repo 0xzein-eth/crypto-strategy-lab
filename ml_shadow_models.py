@@ -120,9 +120,16 @@ def fit_gradient_boosting(train_rows, validation_rows, feature_names, *,
                         int(q * len(ordered) / (max_thresholds + 1)))
             if index + 1 < len(ordered):
                 threshold = (ordered[index] + ordered[index + 1]) / 2.0
-                if ordered[index] < ordered[index + 1] and (
-                        not thresholds or threshold != thresholds[-1][0]):
-                    thresholds.append((threshold, index + 1))
+                split_at = index + 1
+                if ordered[index] == ordered[index + 1]:
+                    # Quantile may land inside a repeated-value run. Match
+                    # the original <= threshold partition by moving to the
+                    # first value strictly above that repeated value.
+                    while (split_at < len(ordered) and
+                           ordered[split_at] <= threshold):
+                        split_at += 1
+                if not thresholds or threshold != thresholds[-1][0]:
+                    thresholds.append((threshold, split_at))
         candidates.append(thresholds)
 
     for _ in range(rounds):
