@@ -28,7 +28,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: paper-ml-shadow-\${{ github.ref }}
+  group: paper-ml-shadow-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   research:
@@ -52,7 +52,7 @@ jobs:
       - name: Train diagnostic and shadow models
         if: github.event_name != 'pull_request'
         run: |
-          python train_models.py --output /tmp/paper-ml-shadow-report.json --max-epochs "\${{ inputs.max_epochs || '30' }}"
+          python train_models.py --output /tmp/paper-ml-shadow-report.json --max-epochs "${{ inputs.max_epochs || '30' }}"
       - name: Upload shadow-model research report
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
