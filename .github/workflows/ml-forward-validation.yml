@@ -40,7 +40,10 @@ jobs:
       - name: Test immutable predictions, no backfill, and delayed scoring
         run: |
           python -m unittest discover -s tests -p 'test_dataset_builder.py' -v
+          python -m unittest discover -s tests -p 'test_ml_baseline.py' -v
           python -m unittest discover -s tests -p 'test_ml_shadow_models.py' -v
+          python -m unittest discover -s tests -p 'test_train_models.py' -v
+          python -m unittest discover -s tests -p 'test_model_freeze.py' -v
           python -m unittest discover -s tests -p 'test_ml_forward_validation.py' -v
       - name: Initialize frozen models or capture new OPEN predictions and mature outcomes
         run: python -m ml_forward_validation --run
