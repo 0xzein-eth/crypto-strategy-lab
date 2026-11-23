@@ -431,6 +431,31 @@ def process_records(records, bundle, events, now=None):
     }
 
 
+def _calibration_summary(rows, probabilities, bins=10):
+    groups = [[] for _ in range(bins)]
+    for row, probability in zip(rows, probabilities):
+        index = min(bins - 1, int(probability * bins))
+        groups[index].append((probability, int(row["label"])))
+    total = len(rows)
+    output = []
+    ece = 0.0
+    for index, group in enumerate(groups):
+        if not group:
+            output.append({"bin": index, "n": 0, "mean_probability": None,
+                           "observed_positive_rate": None})
+            continue
+        mean_probability = sum(item[0] for item in group) / len(group)
+        observed_rate = sum(item[1] for item in group) / len(group)
+        ece += len(group) / total * abs(mean_probability - observed_rate)
+        output.append({
+            "bin": index, "n": len(group),
+            "mean_probability": round(mean_probability, 8),
+            "observed_positive_rate": round(observed_rate, 8),
+        })
+    return {"expected_calibration_error": round(ece, 8),
+            "bins": output, "method": "10 equal-width probability bins"}
+
+
 def _cluster_interval(values):
     if len(values) < 4:
         return {"clusters": len(values), "mean": None, "ci95": None}
@@ -488,10 +513,20 @@ def build_report(bundle, events, run_time):
     }
     result["constant_training_prevalence"] = {
         "probability": prevalence, "metrics": constant_metrics}
+    research_r = [float(score["target_r_after_frozen_costs"])
+                  for _, score in joined]
+    result["realized_cohort_outcomes"] = {
+        "net_research_R_sum": round(sum(research_r), 8),
+        "net_research_R_mean": round(sum(research_r)/len(research_r), 8),
+        "positive_net_research_R_rate": round(
+            sum(value > 0 for value in research_r)/len(research_r), 8),
+        "not_a_live_account_pnl": True,
+    }
     for name, probabilities in probabilities_by_model.items():
         metrics = ml_baseline.metrics(rows, probabilities, prevalence)
         result["models"][name] = {
             "metrics": metrics,
+            "calibration": _calibration_summary(rows, probabilities),
             "delta_brier_vs_constant": round(
                 metrics["brier_score"]-constant_metrics["brier_score"], 10),
             "delta_log_loss_vs_constant": round(
