@@ -29,9 +29,13 @@ UTC = dt.timezone.utc
 VERSION = "paper-ml-forward-v1"
 MAX_CAPTURE_DELAY_SECONDS = 15 * 60
 FINGERPRINT_PATHS = (
-    "dataset_builder.py", "ml_baseline.py", "ml_shadow_models.py",
-    "train_models.py", "ml_forward_validation.py",
-    "research/model_freeze_v1.json",
+    "engine.py", "dataset_builder.py", "ml_baseline.py",
+    "ml_shadow_models.py", "train_models.py", "learner.py",
+    "universe.py", "friction.py", "signals.py", "diverse_confirmed.py",
+    "band_hypotheses.py", "regime_hypotheses.py", "entry_sampling.py",
+    "cohort_diagnostics.py", "opportunity_history.py",
+    "temporal_evidence.py", "archive_event_data.py",
+    "ml_forward_validation.py", "research/model_freeze_v1.json",
 )
 
 
