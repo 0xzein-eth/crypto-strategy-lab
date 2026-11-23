@@ -1,0 +1,54 @@
+name: Paper ML baseline research
+on:
+  pull_request:
+    paths:
+      - 'dataset_builder.py'
+      - 'ml_baseline.py'
+      - 'train_models.py'
+      - 'tests/test_dataset_builder.py'
+      - 'tests/test_ml_baseline.py'
+      - '.github/workflows/ml-baseline.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'dataset_builder.py'
+      - 'ml_baseline.py'
+      - 'train_models.py'
+      - '.github/workflows/ml-baseline.yml'
+  workflow_dispatch:
+    inputs:
+      max_epochs:
+        description: "Maximum deterministic logistic-regression epochs"
+        required: false
+        default: "30"
+permissions:
+  contents: read
+concurrency:
+  group: paper-ml-baseline-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Run leakage and model tests
+        if: github.event_name == 'pull_request'
+        run: |
+          python -m unittest discover -s tests -p 'test_dataset_builder.py' -v
+          python -m unittest discover -s tests -p 'test_ml_baseline.py' -v
+      - name: Train diagnostic model on verified historical PAPER outcomes
+        if: github.event_name != 'pull_request'
+        run: |
+          python engine.py --verify-only
+          python train_models.py --output /tmp/paper-ml-baseline-report.json --max-epochs "${{ inputs.max_epochs || '30' }}"
+      - name: Upload diagnostic model report
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-ml-baseline-diagnostic
+          path: /tmp/paper-ml-baseline-report.json
+          retention-days: 30
