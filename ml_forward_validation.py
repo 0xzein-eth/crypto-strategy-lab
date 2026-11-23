@@ -165,6 +165,8 @@ def initialize_bundle(records, event_count, ledger_tip, now=None, path=BUNDLE_PA
         }
     latest_label = max(parse(row["label_available_at"]) for row in dataset["examples"])
     freeze_time = requested_freeze_time or dt.datetime.now(UTC)
+    if latest_label > freeze_time:
+        raise ValueError("CLOCK_INTEGRITY: training label timestamp after model freeze")
     payload = {
         "schema": VERSION,
         "version": 1,
@@ -176,6 +178,14 @@ def initialize_bundle(records, event_count, ledger_tip, now=None, path=BUNDLE_PA
         "eligible_historical_examples": dataset["eligible_examples"],
         "training_rows": len(train),
         "early_stopping_rows": len(validation),
+        "training_record_ids_sha256": hashlib.sha256(
+            "\\n".join(row["record_id"] for row in train).encode("utf-8")
+        ).hexdigest(),
+        "early_stopping_record_ids_sha256": hashlib.sha256(
+            "\\n".join(row["record_id"] for row in validation).encode("utf-8")
+        ).hexdigest(),
+        "validation_start_utc": split["validation_start_utc"],
+        "purged_training_rows": split["purged_training_rows"],
         "training_positive_prevalence": round(prevalence, 12),
         "feature_names": list(dataset["feature_names"]),
         "feature_schema_sha256": feature_schema_hash(dataset["feature_names"]),
