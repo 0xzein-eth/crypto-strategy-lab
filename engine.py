@@ -7,6 +7,7 @@ No retrospective price lookup, no backdating and no API credentials.
 import argparse
 from collections import defaultdict
 import datetime as dt
+import gzip
 import hashlib
 import json
 import math
@@ -378,8 +379,11 @@ def replay(base=None):
         base = BASE
     events = base / "data" / "events"
     records, sequence, head = {}, 0, PREV_ZERO
-    for path in sorted(events.glob("????-??*.jsonl")):
-        with path.open(encoding="utf-8") as f:
+    event_paths = list(events.glob("????-??*.jsonl")) + list(events.glob("????-??*.jsonl.gz"))
+    event_paths.sort(key=lambda item: item.name.removesuffix(".gz"))
+    for path in event_paths:
+        opener = gzip.open if path.suffix == ".gz" else open
+        with opener(path, "rt", encoding="utf-8") as f:
             for line_number, line in enumerate(f, 1):
                 if not line.strip():
                     raise ValueError("INTEGRITY_FAILURE blank event line")

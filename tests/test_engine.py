@@ -1,5 +1,6 @@
 import copy
 import datetime as dt
+import gzip
 import json
 from pathlib import Path
 import tempfile
@@ -87,6 +88,26 @@ class EngineTests(unittest.TestCase):
                 path.write_text("\n".join(lines)+"\n")
                 with self.assertRaisesRegex(ValueError,"INTEGRITY_FAILURE"):
                     engine.replay(base)
+
+    def test_replay_reads_gzip_archived_event_shard_without_changing_chain(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            event_dir = base / "data" / "events"
+            with patch.object(engine, "EVENTS", event_dir):
+                opened = engine.new_candidates({}, lambda s,p:self.q,self.t,116,1)[0]
+                sequence, head = engine.append_events(
+                    [("OPEN", opened)], 0, engine.PREV_ZERO, self.t)
+                path = next(event_dir.glob("2026-10_daily_*.jsonl"))
+                original = path.read_bytes()
+                archive = Path(str(path) + ".gz")
+                archive.write_bytes(gzip.compress(original, mtime=0))
+                path.unlink()
+
+                records, replayed_sequence, replayed_head, _ = engine.replay(base)
+                self.assertEqual(replayed_sequence, sequence)
+                self.assertEqual(replayed_head, head)
+                self.assertEqual(records[opened["id"]]["status"], "OPEN")
+                self.assertEqual(gzip.decompress(archive.read_bytes()), original)
 
     def test_cannot_double_close_record(self):
         r=engine.new_candidates({},lambda s,p:self.q,self.t,116,1)[0]
