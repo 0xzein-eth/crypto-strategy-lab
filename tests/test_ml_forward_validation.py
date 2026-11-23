@@ -93,7 +93,8 @@ class ForwardValidationTests(unittest.TestCase):
 
     def test_closed_record_without_open_prediction_is_never_backfilled(self):
         closed = sample_record(status="CLOSED")
-        result = forward.process_records([closed], self.bundle, [], self.now)
+        later = dt.datetime(2026, 11, 23, 4, 3, tzinfo=UTC)
+        result = forward.process_records([closed], self.bundle, [], later)
         self.assertEqual(result["added_predictions"], 0)
         self.assertEqual(result["added_skips"], 1)
         self.assertEqual(result["events"][0]["kind"], "skip")
@@ -102,8 +103,9 @@ class ForwardValidationTests(unittest.TestCase):
         self.assertFalse(result["events"][0]["payload"]["prediction_backfill_allowed"])
 
     def test_stale_open_record_is_skipped_not_backfilled(self):
-        stale = sample_record(created=self.now-dt.timedelta(minutes=16))
-        result = forward.process_records([stale], self.bundle, [], self.now)
+        stale = sample_record()
+        stale_now = dt.datetime(2026, 11, 23, 0, 17, tzinfo=UTC)
+        result = forward.process_records([stale], self.bundle, [], stale_now)
         self.assertEqual(result["added_predictions"], 0)
         self.assertEqual(result["events"][0]["payload"]["reason"],
                          "prediction_capture_window_missed")
