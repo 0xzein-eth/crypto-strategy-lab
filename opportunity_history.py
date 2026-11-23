@@ -1,10 +1,10 @@
 """Append-only, hash-chained run-level opportunity audit.
 
-This is diagnostic telemetry, separate from the canonical OPEN/CLOSE ledger.
-The legacy single-file history is immutable; new rows are written to daily
-shards so no Git-tracked file grows beyond GitHub's 100 MB hard limit.
+The immutable legacy JSONL may be gzip-archived byte-for-byte. New rows are
+written to UTC-day shards; one global hash chain spans legacy and new files.
 """
 import datetime as dt
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -17,12 +17,23 @@ def canonical(value):
                       ensure_ascii=True, allow_nan=False)
 
 
+def _legacy_path(path):
+    path = Path(path)
+    compressed = Path(str(path) + ".gz")
+    if path.exists():
+        return path
+    if compressed.exists():
+        return compressed
+    return path
+
+
 def _verify_rows(path, seq=0, head=GENESIS):
     """Verify a file as the next segment of one global hash chain."""
     path = Path(path)
     if not path.exists():
         return seq, head
-    with path.open("r", encoding="utf-8") as stream:
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8") as stream:
         for line_number, line in enumerate(stream, 1):
             try:
                 row = json.loads(line)
@@ -43,8 +54,8 @@ def _verify_rows(path, seq=0, head=GENESIS):
 
 
 def verify(path):
-    """Backward-compatible verification of a standalone legacy JSONL file."""
-    return _verify_rows(path)
+    """Verify a standalone legacy JSONL, transparently reading .jsonl.gz."""
+    return _verify_rows(_legacy_path(path))
 
 
 def shard_directory(path):
@@ -56,7 +67,7 @@ def shard_directory(path):
 def verify_history(path):
     """Verify immutable legacy rows followed by every ordered daily shard."""
     path = Path(path)
-    seq, head = _verify_rows(path)
+    seq, head = _verify_rows(_legacy_path(path))
     directory = shard_directory(path)
     if directory.exists():
         for shard in sorted(directory.glob("*.jsonl")):
@@ -81,12 +92,12 @@ def _utc_day(timestamp):
 def append(path, *, timestamp, entry_mode, audit, added, status, verified_events):
     """Verify complete history then append to the current UTC-day shard.
 
-    The pre-existing opportunity_history.jsonl is treated as a frozen legacy
-    segment and is never appended to or rewritten. Its bytes and hash chain
-    remain part of the global sequence.
+    The pre-existing opportunity-history segment is frozen. If gzip archived,
+    it is still verified and remains the first segment of the same hash chain.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    legacy = _legacy_path(path)
     seq, head = verify_history(path)
     day = _utc_day(timestamp)
     directory = shard_directory(path)
@@ -111,7 +122,8 @@ def append(path, *, timestamp, entry_mode, audit, added, status, verified_events
         "path": str(shard.relative_to(path.parent.parent)).replace("\\", "/"),
         "rows": seq + 1,
         "head_sha256": digest,
-        "legacy_file_frozen": path.exists(),
+        "legacy_file_frozen": legacy.exists(),
+        "legacy_file_compressed": legacy.suffix == ".gz" and legacy.exists(),
         "daily_shards": len(list(directory.glob("*.jsonl"))),
         "append_only": True,
         "individual_opportunities_not_reconstructed": True,
