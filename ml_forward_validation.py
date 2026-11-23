@@ -123,8 +123,8 @@ def initialize_bundle(records, event_count, ledger_tip, now=None, path=BUNDLE_PA
     path = Path(path)
     if path.exists():
         raise FileExistsError("FREEZE_EXISTS: refusing to overwrite frozen model bundle")
-    now = now or dt.datetime.now(UTC)
-    if now.tzinfo is None:
+    requested_freeze_time = now
+    if requested_freeze_time is not None and requested_freeze_time.tzinfo is None:
         raise ValueError("CLOCK_INTEGRITY: freeze time must be timezone-aware")
     manifest = load_manifest()
     dataset = dataset_builder.build_dataset(records)
@@ -157,11 +157,12 @@ def initialize_bundle(records, event_count, ledger_tip, now=None, path=BUNDLE_PA
             "role": "FROZEN_SHADOW_CANDIDATE",
         }
     latest_label = max(parse(row["label_available_at"]) for row in dataset["examples"])
+    freeze_time = requested_freeze_time or dt.datetime.now(UTC)
     payload = {
         "schema": VERSION,
         "version": 1,
-        "created_at_utc": stamp(now),
-        "cohort_start_utc": stamp(now),
+        "created_at_utc": stamp(freeze_time),
+        "cohort_start_utc": stamp(freeze_time),
         "training_labels_available_through_utc": stamp(latest_label),
         "source_ledger_events": int(event_count),
         "source_ledger_tip_sha256": ledger_tip,
@@ -213,7 +214,7 @@ def read_events(path=EVENTS_PATH):
 
 
 def append_event(events, kind, payload):
-    if kind not in ("prediction", "score", "skip"):
+    if kind not in ("prediction", "score", "skip", "excluded"):
         raise ValueError("invalid event kind")
     previous = events[-1]["hash"] if events else ZERO_HASH
     body = {"seq": len(events) + 1, "prev_hash": previous,
@@ -507,10 +508,10 @@ def run(now=None):
     records, event_count, ledger_tip, _ = engine.replay()
     STATE.mkdir(parents=True, exist_ok=True)
     if not BUNDLE_PATH.exists():
-        bundle = initialize_bundle(records, event_count, ledger_tip, now=now)
+        bundle = initialize_bundle(records, event_count, ledger_tip)
         report = {
             "schema": "paper-ml-forward-report-v1",
-            "generated_at_utc": stamp(now),
+            "generated_at_utc": bundle["created_at_utc"],
             "bundle_id": bundle["bundle_id"],
             "cohort_start_utc": bundle["cohort_start_utc"],
             "evaluation_status": "INITIALIZED_WAITING_FOR_NEW_OPEN_EVENTS",
@@ -524,11 +525,16 @@ def run(now=None):
         return report
     bundle = read_bundle()
     events = read_events()
+    original_event_count = len(events)
     processed = process_records(records, bundle, events, now=now)
     events = processed["events"]
-    if events:
-        EVENTS_PATH.write_text("".join(canonical(event)+"\n" for event in events),
-                               encoding="utf-8")
+    new_events = events[original_event_count:]
+    if new_events:
+        with EVENTS_PATH.open("a", encoding="utf-8") as stream:
+            for event in new_events:
+                stream.write(canonical(event) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
     report = build_report(bundle, events, now)
     report.update({key: processed[key] for key in
                    ("added_predictions", "added_scores", "added_skips")})
