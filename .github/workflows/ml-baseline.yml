@@ -1,12 +1,14 @@
-name: Paper ML baseline research
+name: Paper ML shadow research
 on:
   pull_request:
     paths:
       - 'dataset_builder.py'
       - 'ml_baseline.py'
+      - 'ml_shadow_models.py'
       - 'train_models.py'
       - 'tests/test_dataset_builder.py'
       - 'tests/test_ml_baseline.py'
+      - 'tests/test_ml_shadow_models.py'
       - 'tests/test_train_models.py'
       - '.github/workflows/ml-baseline.yml'
   push:
@@ -14,43 +16,47 @@ on:
     paths:
       - 'dataset_builder.py'
       - 'ml_baseline.py'
+      - 'ml_shadow_models.py'
       - 'train_models.py'
       - '.github/workflows/ml-baseline.yml'
   workflow_dispatch:
     inputs:
       max_epochs:
-        description: "Maximum deterministic logistic-regression epochs"
+        description: "Maximum deterministic epochs for Logistic Regression and MLP"
         required: false
         default: "30"
 permissions:
   contents: read
 concurrency:
-  group: paper-ml-baseline-${{ github.ref }}
+  group: paper-ml-shadow-\${{ github.ref }}
   cancel-in-progress: false
 jobs:
   research:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Run leakage and model tests
+      - name: Run leakage and shadow-model tests
         if: github.event_name == 'pull_request'
         run: |
           python -m unittest discover -s tests -p 'test_dataset_builder.py' -v
           python -m unittest discover -s tests -p 'test_ml_baseline.py' -v
+          python -m unittest discover -s tests -p 'test_ml_shadow_models.py' -v
           python -m unittest discover -s tests -p 'test_train_models.py' -v
-      - name: Train diagnostic model on verified historical PAPER outcomes
+      - name: Verify canonical PAPER ledger
+        if: github.event_name != 'pull_request'
+        run: python engine.py --verify-only
+      - name: Train diagnostic and shadow models
         if: github.event_name != 'pull_request'
         run: |
-          python engine.py --verify-only
-          python train_models.py --output /tmp/paper-ml-baseline-report.json --max-epochs "${{ inputs.max_epochs || '30' }}"
-      - name: Upload diagnostic model report
+          python train_models.py --output /tmp/paper-ml-shadow-report.json --max-epochs "\${{ inputs.max_epochs || '30' }}"
+      - name: Upload shadow-model research report
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: paper-ml-baseline-diagnostic
-          path: /tmp/paper-ml-baseline-report.json
+          name: paper-ml-shadow-diagnostic
+          path: /tmp/paper-ml-shadow-report.json
           retention-days: 30
