@@ -45,9 +45,23 @@ def sample_record(record_id="LAB-90001", status="OPEN", created=None,
 def test_bundle():
     manifest = forward.load_manifest()
     models = {}
-    for name in ("logistic_regression", "gradient_boosting", "mlp_backprop"):
+    parameters = {
+        "logistic_regression": {
+            "epochs_requested": 30, "batch_size": 256, "learning_rate": 0.05,
+            "l2": 0.001, "patience": 5, "seed": 17,
+        },
+        "gradient_boosting": {
+            "rounds_requested": 24, "learning_rate": 0.05,
+            "max_thresholds_per_feature": 12, "min_leaf": 12,
+        },
+        "mlp_backprop": {
+            "hidden_units": 16, "epochs_requested": 30, "batch_size": 128,
+            "learning_rate": 0.01, "l2": 0.0005, "patience": 6, "seed": 29,
+        },
+    }
+    for name, params in parameters.items():
         model = {"feature_names": list(dataset_builder.FEATURE_NAMES),
-                 "test_candidate": name}
+                 "test_candidate": name, **params}
         models[name] = {"model": model, "model_id": forward.model_digest(model)}
     payload = {
         "schema": forward.VERSION, "version": 1,
