@@ -9,7 +9,14 @@
     "provider": "okx-swap",
     "bar_span": "15m confirmed OKX USDT-SWAP",
     "late_excluded": false,
-    "horizons_hours": [1, 2, 4, 8, 12, 24],
+    "horizons_hours": [
+      1,
+      2,
+      4,
+      8,
+      12,
+      24
+    ],
     "features_available_at": "OPEN",
     "labels_available_after": "fixed_horizon_close",
     "purge_embargo_hours": 24
@@ -19,8 +26,18 @@
     "ordered": true,
     "continuous_feature_count": 22,
     "categorical_groups": {
-      "side": ["LONG", "SHORT"],
-      "horizon_hours": [1, 2, 4, 8, 12, 24],
+      "side": [
+        "LONG",
+        "SHORT"
+      ],
+      "horizon_hours": [
+        1,
+        2,
+        4,
+        8,
+        12,
+        24
+      ],
       "symbol_source": "universe.SYMBOLS",
       "strategy_source": "learner.BASELINES + learner.ADVANCED"
     },
@@ -74,11 +91,26 @@
     "missing_predictions_must_not_be_backfilled": true,
     "compare_against_training_prevalence_constant": true,
     "compare_against_logistic_reference": true,
-    "primary_metrics": ["brier_score", "log_loss"],
-    "secondary_metrics": ["roc_auc", "accuracy_at_0_5", "calibration"],
+    "primary_metrics": [
+      "brier_score",
+      "log_loss"
+    ],
+    "secondary_metrics": [
+      "roc_auc",
+      "accuracy_at_0_5",
+      "calibration"
+    ],
     "cluster_uncertainty_by": "UTC entry day",
-    "report_strata": ["strategy", "side", "horizon_hours", "symbol"],
-    "champion_rule": "all preregistered statistical, calibration, coverage and post-cost gates must pass; otherwise NO_WINNER"
+    "report_strata": [
+      "strategy",
+      "side",
+      "horizon_hours",
+      "symbol"
+    ],
+    "champion_rule": "all preregistered statistical, calibration, coverage and post-cost gates must pass; otherwise NO_WINNER",
+    "max_prediction_capture_delay_seconds": 900,
+    "prediction_journal": "append-only SHA-256 hash chain",
+    "score_only_after_fixed_horizon_and_timely_close": true
   },
   "historical_validation": {
     "previously_inspected": true,
