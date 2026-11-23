@@ -31,7 +31,18 @@ def compress_file(path):
             return {"path": str(target), "status": "already_archived"}
         raise FileNotFoundError(path)
     if target.exists():
-        raise FileExistsError(target)
+        if sha256_file(path) == sha256_file(target, opener=gzip.open):
+            original_size = path.stat().st_size
+            compressed_size = target.stat().st_size
+            path.unlink()
+            return {
+                "path": str(target),
+                "status": "archived_losslessly_recovered",
+                "original_bytes": original_size,
+                "compressed_bytes": compressed_size,
+                "original_sha256": sha256_file(target, opener=gzip.open),
+            }
+        raise ValueError("ARCHIVE_INTEGRITY_FAILURE: source/archive collision")
 
     original_hash = sha256_file(path)
     try:
