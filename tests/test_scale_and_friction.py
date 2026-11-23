@@ -222,5 +222,40 @@ class ScaleAndCostTests(unittest.TestCase):
         del older["stress_normalized_R"]
         self.assertLess(learner.research_R(older),older["normalized_R"])
 
+
+    def test_prior_seven_day_entry_breadth_is_neutral_to_outcomes(self):
+        quotes=[dict(self.quotes[s]) for s in ("BTC","DOGE")]
+        slot=int(self.t.timestamp()//engine.SIGNAL_SLOT_SECONDS)
+        major=universe.bucket("BTC",quotes[0]["pct24h"],
+                              quotes[0]["quote_volume_24h"])
+        meme=universe.bucket("DOGE",quotes[1]["pct24h"],
+                             quotes[1]["quote_volume_24h"])
+        daily={major:0,meme:0}
+        weekly={major:60,meme:0}
+        order=engine.diversified_quotes(quotes,slot,daily,weekly)
+        self.assertEqual(order[0]["symbol"],"DOGE")
+        self.assertEqual(order,engine.diversified_quotes(
+            list(reversed(quotes)),slot,daily,weekly))
+        self.assertEqual({q["symbol"] for q in order},{"BTC","DOGE"})
+
+    def test_maker_fee_counterfactual_pricing(self):
+        # Illustrative repricing only: assumes both legs fill as maker.
+        mk=friction.maker_counterfactual(1,10000,1.5)
+        self.assertEqual(mk["maker_fee_round_trip_pct"],0.02)
+        self.assertAlmostEqual(mk["maker_fee_round_trip_usd"],2.0,places=6)
+        self.assertAlmostEqual(mk["maker_net_pnl_usd"],98.0,places=6)
+        self.assertAlmostEqual(mk["maker_normalized_R"],
+                               (1-0.02)/1.5,places=8)
+        self.assertTrue(mk["maker_fill_assumed_not_verified"])
+        mk2=friction.maker_counterfactual(-1,1000,1.5)
+        self.assertAlmostEqual(mk2["maker_net_pnl_usd"],-10.2,places=6)
+        self.assertAlmostEqual(mk2["maker_normalized_R"],
+                               (-1-0.02)/1.5,places=8)
+        with self.assertRaises(ValueError):
+            friction.maker_counterfactual(float("nan"),1000,1.5)
+        with self.assertRaises(ValueError):
+            friction.maker_counterfactual(1,0,1.5)
+
+
 if __name__=="__main__":
     unittest.main()
