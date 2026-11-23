@@ -1,0 +1,96 @@
+{
+  "schema": "paper-ml-prospective-freeze-v1",
+  "status": "PREREGISTERED_CANDIDATES_NO_CHAMPION",
+  "purpose": "blind prospective PAPER-only comparison; no allocation or execution authority",
+  "target": "1 iff post-fee frozen stress-adjusted research R > 0",
+  "eligibility": {
+    "status": "CLOSED",
+    "market_type": "perpetual",
+    "provider": "okx-swap",
+    "bar_span": "15m confirmed OKX USDT-SWAP",
+    "late_excluded": false,
+    "horizons_hours": [1, 2, 4, 8, 12, 24],
+    "features_available_at": "OPEN",
+    "labels_available_after": "fixed_horizon_close",
+    "purge_embargo_hours": 24
+  },
+  "feature_schema": {
+    "source": "dataset_builder.FEATURE_NAMES",
+    "ordered": true,
+    "continuous_feature_count": 22,
+    "categorical_groups": {
+      "side": ["LONG", "SHORT"],
+      "horizon_hours": [1, 2, 4, 8, 12, 24],
+      "symbol_source": "universe.SYMBOLS",
+      "strategy_source": "learner.BASELINES + learner.ADVANCED"
+    },
+    "allow_changes_during_cohort": false
+  },
+  "candidates": [
+    {
+      "name": "logistic_regression",
+      "role": "reference_candidate",
+      "implementation": "ml_baseline.fit",
+      "parameters": {
+        "max_epochs": 30,
+        "batch_size": 256,
+        "learning_rate": 0.05,
+        "l2": 0.001,
+        "patience": 5,
+        "seed": 17
+      }
+    },
+    {
+      "name": "gradient_boosting",
+      "role": "shadow_candidate",
+      "implementation": "ml_shadow_models.fit_gradient_boosting",
+      "parameters": {
+        "rounds": 24,
+        "learning_rate": 0.05,
+        "max_thresholds": 12,
+        "min_leaf": 12
+      }
+    },
+    {
+      "name": "mlp_backprop",
+      "role": "shadow_candidate",
+      "implementation": "ml_shadow_models.fit_mlp",
+      "parameters": {
+        "hidden_units": 16,
+        "max_epochs": 30,
+        "batch_size": 128,
+        "learning_rate": 0.01,
+        "l2": 0.0005,
+        "patience": 6,
+        "seed": 29
+      }
+    }
+  ],
+  "prospective_rules": {
+    "freeze_model_artifacts_before_first_cohort_prediction": true,
+    "persist_predictions_at_open": true,
+    "immutable_predictions": true,
+    "no_mid_cohort_retraining_or_tuning": true,
+    "missing_predictions_must_not_be_backfilled": true,
+    "compare_against_training_prevalence_constant": true,
+    "compare_against_logistic_reference": true,
+    "primary_metrics": ["brier_score", "log_loss"],
+    "secondary_metrics": ["roc_auc", "accuracy_at_0_5", "calibration"],
+    "cluster_uncertainty_by": "UTC entry day",
+    "report_strata": ["strategy", "side", "horizon_hours", "symbol"],
+    "champion_rule": "all preregistered statistical, calibration, coverage and post-cost gates must pass; otherwise NO_WINNER"
+  },
+  "historical_validation": {
+    "previously_inspected": true,
+    "used_for_early_stopping": true,
+    "pristine_holdout": false,
+    "may_select_champion": false
+  },
+  "safety": {
+    "paper_only": true,
+    "real_orders": false,
+    "wallet_or_sampler_changes": false,
+    "automatic_allocation_change": false,
+    "live_deployment_allowed": false
+  }
+}
