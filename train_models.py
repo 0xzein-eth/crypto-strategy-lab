@@ -23,6 +23,73 @@ def _model_record(trained):
     }
 
 
+def _comparison(models, validation_rows, training_prevalence):
+    """Compare all fitted models against identical validation rows and a train-rate constant."""
+    baseline_predictions = [
+        {"record_id": row["record_id"],
+         "probability_positive_net_R": round(training_prevalence, 8)}
+        for row in validation_rows
+    ]
+    baseline_metrics = ml_baseline.metrics(
+        validation_rows, [training_prevalence] * len(validation_rows),
+        training_prevalence)
+    comparison = {
+        "evaluation_rows": len(validation_rows),
+        "validation_record_ids_sha256": __import__("hashlib").sha256(
+            "\n".join(row["record_id"] for row in validation_rows).encode("utf-8")
+        ).hexdigest(),
+        "constant_training_prevalence": round(training_prevalence, 8),
+        "constant_baseline": {
+            "validation": baseline_metrics,
+            "validation_predictions": baseline_predictions,
+            "role": "NON_LEARNED_REFERENCE",
+        },
+        "models": {},
+        "metric_directions": {
+            "brier_score": "lower_is_better",
+            "log_loss": "lower_is_better",
+            "roc_auc": "higher_is_better",
+            "accuracy_at_0_5": "higher_is_better",
+        },
+        "promotion_decision": "NONE_DIAGNOSTIC_ONLY",
+        "historical_validation_previously_inspected": True,
+        "validation_is_pristine_holdout": False,
+    }
+    logistic_metrics = models.get("logistic_regression", {}).get("validation")
+    for name, record in models.items():
+        metrics = record.get("validation")
+        if not metrics:
+            comparison["models"][name] = {
+                "status": record.get("status", "NOT_FITTED"),
+                "reason": record.get("reason"),
+            }
+            continue
+        comparison["models"][name] = {
+            "status": "EVALUATED",
+            "validation": metrics,
+            "delta_brier_vs_constant": round(
+                metrics["brier_score"] - baseline_metrics["brier_score"], 8),
+            "delta_log_loss_vs_constant": round(
+                metrics["log_loss"] - baseline_metrics["log_loss"], 8),
+            "delta_brier_vs_logistic": (
+                round(metrics["brier_score"] - logistic_metrics["brier_score"], 8)
+                if logistic_metrics else None),
+            "delta_log_loss_vs_logistic": (
+                round(metrics["log_loss"] - logistic_metrics["log_loss"], 8)
+                if logistic_metrics else None),
+            "delta_roc_auc_vs_logistic": (
+                round(metrics["roc_auc"] - logistic_metrics["roc_auc"], 8)
+                if logistic_metrics and metrics["roc_auc"] is not None
+                and logistic_metrics["roc_auc"] is not None else None),
+            "beats_constant_on_brier": (
+                metrics["brier_score"] < baseline_metrics["brier_score"]),
+            "beats_logistic_on_brier": (
+                metrics["brier_score"] < logistic_metrics["brier_score"]
+                if logistic_metrics else None),
+        }
+    return comparison
+
+
 def run(output=None, max_epochs=30):
     import engine
 
@@ -80,6 +147,9 @@ def run(output=None, max_epochs=30):
                     "live_orders": False,
                 }
         result["model_training_failures"] = failures
+        result["comparison"] = _comparison(
+            result["models"], split["validation"],
+            result["training_positive_rate"])
         logistic = result["models"]["logistic_regression"]
         if "model" in logistic:
             # Preserve the original report fields for existing consumers.
