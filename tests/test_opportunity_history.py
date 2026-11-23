@@ -1,4 +1,5 @@
 """Integrity tests for the append-only, daily-sharded opportunity audit."""
+import gzip
 import hashlib
 import json
 import tempfile
@@ -94,6 +95,35 @@ class OpportunityHistoryTests(unittest.TestCase):
             self.assertEqual(opportunity_history.verify_history(path),
                              (2, result["head_sha256"]))
 
+
+    def test_gzip_archived_legacy_segment_is_frozen_and_chain_continues(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "data" / "opportunity_history.jsonl"
+            path.parent.mkdir(parents=True)
+            row = {
+                "seq": 1, "prev_hash": opportunity_history.GENESIS,
+                "timestamp": "2026-10-27T23:50:00Z",
+                "entry_mode": "legacy-explore", "audit": {"legacy": True},
+                "added": 0, "status": "OK", "verified_events": 1,
+            }
+            digest = hashlib.sha256(
+                opportunity_history.canonical(row).encode("utf-8")).hexdigest()
+            original = (opportunity_history.canonical(dict(row, hash=digest)) + "\n").encode()
+            compressed = Path(str(path) + ".gz")
+            compressed.write_bytes(gzip.compress(original, mtime=0))
+            frozen_bytes = compressed.read_bytes()
+
+            result = opportunity_history.append(
+                path, timestamp="2026-10-28T00:00:00Z",
+                entry_mode="legacy-explore", audit={"after_archive": True},
+                added=1, status="OK", verified_events=2)
+
+            self.assertEqual(compressed.read_bytes(), frozen_bytes)
+            self.assertTrue(result["legacy_file_frozen"])
+            self.assertTrue(result["legacy_file_compressed"])
+            self.assertEqual(result["rows"], 2)
+            self.assertEqual(opportunity_history.verify_history(path),
+                             (2, result["head_sha256"]))
 
 if __name__ == "__main__":
     unittest.main()
