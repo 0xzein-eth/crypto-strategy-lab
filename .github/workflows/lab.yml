@@ -59,6 +59,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_recovery_window.py' -v
           python -m unittest discover -s tests -p 'test_schedule_coverage.py' -v
           python -m unittest discover -s tests -p 'test_opportunity_history.py' -v
+          python -m unittest discover -s tests -p 'test_archive_event_data.py' -v
       - name: Collect high-throughput PAPER hypotheses and close due experiments
         # 44 is a maximum, not actual funded order count. Open only genuine
         # fresh unique 15m symbol-slot hypotheses with source quality gates.
@@ -71,7 +72,7 @@ jobs:
             cp /tmp/archive-migration.json data/archive_migration_complete.json
             cat /tmp/archive-migration.json
           else
-            echo "Immutable ledger archives already migrated; skipping."
+            python archive_event_data.py --incremental --keep-latest 1
           fi
       - name: Verify new event history and source files
         run: |
