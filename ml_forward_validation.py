@@ -108,7 +108,8 @@ def verify_bundle(bundle):
             MAX_CAPTURE_DELAY_SECONDS != manifest["prospective_rules"][
                 "max_prediction_capture_delay_seconds"]):
         raise ValueError("FREEZE_INVALID: prediction capture window changed")
-    expected = {item["name"] for item in manifest["candidates"]}
+    candidate_specs = {item["name"]: item for item in manifest["candidates"]}
+    expected = set(candidate_specs)
     models = bundle.get("models", {})
     if set(models) != expected:
         raise ValueError("FREEZE_INVALID: candidate set mismatch")
@@ -118,6 +119,26 @@ def verify_bundle(bundle):
             raise ValueError("INTEGRITY_FAILURE: model artifact hash " + name)
         if model.get("feature_names") != list(dataset_builder.FEATURE_NAMES):
             raise ValueError("FREEZE_INVALID: model feature order " + name)
+        parameter_map = {
+            "logistic_regression": {
+                "max_epochs": "epochs_requested", "batch_size": "batch_size",
+                "learning_rate": "learning_rate", "l2": "l2",
+                "patience": "patience", "seed": "seed",
+            },
+            "gradient_boosting": {
+                "rounds": "rounds_requested", "learning_rate": "learning_rate",
+                "max_thresholds": "max_thresholds_per_feature", "min_leaf": "min_leaf",
+            },
+            "mlp_backprop": {
+                "hidden_units": "hidden_units", "max_epochs": "epochs_requested",
+                "batch_size": "batch_size", "learning_rate": "learning_rate",
+                "l2": "l2", "patience": "patience", "seed": "seed",
+            },
+        }
+        expected_parameters = candidate_specs[name]["parameters"]
+        for manifest_key, model_key in parameter_map[name].items():
+            if model.get(model_key) != expected_parameters[manifest_key]:
+                raise ValueError("FREEZE_INVALID: candidate parameter mismatch " + name)
     if bundle.get("paper_only") is not True or bundle.get("real_orders") is not False:
         raise ValueError("SAFETY_FAILURE: model bundle execution boundary")
     return True
