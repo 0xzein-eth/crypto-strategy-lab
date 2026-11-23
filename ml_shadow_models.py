@@ -104,41 +104,61 @@ def fit_gradient_boosting(train_rows, validation_rows, feature_names, *,
     scores = [base_logit] * len(y_train)
     stumps = []
 
-    # Candidate thresholds are derived from training data only.
+    # Candidate thresholds and sorted row indices are derived once from
+    # training data only. Prefix sums make each candidate split O(1) per
+    # feature after one O(n) pass, avoiding O(features*thresholds*n) scans
+    # inside every boosting round on the full research cohort.
     candidates = []
+    sorted_indices = []
     for j in range(len(feature_names)):
-        ordered = sorted(row[j] for row in x_train)
+        order = sorted(range(len(x_train)), key=lambda i: x_train[i][j])
+        sorted_indices.append(order)
+        ordered = [x_train[i][j] for i in order]
         thresholds = []
         for q in range(1, max_thresholds + 1):
             index = min(len(ordered) - 1,
                         int(q * len(ordered) / (max_thresholds + 1)))
             if index + 1 < len(ordered):
                 threshold = (ordered[index] + ordered[index + 1]) / 2.0
-                if not thresholds or threshold != thresholds[-1]:
-                    thresholds.append(threshold)
+                if ordered[index] < ordered[index + 1] and (
+                        not thresholds or threshold != thresholds[-1][0]):
+                    thresholds.append((threshold, index + 1))
         candidates.append(thresholds)
 
     for _ in range(rounds):
         probabilities = [_probability(score) for score in scores]
         residuals = [label - p for label, p in zip(y_train, probabilities)]
+        total_sq = sum(value * value for value in residuals)
         best = None
         best_loss = float("inf")
         for j, thresholds in enumerate(candidates):
             if not thresholds:
                 continue
-            for threshold in thresholds:
-                left, right = [], []
-                for i, row in enumerate(x_train):
-                    (left if row[j] <= threshold else right).append(residuals[i])
-                if len(left) < min_leaf or len(right) < min_leaf:
+            prefix_sum = [0.0]
+            prefix_sq = [0.0]
+            running_sum = running_sq = 0.0
+            for row_index in sorted_indices[j]:
+                value = residuals[row_index]
+                running_sum += value
+                running_sq += value * value
+                prefix_sum.append(running_sum)
+                prefix_sq.append(running_sq)
+            total_sum = prefix_sum[-1]
+            for threshold, split_at in thresholds:
+                left_n = split_at
+                right_n = len(residuals) - split_at
+                if left_n < min_leaf or right_n < min_leaf:
                     continue
-                left_value = sum(left) / len(left)
-                right_value = sum(right) / len(right)
-                loss = (sum((v-left_value)**2 for v in left) +
-                        sum((v-right_value)**2 for v in right))
+                left_sum = prefix_sum[split_at]
+                right_sum = total_sum - left_sum
+                left_sq = prefix_sq[split_at]
+                right_sq = total_sq - left_sq
+                loss = (left_sq - left_sum * left_sum / left_n +
+                        right_sq - right_sum * right_sum / right_n)
                 if loss < best_loss:
                     best_loss = loss
-                    best = (j, threshold, left_value, right_value)
+                    best = (j, threshold, left_sum / left_n,
+                            right_sum / right_n)
         if best is None:
             break
         j, threshold, left_value, right_value = best
