@@ -16,6 +16,7 @@ from pathlib import Path
 import dataset_builder
 import ml_baseline
 import ml_shadow_models
+import learner
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / "ml_forward_state"
@@ -104,7 +105,7 @@ def verify_bundle(bundle):
         model = record.get("model")
         if not isinstance(model, dict) or record.get("model_id") != model_digest(model):
             raise ValueError("INTEGRITY_FAILURE: model artifact hash " + name)
-        if model.get("feature_names") != dataset_builder.FEATURE_NAMES:
+        if model.get("feature_names") != list(dataset_builder.FEATURE_NAMES):
             raise ValueError("FREEZE_INVALID: model feature order " + name)
     if bundle.get("paper_only") is not True or bundle.get("real_orders") is not False:
         raise ValueError("SAFETY_FAILURE: model bundle execution boundary")
@@ -204,7 +205,7 @@ def read_events(path=EVENTS_PATH):
                     event.get("hash") != digest(body) or
                     set(body) != {"seq", "prev_hash", "kind", "payload"}):
                 raise ValueError("INTEGRITY_FAILURE: forward event hash chain")
-            if event.get("kind") not in ("prediction", "score", "skip"):
+            if event.get("kind") not in ("prediction", "score", "skip", "excluded"):
                 raise ValueError("INTEGRITY_FAILURE: unknown forward event type")
             events.append(event)
             previous = event["hash"]
@@ -236,9 +237,9 @@ def prediction_index(events):
             if record_id in seen:
                 raise ValueError("INTEGRITY_FAILURE: duplicate skip " + record_id)
             seen.add(record_id)
-        elif event["kind"] == "score":
+        elif event["kind"] in ("score", "excluded"):
             if record_id not in predictions or record_id in scored:
-                raise ValueError("INTEGRITY_FAILURE: orphan/duplicate score " + record_id)
+                raise ValueError("INTEGRITY_FAILURE: orphan/duplicate outcome " + record_id)
             scored.add(record_id)
     return predictions, scored, seen
 
@@ -350,7 +351,7 @@ def process_records(records, bundle, events, now=None):
         if record.get("status") != "CLOSED":
             continue
         if not dataset_builder.eligible_closed(record):
-            append_event(events, "skip", {
+            append_event(events, "excluded", {
                 "record_id": record_id, "created_at": record["created_at"],
                 "recorded_at_utc": stamp(now),
                 "reason": "closed_outcome_not_eligible_or_timely",
@@ -362,7 +363,7 @@ def process_records(records, bundle, events, now=None):
         resolved = parse(record["resolved_at"])
         if resolved > now:
             raise ValueError("CLOCK_INTEGRITY: cannot score a future outcome")
-        target_r = float(__import__("learner").research_R(record))
+        target_r = float(learner.research_R(record))
         append_event(events, "score", {
             "record_id": record_id,
             "scored_at_utc": stamp(now),
@@ -400,6 +401,7 @@ def build_report(bundle, events, run_time):
     predictions, scored, seen = prediction_index(events)
     scores = {event["payload"]["record_id"]: event["payload"]
               for event in events if event["kind"] == "score"}
+    excluded = [event for event in events if event["kind"] == "excluded"]
     joined = [(predictions[ident], scores[ident]) for ident in sorted(scores)]
     rows = [{"record_id": pred["record_id"], "label": score["label_positive_net_R"]}
             for pred, score in joined]
@@ -412,11 +414,9 @@ def build_report(bundle, events, run_time):
                                 for name, item in bundle["models"].items()},
         "predictions_recorded": len(predictions),
         "outcomes_scored": len(scores),
-        "skipped_without_prediction_or_eligible_outcome": sum(
-            event["kind"] == "skip" for event in events),
-        "pending_outcomes": len(predictions) - len(scores) -
-            sum(1 for event in events if event["kind"] == "skip" and
-                event["payload"]["record_id"] in predictions),
+        "skipped_without_prediction": sum(event["kind"] == "skip" for event in events),
+        "excluded_predicted_outcomes": len(excluded),
+        "pending_outcomes": len(predictions) - len(scores) - len(excluded),
         "evaluation_status": "COLLECTING_PROSPECTIVE_COHORT",
         "champion": None,
         "promotion_decision": "NONE_NO_AUTOMATIC_PROMOTION",
