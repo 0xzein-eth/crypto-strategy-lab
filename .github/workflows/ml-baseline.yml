@@ -6,6 +6,9 @@ on:
       - 'ml_baseline.py'
       - 'ml_shadow_models.py'
       - 'train_models.py'
+      - 'ml_forward_validation.py'
+      - 'research/model_freeze_v1.json'
+      - 'tests/test_ml_forward_validation.py'
       - 'research/model_freeze_v1.json'
       - 'docs/PAPER_ML_PROSPECTIVE_FREEZE_V1.md'
       - 'tests/test_dataset_builder.py'
@@ -52,6 +55,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_ml_shadow_models.py' -v
           python -m unittest discover -s tests -p 'test_train_models.py' -v
           python -m unittest discover -s tests -p 'test_model_freeze.py' -v
+          python -m unittest discover -s tests -p 'test_ml_forward_validation.py' -v
       - name: Verify canonical PAPER ledger
         run: python engine.py --verify-only
       - name: Train diagnostic and shadow models
