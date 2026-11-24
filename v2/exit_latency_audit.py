@@ -32,7 +32,6 @@ def audit(report):
     by_strategy = defaultdict(list)
     by_symbol = defaultdict(list)
     buckets = Counter()
-    late = 0
     for row in rows:
         if not isinstance(row, dict):
             raise ValueError("INTEGRITY_FAILURE: malformed closed outcome")
@@ -41,7 +40,6 @@ def audit(report):
                      ts(row["fixed_evaluate_at"])).total_seconds()
             strategy = row["strategy"]
             symbol = row["symbol"]
-            ident = row["id"]
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("INTEGRITY_FAILURE: incomplete exit timestamp record") from exc
         if delay < 0:
@@ -50,10 +48,9 @@ def audit(report):
         delays.append(delay)
         by_strategy[strategy].append(delay)
         by_symbol[symbol].append(delay)
-        if delay > TIMELY_LIMIT_SECONDS:
-            late += 1
-        for label, lower, upper in BUCKETS:
-            if delay >= lower and (upper is None or delay < upper):
+        for index, (label, lower, upper) in enumerate(BUCKETS):
+            above_lower = delay >= lower if index == 0 else delay > lower
+            if above_lower and (upper is None or delay <= upper):
                 buckets[label] += 1
                 break
 
