@@ -933,6 +933,29 @@ def summarize(records, moment):
                     sum(r["fee_round_trip_usd"] for r in closed), 2),
                 "net_fee_only_pnl_usd": round(sum(pnl), 2),
                 "fee_only_break_even_pct_per_entry": round(2 * FEE_SIDE_PCT, 4),
+                "maker_fee_counterfactual": {
+                    "modeled_closes": len(closed),
+                    "assumed_maker_fee_pct_per_side": friction.MAKER_FEE_SIDE_PCT,
+                    "break_even_round_trip_fee_pct": round(
+                        2 * friction.MAKER_FEE_SIDE_PCT, 4),
+                    "net_pnl_usd_same_outcomes": round(sum(
+                        friction.maker_counterfactual(
+                            r["signed_return_pct"], r["notional_usd"],
+                            r["research_risk_pct"])["maker_net_pnl_usd"]
+                        for r in closed), 2),
+                    "net_R_same_outcomes": round(sum(
+                        friction.maker_counterfactual(
+                            r["signed_return_pct"], r["notional_usd"],
+                            r["research_risk_pct"])["maker_normalized_R"]
+                        for r in closed), 5),
+                    "maker_fill_assumed_not_verified": True,
+                    "note": (
+                        "Illustrative counterfactual repricing of the same "
+                        "fixed-horizon returns at 0.01% maker fee per side. "
+                        "No maker fills, queue priority, adverse selection, "
+                        "partial fills, spread capture, funding or impact are "
+                        "verified; canonical PnL remains unchanged."),
+                },
                 "not_wallet_equity": True,
                 "real_spread_funding_and_impact_unproven": True,
                 "cumulative_drawdown_not_investable_account_drawdown": True,
