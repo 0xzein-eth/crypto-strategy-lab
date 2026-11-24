@@ -17,7 +17,7 @@ class ExitLatencyAuditTests(unittest.TestCase):
             "latest_real_observation_utc": "2026-11-01T02:00:00Z",
             "closed_positions": 3, "open_positions": 0,
             "recorded_closed_outcomes": [
-                row("a", closed="2026-11-01T00:05:00Z"),
+                row("a", closed="2026-11-01T00:04:00Z"),
                 row("b", strategy="VWAP-v1", symbol="ETH",
                     closed="2026-11-01T00:20:00Z"),
                 row("c", closed="2026-11-01T01:01:00Z"),
