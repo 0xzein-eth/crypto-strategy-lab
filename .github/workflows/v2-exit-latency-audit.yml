@@ -1,0 +1,43 @@
+name: Crypto Lab v2 read-only exit latency audit
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Crypto Lab v2 durable public-market PAPER wallet"
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '29 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v2-readonly-exit-latency-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test read-only latency calculations
+        run: python -m unittest discover -s tests -p 'test_v2_exit_latency_audit.py' -v
+      - name: Verify source wallet journal before reading report
+        run: python -m v2.forward_paper --verify-only
+      - name: Produce observed exit-latency diagnostics only
+        run: python -m v2.exit_latency_audit --output /tmp/v2-exit-latency-audit.json
+      - name: Publish latency evidence without exposing strategy rankings
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-read-only-exit-latency-audit
+          path: /tmp/v2-exit-latency-audit.json
+          retention-days: 30
