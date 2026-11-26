@@ -59,6 +59,35 @@ class CostAttributionTests(unittest.TestCase):
         self.assertEqual(result["trade_row_net_reconciliation_residual_usdt"], "0.010000")
         self.assertIn("sum(row price pnl)", result["trade_row_net_reconciliation_formula"])
 
+    def test_full_precision_reconciliation_is_separate_from_rounded_residual(self):
+        source = wallet()
+        rows = source["recorded_closed_outcomes"]
+        rows[0].update({
+            "price_pnl_unrounded_usdt": "0.504",
+            "entry_fee_unrounded_usdt": "0.1004",
+            "exit_fee_unrounded_usdt": "0.1004",
+            "net_after_bidask_and_fee_before_unverified_funding_unrounded_usdt": "0.3032",
+        })
+        rows[1].update({
+            "price_pnl_unrounded_usdt": "-0.204",
+            "entry_fee_unrounded_usdt": "0.1004",
+            "exit_fee_unrounded_usdt": "0.1004",
+            "net_after_bidask_and_fee_before_unverified_funding_unrounded_usdt": "-0.4048",
+        })
+        result = reconcile(source, funding([funded("a", "0", "0"),
+                                             funded("b", "0", "0")]))
+        self.assertTrue(result["full_precision_source_available_for_all_closed_rows"])
+        self.assertEqual(result["full_precision_price_pnl_usdt"], "0.300000")
+        self.assertEqual(result["full_precision_fees_usdt"], "0.401600")
+        self.assertEqual(result["full_precision_net_before_funding_usdt"], "-0.101600")
+        self.assertEqual(result["full_precision_net_reconciliation_residual_usdt"], "0.000000")
+
+    def test_full_precision_reconciliation_is_unavailable_when_any_row_lacks_fields(self):
+        result = reconcile(wallet(), funding([funded("a", "0", "0"),
+                                               funded("b", "0", "0")]))
+        self.assertFalse(result["full_precision_source_available_for_all_closed_rows"])
+        self.assertIsNone(result["full_precision_net_reconciliation_residual_usdt"])
+
     def test_missing_funding_remains_unknown_not_zero(self):
         result = reconcile(wallet(), funding([funded("a", "0.02", "0.28")]))
         self.assertEqual(result["settled_funding_coverage"]["unknown_intervals_not_assumed_zero"], 1)
