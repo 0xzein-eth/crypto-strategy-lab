@@ -85,6 +85,29 @@ def reconcile(wallet, funding):
     # Trade-row net values are rounded independently. Keep the residual visible
     # rather than silently treating it as zero or assuming its cause.
     row_net_reconciliation_residual = net_before - (total_price - fee_total)
+    precision_fields = (
+        "price_pnl_unrounded_usdt", "entry_fee_unrounded_usdt",
+        "exit_fee_unrounded_usdt",
+        "net_after_bidask_and_fee_before_unverified_funding_unrounded_usdt",
+    )
+    precision_available = bool(wallet_rows) and all(
+        all(field in row for field in precision_fields) for row in wallet_rows
+    )
+    if precision_available:
+        precise_price = sum((dec(row["price_pnl_unrounded_usdt"], "precise price pnl")
+                             for row in wallet_rows), Decimal(0))
+        precise_entry_fee = sum((dec(row["entry_fee_unrounded_usdt"], "precise entry fee")
+                                 for row in wallet_rows), Decimal(0))
+        precise_exit_fee = sum((dec(row["exit_fee_unrounded_usdt"], "precise exit fee")
+                                for row in wallet_rows), Decimal(0))
+        precise_net_before = sum((dec(
+            row["net_after_bidask_and_fee_before_unverified_funding_unrounded_usdt"],
+            "precise net before funding") for row in wallet_rows), Decimal(0))
+        precise_fee_total = precise_entry_fee + precise_exit_fee
+        precise_residual = precise_net_before - (precise_price - precise_fee_total)
+    else:
+        precise_price = precise_entry_fee = precise_exit_fee = None
+        precise_net_before = precise_fee_total = precise_residual = None
     gross_abs = abs(total_price)
     return {
         "schema": SCHEMA,
@@ -106,6 +129,15 @@ def reconcile(wallet, funding):
         "trade_row_net_reconciliation_residual_usdt": fmt(row_net_reconciliation_residual),
         "trade_row_net_reconciliation_formula": (
             "sum(row net before funding) - (sum(row price pnl) - sum(row entry and exit fees))"
+        ),
+        "full_precision_source_available_for_all_closed_rows": precision_available,
+        "full_precision_price_pnl_usdt": fmt(precise_price) if precision_available else None,
+        "full_precision_entry_fees_usdt": fmt(precise_entry_fee) if precision_available else None,
+        "full_precision_exit_fees_usdt": fmt(precise_exit_fee) if precision_available else None,
+        "full_precision_fees_usdt": fmt(precise_fee_total) if precision_available else None,
+        "full_precision_net_before_funding_usdt": fmt(precise_net_before) if precision_available else None,
+        "full_precision_net_reconciliation_residual_usdt": (
+            fmt(precise_residual) if precision_available else None
         ),
         "fee_to_absolute_crossing_price_pnl_ratio": (
             round(float(fee_total / gross_abs), 6) if gross_abs else None),
