@@ -166,12 +166,13 @@ def reconcile(wallet, funding):
             "pure mid-price alpha or a verified fill. Fee components from trade "
             "rows are rounded to cents. Both the rounded-row fee sum versus aggregate "
             "fee total and the net-versus-price-minus-fees residual are exposed; neither "
-            "is silently forced to zero or assigned a cause. Full-precision source rows "
-            "independently rounds gross PnL, entry fee, exit fee and net PnL to cents. This explains "
-            "the observed row-sum residual; exact historical full-precision totals are unavailable " +
-            "in the current report. Optional precision fields are used only when every row supplies them. " +
-            "Funding is ex-post authentic settlement cash for matched closed intervals only. "
-            "No result establishes executable alpha or live readiness."
+            "is silently forced to zero. The current wallet close code independently "
+            "rounds gross PnL, entry fee, exit fee and net PnL to cents, explaining the "
+            "observed row-sum residual. Exact historical full-precision totals are not "
+            "present in the current report. Optional precision fields are used only "
+            "when every closed row supplies them. Funding is ex-post authentic settlement "
+            "cash for matched closed intervals only. No result establishes executable "
+            "alpha or live readiness."
         ),
     }
 
