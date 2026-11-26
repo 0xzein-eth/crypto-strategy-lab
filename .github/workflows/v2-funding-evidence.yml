@@ -26,15 +26,27 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Validate funding-only calculation and immutable v2 tick evidence
+      - name: Validate funding and cost attribution calculations plus immutable v2 tick evidence
         run: |
           python -m unittest discover -s tests -p 'test_v2_funding_evidence.py' -v
+          python -m unittest discover -s tests -p 'test_v2_cost_attribution.py' -v
           python -m v2.forward_paper --verify-only
       - name: Reconcile only genuine settled funding for 26 paired shadow arms
         run: python -m v2.funding_evidence --output /tmp/v2-settled-funding-attribution.json
-      - name: Publish incomplete-funding and complete-coverage diagnostics
+      - name: Attribute wallet price PnL, explicit fees and settled funding separately
+        run: |
+          python -m v2.cost_attribution \
+            --funding /tmp/v2-settled-funding-attribution.json \
+            --output /tmp/v2-wallet-cost-attribution.json
+      - name: Publish settled funding evidence
         uses: actions/upload-artifact@v4
         with:
           name: v2-authentic-settled-funding-cashflow-research
           path: /tmp/v2-settled-funding-attribution.json
+          retention-days: 30
+      - name: Publish wallet fee and funding attribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-wallet-fee-funding-attribution
+          path: /tmp/v2-wallet-cost-attribution.json
           retention-days: 30
