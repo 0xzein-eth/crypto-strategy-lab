@@ -82,6 +82,9 @@ def reconcile(wallet, funding):
         return str(value.quantize(Decimal("0.000001")))
 
     fee_total = total_entry_fee + total_exit_fee
+    # Trade-row net values are rounded independently. Keep the residual visible
+    # rather than silently treating it as zero or assuming its cause.
+    row_net_reconciliation_residual = net_before - (total_price - fee_total)
     gross_abs = abs(total_price)
     return {
         "schema": SCHEMA,
@@ -100,6 +103,10 @@ def reconcile(wallet, funding):
         "rounded_trade_fee_sum_minus_aggregate_fee_usdt": fmt(
             fee_total - dec(wallet.get("simulated_fee_total_usdt", "0"), "aggregate fee")),
         "net_after_bidask_and_fees_before_funding_usdt": fmt(net_before),
+        "trade_row_net_reconciliation_residual_usdt": fmt(row_net_reconciliation_residual),
+        "trade_row_net_reconciliation_formula": (
+            "sum(row net before funding) - (sum(row price pnl) - sum(row entry and exit fees))"
+        ),
         "fee_to_absolute_crossing_price_pnl_ratio": (
             round(float(fee_total / gross_abs), 6) if gross_abs else None),
         "settled_funding_coverage": {
@@ -125,8 +132,10 @@ def reconcile(wallet, funding):
         "note": (
             "Price PnL uses hypothetical top-of-book crossing prices and is not "
             "pure mid-price alpha or a verified fill. Fee components from trade "
-            "rows are rounded to cents; the aggregate fee total retains internal "
-            "precision, so their difference is a rounding reconciliation. Funding "
+            "rows are rounded to cents. Both the rounded-row fee sum versus aggregate "
+            "fee total and the net-versus-price-minus-fees residual are exposed; neither "
+            "is silently forced to zero or assigned a cause. Full-precision source rows "
+            "are needed to determine whether residuals are solely rounding. Funding "
             "is ex-post authentic settlement cash for matched closed intervals only. "
             "No result establishes executable alpha or live readiness."
         ),
