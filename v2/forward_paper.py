@@ -187,6 +187,13 @@ def replay(events):
                     "exit_fee_usdt":outcome["exit_fee_usdt"],
                     "net_after_bidask_and_fee_before_unverified_funding_usdt":
                         outcome["net_pnl_usdt"],
+                    "price_pnl_unrounded_usdt": outcome["price_pnl_unrounded_usdt"],
+                    "entry_fee_unrounded_usdt": outcome["entry_fee_unrounded_usdt"],
+                    "exit_fee_unrounded_usdt": outcome["exit_fee_unrounded_usdt"],
+                    "funding_cash_unrounded_usdt": outcome["funding_cash_unrounded_usdt"],
+                    "net_after_bidask_and_fee_before_unverified_funding_unrounded_usdt":
+                        str(Decimal(outcome["net_pnl_unrounded_usdt"]) -
+                            Decimal(outcome["funding_cash_unrounded_usdt"])),
                 })
                 del active[ident]
         # No new entries are opened during a tick that encountered a margin
