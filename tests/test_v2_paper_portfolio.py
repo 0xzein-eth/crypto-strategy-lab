@@ -55,6 +55,13 @@ class PaperAccountTests(unittest.TestCase):
         self.assertAlmostEqual(float(cash),float(1000+net),places=2)
         self.assertTrue(Decimal(c["entry_fee_usdt"])>0)
         self.assertTrue(Decimal(c["exit_fee_usdt"])>0)
+        self.assertEqual(
+            Decimal(c["net_pnl_unrounded_usdt"]),
+            Decimal(c["price_pnl_unrounded_usdt"])
+            - Decimal(c["entry_fee_unrounded_usdt"])
+            - Decimal(c["exit_fee_unrounded_usdt"])
+            + Decimal(c["funding_cash_unrounded_usdt"]),
+        )
         self.assertEqual(w.audit_events()["verified_events"],2)
         self.assertEqual(w.snapshot(close_when)["closed_positions"],1)
 
