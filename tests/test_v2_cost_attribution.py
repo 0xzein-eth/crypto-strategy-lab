@@ -44,6 +44,21 @@ class CostAttributionTests(unittest.TestCase):
         self.assertTrue(result["settled_funding_coverage"]["complete_for_closed_wallet_rows"])
         self.assertEqual(result["observed_late_exits_over_30m"], 1)
 
+    def test_net_row_reconciliation_residual_is_zero_when_arithmetic_matches(self):
+        result = reconcile(wallet(), funding([funded("a", "0", "0"),
+                                               funded("b", "0", "0")]))
+        self.assertEqual(result["trade_row_net_reconciliation_residual_usdt"], "0.000000")
+
+    def test_net_row_reconciliation_residual_exposes_mismatch(self):
+        source = wallet()
+        source["recorded_closed_outcomes"][0][
+            "net_after_bidask_and_fee_before_unverified_funding_usdt"
+        ] = "0.31"
+        result = reconcile(source, funding([funded("a", "0", "0"),
+                                             funded("b", "0", "0")]))
+        self.assertEqual(result["trade_row_net_reconciliation_residual_usdt"], "0.010000")
+        self.assertIn("sum(row price pnl)", result["trade_row_net_reconciliation_formula"])
+
     def test_missing_funding_remains_unknown_not_zero(self):
         result = reconcile(wallet(), funding([funded("a", "0.02", "0.28")]))
         self.assertEqual(result["settled_funding_coverage"]["unknown_intervals_not_assumed_zero"], 1)
