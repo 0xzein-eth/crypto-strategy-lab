@@ -84,6 +84,9 @@ class DurableForwardWalletTests(unittest.TestCase):
         self.assertGreater(Decimal(last["current_simulated_cash_usdt"]),1000)
         self.assertEqual(last["current_simulated_cash_usdt"],last["current_simulated_equity_usdt"])
         self.assertEqual(last["account_journal"]["verified_events"],4)
+        for row in last["recorded_closed_outcomes"]:
+            self.assertIn("price_pnl_unrounded_usdt", row)
+            self.assertIn("net_after_bidask_and_fee_before_unverified_funding_unrounded_usdt", row)
         self.assertEqual(last["real_order_submissions"],0)
         self.assertFalse(last["funding_source_complete"])
         self.assertFalse(last["after_all_costs_performance_proven"])
