@@ -312,6 +312,12 @@ class PaperWallet:
                   "exit_fee_usdt": usd(exit_fee),
                   "funding_cash_usdt": usd(p["funding_cash_usdt"]),
                   "net_pnl_usdt": usd(pnl),
+                  # Preserve exact Decimal components for downstream audit.
+                  "price_pnl_unrounded_usdt": str(gross),
+                  "entry_fee_unrounded_usdt": str(p["entry_fee"]),
+                  "exit_fee_unrounded_usdt": str(exit_fee),
+                  "funding_cash_unrounded_usdt": str(p["funding_cash_usdt"]),
+                  "net_pnl_unrounded_usdt": str(pnl),
                   "forced_liquidation": forced_liquidation,
                   "assumed_top_book_not_real_fill": True}
         del self._positions[position_id]
