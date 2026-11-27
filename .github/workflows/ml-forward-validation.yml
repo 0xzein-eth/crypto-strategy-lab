@@ -1,0 +1,83 @@
+name: PAPER ML prospective forward validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dataset_builder.py'
+      - 'ml_baseline.py'
+      - 'ml_shadow_models.py'
+      - 'train_models.py'
+      - 'ml_forward_validation.py'
+      - 'research/model_freeze_v1.json'
+      - '.github/workflows/ml-forward-validation.yml'
+  workflow_run:
+    workflows: ["Continuous paper strategy lab"]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: paper-ml-forward-one-writer
+  cancel-in-progress: false
+jobs:
+  capture-and-score:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.event != 'pull_request')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify canonical PAPER ledger before reading
+        run: python engine.py --verify-only
+      - name: Test immutable predictions, no backfill, and delayed scoring
+        run: |
+          python -m unittest discover -s tests -p 'test_dataset_builder.py' -v
+          python -m unittest discover -s tests -p 'test_ml_baseline.py' -v
+          python -m unittest discover -s tests -p 'test_ml_shadow_models.py' -v
+          python -m unittest discover -s tests -p 'test_train_models.py' -v
+          python -m unittest discover -s tests -p 'test_model_freeze.py' -v
+          python -m unittest discover -s tests -p 'test_ml_forward_validation.py' -v
+      - name: Initialize frozen models or capture new OPEN predictions and mature outcomes
+        run: python -m ml_forward_validation --run
+      - name: Verify frozen bundle and append-only prediction journal
+        run: |
+          python -m ml_forward_validation --verify-only
+          python engine.py --verify-only
+          git diff --check
+          if git status --porcelain data/ | grep .; then
+            echo "INTEGRITY_FAILURE: ML forward validation must never modify canonical PAPER data/"
+            exit 1
+          fi
+      - name: Persist only isolated ML forward-validation state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- ml_forward_state/
+          if git diff --cached --quiet; then
+            echo "No new ML predictions, scores, or freeze changes to persist."
+            exit 0
+          fi
+          git commit -m "paper(ml): persist immutable prospective predictions and scores [skip ci]"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Persisted isolated ML forward-validation state."
+              exit 0
+            fi
+            echo "Non-fast-forward: attempt ${attempt}; rebase without force."
+            git fetch origin main
+            if ! git rebase origin/main; then
+              echo "INTEGRITY_FAILURE: ML journal conflict; no force push."
+              git rebase --abort || true
+              exit 1
+            fi
+          done
+          echo "PERSISTENCE_FAILURE: unable to persist ML state safely."
+          exit 1
